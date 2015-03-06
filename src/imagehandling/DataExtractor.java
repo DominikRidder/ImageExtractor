@@ -1,0 +1,5 @@
+package imagehandling;
+
+interface DataExtractor {
+
+}
