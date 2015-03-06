@@ -1,6 +1,7 @@
 package imagehandling;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import ij.plugin.DICOM;
 
@@ -203,13 +204,12 @@ public class Image {
 			words.add(part.substring(1, part.length()));
 			
 		}
-		ArrayList<String> sort = new ArrayList<String>();
-		
-		
+		Collections.sort(words);
 		
 		for (String word: words){
 			str += word;
 		}
+		str = (str.substring(0, str.length()-2));
 		return str;
 	}
 }
