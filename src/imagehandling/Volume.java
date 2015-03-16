@@ -3,6 +3,10 @@ package imagehandling;
 import java.io.File;
 import java.util.ArrayList;
 
+
+
+
+
 public class Volume {
 
     private ArrayList<Image> slices;
