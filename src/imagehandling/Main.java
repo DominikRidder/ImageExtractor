@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class Main {
 	public static void main(String agrs[]) {
-		String filepath = "/opt/dridder_local/Documents/ImageExtractor/Testfolder";
+		String filepath = "/opt/dridder_local/TestDicoms/Testfolder";
 		Volume vol = new Volume(filepath);
 
 		// try to get a Attribute
@@ -34,5 +34,7 @@ public class Main {
 			System.out.println("Well than i wont extract them.");
 		}
 		sc.close();
+		
+		System.out.println(Image.getKeyWords("ech"));
 	}
 }

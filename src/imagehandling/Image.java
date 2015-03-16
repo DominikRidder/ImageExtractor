@@ -212,4 +212,37 @@ public class Image {
 		str = (str.substring(0, str.length()-2));
 		return str;
 	}
+	
+	public static String getKeyWords(String st){
+		ArrayList<String>words = new ArrayList<String>();
+		String str = "";
+		for (KeyMap en : KeyMap.values()) {
+			String part = en.name().replace("KEY", "").replace("_", " ")
+					.toLowerCase()+ "\n";
+			words.add(part.substring(1, part.length()));
+			
+		}
+		Collections.sort(words);
+		
+		
+		String	keysearch[] = st.split("\\*");
+		
+		int i=0;
+		while (i<words.size()){
+			String word = words.get(i);
+			for (String search : keysearch){
+				if (! word.contains(search)){
+					words.remove(i);
+					i--;
+					break;
+				}
+			}
+			i++;
+		}
+		for (String word: words){
+			str += word;
+		}
+		str = (str.substring(0, str.length()-2));
+		return str;
+	}
 }
