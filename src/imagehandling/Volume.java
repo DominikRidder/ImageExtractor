@@ -3,16 +3,6 @@ package imagehandling;
 import java.io.File;
 import java.util.ArrayList;
 
-// Some of these method actually using a lot of Memory. Maybe u have to increase your java heap space...
-
-
-
-
-
-
-
-
-
 public class Volume {
 
     private ArrayList<Image> slices;
