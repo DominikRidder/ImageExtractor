@@ -21,7 +21,7 @@ public class Main {
 		} else {
 			System.out.println("These headers are different.\n");
 		}
-
+		
 		// Extract 2 times
 		Scanner sc = new Scanner(System.in);
 		System.out.println("Is it ok for you, if i extract the header?(y/n)");
@@ -35,6 +35,6 @@ public class Main {
 		}
 		sc.close();
 		
-		System.out.println(Image.getKeyWords("ech"));
+		System.out.println(Image.getKeyWords("*data"));
 	}
 }

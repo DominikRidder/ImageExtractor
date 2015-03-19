@@ -4,20 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import ij.plugin.DICOM;
+import ij.util.WildcardMatch;
 
 public class Image {
 
 	private String type;
 
 	private String path;
-
-	public String getType() {
-		return type;
-	}
-
-	public String getPath() {
-		return path;
-	}
 
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
@@ -49,80 +42,85 @@ public class Image {
 		this.path = path;
 	}
 
-	public boolean isImage() {
-		switch (type) {
-		case "dcm":
-		case "IMA":
-			try {
-				// just to find out if it is a Dicom
-				new DICOM().open(path);
-				return true;
-			} catch (IndexOutOfBoundsException e) {
-			}
-			break;
-		default:
-			break;
-		}
-		return false;
-	}
-
 	public Image(String type, String path) {
 		this.type = type;
 		this.path = path;
 	}
 
-	/**
-	 * Returns the Header of the Image, given by the path.
-	 */
-	public String getHeader() {
-		HeaderExtractor he = null;
-		switch (type) {
-		case "dcm":
-		case "IMA":
-			he = new DicomHeaderExtractor();
-			break;
-		default:
-			throw new RuntimeException("The Image Type can't be handeld.");
+	public static String getKeyWords() {
+		ArrayList<String> words = new ArrayList<String>();
+		String str = "";
+		for (KeyMap en : KeyMap.values()) {
+			String part = en.name().replace("KEY", "").replace("_", " ")
+					.toLowerCase()
+					+ "\n";
+			words.add(part.substring(1, part.length()));
+
 		}
-		return he.getHeader(path);
+		Collections.sort(words);
+
+		for (String word : words) {
+			str += word;
+		}
+		str = (str.substring(0, str.length() - 2));
+		return str;
 	}
 
-	/**
-	 * Creates ***.header txt document in the given path with the header
-	 * information of the Image.
-	 */
-	public void extractHeader() {
-		extractHeader(false);
-	}
-	
-	protected void extractHeader(boolean bool) {
-		HeaderExtractor he = null;
-		switch (type) {
-		case "dcm":
-		case "IMA":
-			he = new DicomHeaderExtractor();
-			break;
-		default:
-			throw new RuntimeException("The Image Type can't be handeld.");
+	public static String getKeyWords(String st) {
+		ArrayList<String> words = new ArrayList<String>();
+		String str = "";
+		for (KeyMap en : KeyMap.values()) {
+			String part = en.name().replace("KEY", "").replace("_", " ")
+					.toLowerCase()
+					+ "\n";
+			words.add(part.substring(1, part.length()));
+
 		}
-		try{
-			he.extractHeader(path);
-		}catch(Exception e){
-			if (bool){
-				throw new RuntimeException(e.getMessage());
-			}else{
-				System.out.println(e.getMessage());
+		Collections.sort(words);
+
+		int i = 0;
+		WildcardMatch wm = new WildcardMatch();
+		wm.setCaseSensitive(false);
+		while (i < words.size()) {
+			String word = words.get(i);
+			word = word.substring(0, word.length()-1);
+			if (! wm.match(word, st)) {
+				words.remove(i);
+				i--;
 			}
+			i++;
 		}
+		for (String word : words) {
+			str += word;
+		}
+		if (str.length() == 0){
+			return "";
+		}
+		str = (str.substring(0, str.length() - 1));
+		return str;
 	}
 
-	public String getData() {
-		// TODO
-		return null;
+	public String getType() {
+		return type;
 	}
 
-	public void extractData() {
-		// TODO
+	public String getPath() {
+		return path;
+	}
+
+	public String getAttribute(String key) {
+		String attribute = "";
+		switch (type) {
+		case "dcm":
+		case "IMA":
+			attribute = getAttributeDicom(key);
+			break;
+		default:
+			System.out
+					.println("getting Attributes didnt work. Image Format is not supported.");
+			break;
+		}
+		return attribute;
 	}
 
 	/**
@@ -143,19 +141,75 @@ public class Image {
 		return attribute;
 	}
 
-	public String getAttribute(String key) {
-		String attribute = "";
+	/**
+	 * Returns the Header of the Image, given by the path.
+	 */
+	public String getHeader() {
+		HeaderExtractor he = null;
 		switch (type) {
 		case "dcm":
 		case "IMA":
-			attribute = getAttributeDicom(key);
+			he = new DicomHeaderExtractor();
 			break;
 		default:
-			System.out
-					.println("getting Attributes didnt work. Image Format is not supported.");
+			throw new RuntimeException("The Image Type can't be handeld.");
+		}
+		return he.getHeader(path);
+	}
+
+	public String getData() {
+		// TODO
+		return null;
+	}
+
+	public boolean isImage() {
+		switch (type) {
+		case "dcm":
+		case "IMA":
+			try {
+				// just to find out if it is a Dicom
+				new DICOM().open(path);
+				return true;
+			} catch (IndexOutOfBoundsException e) {
+			}
+			break;
+		default:
 			break;
 		}
-		return attribute;
+		return false;
+	}
+
+	/**
+	 * Creates ***.header txt document in the given path with the header
+	 * information of the Image.
+	 */
+	public void extractHeader() {
+		extractHeader(false);
+	}
+
+	public void extractData() {
+		// TODO
+	}
+
+	protected void extractHeader(boolean bool) {
+		HeaderExtractor he = null;
+		switch (type) {
+		case "dcm":
+		case "IMA":
+			he = new DicomHeaderExtractor();
+			break;
+		default:
+			throw new RuntimeException("The Image Type can't be handeld.");
+		}
+		try {
+			he.extractHeader(path);
+		} catch (Exception e) {
+			if (bool) {
+				throw new RuntimeException(e.getMessage());
+			} else {
+				System.out.println(e.getMessage());
+			}
+		}
 	}
 
 	private String getAttributeDicom(KeyMap en) {
@@ -189,60 +243,10 @@ public class Image {
 			}
 		}
 		if (enu == null) {
-			System.out.println("The given key is not implemented. Use Image.getKeyWords() or Volume.getKeyWords() \nto get a String with all implemented keys. The keyword is not case-sensitive.");
+			System.out
+					.println("The given key is not implemented. Use Image.getKeyWords() or Volume.getKeyWords() \nto get a String with all implemented keys. The keyword is not case-sensitive.");
 			return "<<key not found>>";
 		}
 		return getAttributeDicom(enu);
-	}
-	
-	public static String getKeyWords(){
-		ArrayList<String>words = new ArrayList<String>();
-		String str = "";
-		for (KeyMap en : KeyMap.values()) {
-			String part = en.name().replace("KEY", "").replace("_", " ")
-					.toLowerCase()+ "\n";
-			words.add(part.substring(1, part.length()));
-			
-		}
-		Collections.sort(words);
-		
-		for (String word: words){
-			str += word;
-		}
-		str = (str.substring(0, str.length()-2));
-		return str;
-	}
-	
-	public static String getKeyWords(String st){
-		ArrayList<String>words = new ArrayList<String>();
-		String str = "";
-		for (KeyMap en : KeyMap.values()) {
-			String part = en.name().replace("KEY", "").replace("_", " ")
-					.toLowerCase()+ "\n";
-			words.add(part.substring(1, part.length()));
-			
-		}
-		Collections.sort(words);
-		
-		
-		String	keysearch[] = st.split("\\*");
-		
-		int i=0;
-		while (i<words.size()){
-			String word = words.get(i);
-			for (String search : keysearch){
-				if (! word.contains(search)){
-					words.remove(i);
-					i--;
-					break;
-				}
-			}
-			i++;
-		}
-		for (String word: words){
-			str += word;
-		}
-		str = (str.substring(0, str.length()-2));
-		return str;
 	}
 }
