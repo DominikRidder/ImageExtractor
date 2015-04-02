@@ -83,8 +83,8 @@ public class Image {
 		wm.setCaseSensitive(false);
 		while (i < words.size()) {
 			String word = words.get(i);
-			word = word.substring(0, word.length()-1);
-			if (! wm.match(word, st)) {
+			word = word.substring(0, word.length() - 1);
+			if (!wm.match(word, st)) {
 				words.remove(i);
 				i--;
 			}
@@ -93,7 +93,7 @@ public class Image {
 		for (String word : words) {
 			str += word;
 		}
-		if (str.length() == 0){
+		if (str.length() == 0) {
 			return "";
 		}
 		str = (str.substring(0, str.length() - 1));
@@ -233,20 +233,25 @@ public class Image {
 	}
 
 	private String getAttributeDicom(String keyword) {
+		String str = "";
 		KeyMap enu = null;
 		keyword = keyword.replace(" ", "").toLowerCase();
-		for (KeyMap en : KeyMap.values()) {
-			if (keyword.equals(en.name().replace("KEY", "").replace("_", "")
-					.toLowerCase())) {
-				enu = en;
-				break;
+		for (String keywordo : keyword.split("\n")) {
+			for (KeyMap en : KeyMap.values()) {
+				if (keywordo.equals(en.name().replace("KEY", "")
+						.replace("_", "").toLowerCase())) {
+					enu = en;
+					break;
+				}
+			}
+			if (enu == null) {
+				System.out
+						.println("The given key is not implemented. Use Image.getKeyWords() or Volume.getKeyWords() \nto get a String with all implemented keys. The keyword is not case-sensitive.");
+				str += "<<key not found>>";
+			} else {
+				str += keywordo+": "+getAttributeDicom(enu)+"\n";
 			}
 		}
-		if (enu == null) {
-			System.out
-					.println("The given key is not implemented. Use Image.getKeyWords() or Volume.getKeyWords() \nto get a String with all implemented keys. The keyword is not case-sensitive.");
-			return "<<key not found>>";
-		}
-		return getAttributeDicom(enu);
+		return str;
 	}
 }

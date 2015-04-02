@@ -23,18 +23,20 @@ public class Main {
 		}
 		
 		// Extract 2 times
-		Scanner sc = new Scanner(System.in);
-		System.out.println("Is it ok for you, if i extract the header?(y/n)");
-		if (sc.next().charAt(0) == 'y') {
-			System.out.println("First time vol.extractHeader():");
-			vol.extractHeader();
-			System.out.println("Second time vol.extractHeader():");
-			vol.extractHeader();
-		} else {
-			System.out.println("Well than i wont extract them.");
-		}
-		sc.close();
+//		Scanner sc = new Scanner(System.in);
+//		System.out.println("Is it ok for you, if i extract the header?(y/n)");
+//		if (sc.next().charAt(0) == 'y') {
+//			System.out.println("First time vol.extractHeader():");
+//			vol.extractHeader();
+//			System.out.println("Second time vol.extractHeader():");
+//			vol.extractHeader();
+//		} else {
+//			System.out.println("Well than i wont extract them.");
+//		}
+//		sc.close();
 		
-		System.out.println(Image.getKeyWords("*data"));
+
+		System.out.println(img.getAttribute(Image.getKeyWords("*")));
+//		System.out.println(Image.getKeyWords("*"));
 	}
 }
