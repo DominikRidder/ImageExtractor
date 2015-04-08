@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public class Volume {
 
 	private ArrayList<Image> slices;
-
+	
 	public Volume() {
 		System.out
 				.println("You have to use the Volume(String path) construktor to work with Volume.\nThe path should be the path of the repository, where the images are stored in.");
@@ -40,7 +40,26 @@ public class Volume {
 			} catch (RuntimeException e) {
 			}
 		}
+	}
+	
+	protected Volume(String path, Gui gui) {
+		slices = new ArrayList<Image>();
 
+		// getting the files inhabited in the path
+		File file = new File(path);
+		File[] list = file.listFiles();
+
+		if (list == null) {
+			throw new RuntimeException("The given Volume path seems to be not correct. Please check the path.");
+		}
+
+		// adding the Images
+		for (File l : list) {
+			try {
+				slices.add(new Image(l.getAbsolutePath()));
+			} catch (RuntimeException e) {
+			}
+		}
 	}
 
 	/**
@@ -80,7 +99,7 @@ public class Volume {
 		return Image.getKeyWords();
 	}
 
-	public static String getKeyWords(String str){
+	public static String getKeyWords(String str) {
 		return Image.getKeyWords(str);
 	}
 

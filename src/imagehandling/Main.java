@@ -1,12 +1,12 @@
 package imagehandling;
 
-import java.util.Scanner;
+//import java.util.Scanner;
 
 public class Main {
 	public static void main(String agrs[]) {
 		String filepath = "/opt/dridder_local/TestDicoms/Testfolder";
 		Volume vol = new Volume(filepath);
-
+		                   
 		// try to get a Attribute
 		String str = vol
 				.getAttribute("I have no clue what i should type here.");
@@ -22,21 +22,11 @@ public class Main {
 			System.out.println("These headers are different.\n");
 		}
 		
-		// Extract 2 times
-//		Scanner sc = new Scanner(System.in);
-//		System.out.println("Is it ok for you, if i extract the header?(y/n)");
-//		if (sc.next().charAt(0) == 'y') {
-//			System.out.println("First time vol.extractHeader():");
-//			vol.extractHeader();
-//			System.out.println("Second time vol.extractHeader():");
-//			vol.extractHeader();
-//		} else {
-//			System.out.println("Well than i wont extract them.");
-//		}
-//		sc.close();
-		
+		vol.extractHeader();
 
-		System.out.println(img.getAttribute(Image.getKeyWords("*")));
-//		System.out.println(Image.getKeyWords("*"));
+//		System.out.println(img.getAttribute(Image.getKeyWords("*birth*")));
+		System.out.println(img.getAttribute("patient id"));
+		System.out.println(img.getAttribute("study id"));
+		System.out.println(img.getAttribute("patients birth date"));
 	}
 }

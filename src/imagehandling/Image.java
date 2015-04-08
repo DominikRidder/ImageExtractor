@@ -235,8 +235,10 @@ public class Image {
 	private String getAttributeDicom(String keyword) {
 		String str = "";
 		KeyMap enu = null;
-		keyword = keyword.replace(" ", "").toLowerCase();
+		String output = "";
 		for (String keywordo : keyword.split("\n")) {
+			output = keywordo;
+			keywordo = keywordo.replace(" ", "").toLowerCase();
 			for (KeyMap en : KeyMap.values()) {
 				if (keywordo.equals(en.name().replace("KEY", "")
 						.replace("_", "").toLowerCase())) {
@@ -249,7 +251,7 @@ public class Image {
 						.println("The given key is not implemented. Use Image.getKeyWords() or Volume.getKeyWords() \nto get a String with all implemented keys. The keyword is not case-sensitive.");
 				str += "<<key not found>>";
 			} else {
-				str += keywordo+": "+getAttributeDicom(enu)+"\n";
+				str += output+": "+getAttributeDicom(enu)+"\n";
 			}
 		}
 		return str;
