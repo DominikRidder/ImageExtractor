@@ -22,6 +22,10 @@ public class Gui extends JFrame implements ActionListener {
 	JPanel panel;
 
 	JPanel dir;
+	
+	JPanel img;
+	
+	JPanel att;
 
 	Volume vol;
 
@@ -32,6 +36,10 @@ public class Gui extends JFrame implements ActionListener {
 	JTextArea output;
 
 	JTextField current_path;
+	
+	JTextField index;
+	
+	JTextField filter;
 
 	public Gui() {
 		setSize(500, 400);
@@ -46,8 +54,13 @@ public class Gui extends JFrame implements ActionListener {
 		current_path = new JTextField();
 		current_path.setText("Volume: <<not set>>");
 		current_path.setEditable(false);
+		current_path.setMaximumSize(new Dimension(1000, 10000));
 		JScrollPane scroll = new JScrollPane(output);
 		scroll.setPreferredSize(new Dimension(100, 100));
+		index = new JTextField();
+		index.setText("0");
+		filter = new JTextField();
+		filter.setText("");
 		
 		chooser = new JFileChooser();
 		chooser.setCurrentDirectory(new java.io.File("."));
@@ -69,15 +82,24 @@ public class Gui extends JFrame implements ActionListener {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 		dir = new JPanel();
 		dir.setLayout(new GridLayout(1, 2, 20, 1));
+		att = new JPanel();
+		att.setLayout(new GridLayout(1,2,20,1));
+		img = new JPanel();
+		img.setLayout(new GridLayout(1,2,20,1));
 
 		panel.add(Box.createRigidArea(new Dimension(0, 10)));
 		panel.add(path);
 		panel.add(dir);
-		panel.add(current_path);
-		panel.add(show_attributes);
+		img.add(current_path);
+		img.add(index);
+		panel.add(img);
+		att.add(show_attributes);
+		att.add(filter);
+		panel.add(att);
 		panel.add(scroll);
 		dir.add(search_path);
 		dir.add(apply_path);
+		dir.setMaximumSize(new Dimension(500, 1000));
 		
 		getContentPane().add(panel);
 		setLocationRelativeTo(null);
@@ -103,7 +125,11 @@ public class Gui extends JFrame implements ActionListener {
 			}
 			break;
 		case "Display Attributes":
-			output.setText(vol.getHeader().get(0));
+			if (filter.getText().equals("")){
+			output.setText(vol.getSlice(Integer.parseInt(index.getText())).getHeader());
+			}else{
+				output.setText(vol.getSlice(Integer.parseInt(index.getText())).getAttribute(Image.getKeyWords("*"+filter.getText()+"*")));
+			}
 			break;
 		default:
 			break;
