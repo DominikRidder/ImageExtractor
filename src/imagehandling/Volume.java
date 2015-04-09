@@ -2,6 +2,7 @@ package imagehandling;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Volume {
 
@@ -60,6 +61,9 @@ public class Volume {
 			} catch (RuntimeException e) {
 			}
 		}
+		
+		// sort images
+		Collections.sort(slices);
 	}
 
 	/**

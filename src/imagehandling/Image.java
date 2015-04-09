@@ -6,7 +6,7 @@ import java.util.Collections;
 import ij.plugin.DICOM;
 import ij.util.WildcardMatch;
 
-public class Image {
+public class Image implements Comparable {
 
 	private String type;
 
@@ -251,9 +251,24 @@ public class Image {
 						.println("The given key is not implemented. Use Image.getKeyWords() or Volume.getKeyWords() \nto get a String with all implemented keys. The keyword is not case-sensitive.");
 				str += "<<key not found>>";
 			} else {
-				str += output+": "+getAttributeDicom(enu)+"\n";
+				str += output + ": " + getAttributeDicom(enu) + "\n";
 			}
 		}
 		return str;
 	}
+
+	// Comparing by ImageNumber
+	public int compareTo(Object o) {
+		int thisnumb = Integer.parseInt(this.getAttribute("image number")
+				.replace(" ", "").replace("\n", "").split(":")[1]);
+		int objnumb = Integer.parseInt(((Image) o).getAttribute("image number")
+				.replace(" ", "").replace("\n", "").split(":")[1]);
+		if (thisnumb > objnumb) {
+			return 1;
+		} else if (thisnumb < objnumb) {
+			return -1;
+		}
+		return 0;
+	}
+
 }

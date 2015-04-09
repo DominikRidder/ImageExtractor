@@ -4,16 +4,23 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 
 public class Gui extends JFrame implements ActionListener {
 
@@ -22,9 +29,9 @@ public class Gui extends JFrame implements ActionListener {
 	JPanel panel;
 
 	JPanel dir;
-	
+
 	JPanel img;
-	
+
 	JPanel att;
 
 	Volume vol;
@@ -36,32 +43,37 @@ public class Gui extends JFrame implements ActionListener {
 	JTextArea output;
 
 	JTextField current_path;
-	
+
+	JTextField text_slice;
+
 	JTextField index;
-	
+
 	JTextField filter;
 
+	int change = 0;
+	
 	public Gui() {
 		setSize(500, 400);
 		path = new JTextField();
-//		path.setText("/path/to/volume");
+		current_path = new JTextField();
 		path.setMaximumSize(new Dimension(10000, 100));
 		path.setText("/opt/dridder_local/TestDicoms/Testfolder");
 		output = new JTextArea();
 		output.setText("status");
 		output.setMinimumSize(new Dimension(100, 1000));
 		output.setEditable(false);
-		current_path = new JTextField();
-		current_path.setText("Volume: <<not set>>");
+		current_path
+				.setText("Volume: <<not set>>                               ");
 		current_path.setEditable(false);
-		current_path.setMaximumSize(new Dimension(1000, 10000));
+		current_path.setMaximumSize(new Dimension(10000, 10000));
 		JScrollPane scroll = new JScrollPane(output);
 		scroll.setPreferredSize(new Dimension(100, 100));
 		index = new JTextField();
 		index.setText("0");
+		index.setMinimumSize(new Dimension(100, 100));
 		filter = new JTextField();
 		filter.setText("");
-		
+
 		chooser = new JFileChooser();
 		chooser.setCurrentDirectory(new java.io.File("."));
 		chooser.setDialogTitle("Search Path of Volume");
@@ -81,16 +93,19 @@ public class Gui extends JFrame implements ActionListener {
 		panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 		dir = new JPanel();
-		dir.setLayout(new GridLayout(1, 2, 20, 1));
 		att = new JPanel();
-		att.setLayout(new GridLayout(1,2,20,1));
 		img = new JPanel();
-		img.setLayout(new GridLayout(1,2,20,1));
+		dir.setLayout(new GridLayout(1, 2, 20, 1));
+		att.setLayout(new GridLayout(1, 2, 20, 1));
+		img.setLayout(new BoxLayout(img, BoxLayout.LINE_AXIS));
+		att.setMaximumSize(new Dimension(10000, 1000));
+		img.setMaximumSize(new Dimension(10000, 1000));
 
 		panel.add(Box.createRigidArea(new Dimension(0, 10)));
 		panel.add(path);
 		panel.add(dir);
 		img.add(current_path);
+		img.add(Box.createRigidArea(new Dimension(10, 0)));
 		img.add(index);
 		panel.add(img);
 		att.add(show_attributes);
@@ -100,14 +115,70 @@ public class Gui extends JFrame implements ActionListener {
 		dir.add(search_path);
 		dir.add(apply_path);
 		dir.setMaximumSize(new Dimension(500, 1000));
-		
+
 		getContentPane().add(panel);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("ImageExtractor");
-		setVisible(true);
-	}
+		JPanel contentPane = (JPanel) this.getContentPane();
+		int condition = JComponent.WHEN_IN_FOCUSED_WINDOW;
+		InputMap inputMap = contentPane.getInputMap(condition);
+		ActionMap actionMap = contentPane.getActionMap();
 
+		String up = "left";
+		String down = "right";
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), up);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), down);
+		actionMap.put(up, new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				if (!index.getText().equals("")) {
+					change = 1;
+				}
+			}
+		});
+		actionMap.put(down, new AbstractAction() {
+			public void actionPerformed(ActionEvent e) {
+				if (!index.getText().equals("0") && !index.getText().equals("")) {
+					change = -1;
+				}
+			}
+		});
+		setVisible(true);
+
+		String numb = index.getText();
+		String filt = filter.getText();
+		while (true) {
+			if (!index.getText().equals("")) {
+				try {
+					if (Integer.parseInt(index.getText()) > 29) {
+						if (! (Integer.parseInt(index.getText())/1000 > 0)){
+						index.setText("29");
+						}
+					}
+					if (!numb.equals(index.getText())) {
+						numb = index.getText();
+						displayAttributes();
+					}
+				} catch (NumberFormatException e) {
+					if (index.getText().equals(numb)) {
+						numb = "0";
+					}
+					index.setText(numb);
+				}
+			}
+			if (!filter.getText().equals("")) {
+				if (!filt.equals(filter.getText())) {
+					numb = index.getText();
+					displayAttributes();
+				}
+			}
+			if (change != 0){
+				index.setText(""+(Integer.parseInt(index.getText())+change));
+				change = 0;
+			}
+		}
+	}
+	
 	public void actionPerformed(ActionEvent e) {
 		switch (e.getActionCommand()) {
 		case "create Volume":
@@ -125,14 +196,27 @@ public class Gui extends JFrame implements ActionListener {
 			}
 			break;
 		case "Display Attributes":
-			if (filter.getText().equals("")){
-			output.setText(vol.getSlice(Integer.parseInt(index.getText())).getHeader());
-			}else{
-				output.setText(vol.getSlice(Integer.parseInt(index.getText())).getAttribute(Image.getKeyWords("*"+filter.getText()+"*")));
-			}
+			displayAttributes();
 			break;
 		default:
 			break;
+		}
+	}
+
+	public void displayAttributes() {
+		try {
+			if (vol != null) {
+				if (filter.getText().equals("") && !index.getText().equals("")) {
+					output.setText(vol.getSlice(
+							Integer.parseInt(index.getText())).getHeader());
+				} else {
+					output.setText(vol.getSlice(
+							Integer.parseInt(index.getText())).getAttribute(
+							Image.getKeyWords("*" + filter.getText() + "*")));
+				}
+			}
+		} catch (NumberFormatException e) {
+
 		}
 	}
 
