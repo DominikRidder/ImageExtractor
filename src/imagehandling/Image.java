@@ -225,8 +225,8 @@ public class Image implements Comparable {
 					header.length() - 1).split("\n")[0].split(": ")[1];
 		} catch (ArrayIndexOutOfBoundsException
 				| StringIndexOutOfBoundsException e) {
-			System.out.println("The attribute to the given key " + key
-					+ " wasnt found.");
+			//System.out.println("The attribute to the given key " + key
+			//		+ " wasnt found.");
 			attribute = "<<no attribute found>>";
 		}
 		return attribute;

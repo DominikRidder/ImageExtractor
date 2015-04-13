@@ -343,7 +343,8 @@ public enum KeyMap {
 			break;
 		case KEY_PIXEL_DATA:
 			str = "7FE0,0010";
-		default:System.out.println("No ima/dcm key was found with this enum");
+			break;
+		default:System.out.println("l/dcm key was found with this enum");
 			break;
 		}
 		return str;
