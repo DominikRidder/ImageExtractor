@@ -1,6 +1,6 @@
 package imagehandling;
 
-//import java.util.Scanner;
+import java.util.Vector;
 
 public class Main {
 	public static void main(String agrs[]) {
@@ -25,8 +25,16 @@ public class Main {
 		vol.extractHeader();
 
 //		System.out.println(img.getAttribute(Image.getKeyWords("*birth*")));
-		System.out.println(img.getAttribute("patient id"));
-		System.out.println(img.getAttribute("study id"));
+		System.out.print(img.getAttribute("patient id"));
+		System.out.print(img.getAttribute("study id"));
 		System.out.println(img.getAttribute("patients birth date"));
+		
+		Vector<Integer> choice = new Vector<Integer>();
+		choice.add(3);
+		choice.add(5);
+		choice.add(10);
+		System.out.println(vol.getAttribute("pixel data",choice ));
+		
+		new Gui();
 	}
 }

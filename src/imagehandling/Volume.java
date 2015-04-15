@@ -3,11 +3,12 @@ package imagehandling;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Vector;
 
 public class Volume {
 
 	private ArrayList<Image> slices;
-	
+
 	public Volume() {
 		System.out
 				.println("You have to use the Volume(String path) construktor to work with Volume.\nThe path should be the path of the repository, where the images are stored in.");
@@ -42,7 +43,7 @@ public class Volume {
 			}
 		}
 	}
-	
+
 	protected Volume(String path, Gui gui) {
 		slices = new ArrayList<Image>();
 
@@ -51,7 +52,8 @@ public class Volume {
 		File[] list = file.listFiles();
 
 		if (list == null) {
-			throw new RuntimeException("The given Volume path seems to be not correct. Please check the path.");
+			throw new RuntimeException(
+					"The given Volume path seems to be not correct. Please check the path.");
 		}
 
 		// adding the Images
@@ -61,7 +63,7 @@ public class Volume {
 			} catch (RuntimeException e) {
 			}
 		}
-		
+
 		// sort images
 		Collections.sort(slices);
 	}
@@ -188,6 +190,31 @@ public class Volume {
 		}
 
 		return str;
+	}
+
+	public String getAttribute(String key, Vector<Integer> v) {
+		String att = "";
+		Integer[] a = new Integer[0];
+		for (int slice : v.toArray(a)) {
+			att += slices.get(slice).getAttribute(key);
+		}
+		return att;
+	}
+	
+	/**
+	 * Returning the number of Images, which are contained in the Volume.
+	 */
+	public int size(){
+		return slices.size();
+	}
+
+	public String getAttribute(KeyMap en, Vector<Integer> v) {
+		String att = "";
+		Integer[] a = new Integer[0];
+		for (int slice : v.toArray(a)) {
+			att += slices.get(slice).getAttribute(en);
+		}
+		return att;
 	}
 
 	/**

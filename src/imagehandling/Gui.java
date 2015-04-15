@@ -150,7 +150,7 @@ public class Gui extends JFrame implements ActionListener {
 		while (true) {
 			if (!index.getText().equals("")) {
 				try {
-					if (Integer.parseInt(index.getText()) > 29) {
+					if (Integer.parseInt(index.getText()) >= vol.size()) {
 						if (! (Integer.parseInt(index.getText())/1000 > 0)){
 						index.setText("29");
 						}
@@ -159,7 +159,7 @@ public class Gui extends JFrame implements ActionListener {
 						numb = index.getText();
 						displayAttributes();
 					}
-				} catch (NumberFormatException e) {
+				} catch (NumberFormatException | NullPointerException e) {
 					if (index.getText().equals(numb)) {
 						numb = "0";
 					}
