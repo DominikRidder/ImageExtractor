@@ -5,7 +5,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -24,33 +23,37 @@ import javax.swing.KeyStroke;
 
 public class Gui extends JFrame implements ActionListener {
 
+	public static void main(String[] agrs) {
+		new Gui();
+	}
+
 	private static final long serialVersionUID = 1L;
-
-	JPanel panel;
-
-	JPanel dir;
-
-	JPanel img;
 
 	JPanel att;
 
-	Volume vol;
-
-	JTextField path;
+	int change = 0;
 
 	JFileChooser chooser;
 
-	JTextArea output;
-
 	JTextField current_path;
 
-	JTextField text_slice;
-
-	JTextField index;
+	JPanel dir;
 
 	JTextField filter;
 
-	int change = 0;
+	JPanel img;
+
+	JTextField index;
+
+	JTextArea output;
+
+	JPanel panel;
+
+	JTextField path;
+
+	Volume vol;
+
+	JTextField text_slice;
 	
 	public Gui() {
 		setSize(500, 400);
@@ -178,7 +181,7 @@ public class Gui extends JFrame implements ActionListener {
 			}
 		}
 	}
-	
+
 	public void actionPerformed(ActionEvent e) {
 		switch (e.getActionCommand()) {
 		case "create Volume":
@@ -218,10 +221,6 @@ public class Gui extends JFrame implements ActionListener {
 		} catch (NumberFormatException e) {
 
 		}
-	}
-
-	public static void main(String[] agrs) {
-		new Gui();
 	}
 
 }
