@@ -1,5 +1,6 @@
 package imagehandling;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -157,9 +158,17 @@ public class Image implements Comparable {
 		return he.getHeader(path);
 	}
 
-	public String getData() {
-		// TODO
-		return null;
+	public BufferedImage getData() {
+		DataExtractor he = null;
+		switch (type) {
+		case "dcm":
+		case "IMA":
+			he = new DicomDataExtractor();
+			break;
+		default:
+			throw new RuntimeException("The Image Type can't be handeld.");
+		}
+		return he.getData(path);
 	}
 
 	public boolean isImage() {

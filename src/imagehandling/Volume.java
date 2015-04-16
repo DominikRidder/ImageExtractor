@@ -1,5 +1,6 @@
 package imagehandling;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -294,8 +295,8 @@ public class Volume {
 
 	// This method maybe have to be chnaged, if u dont want the Data in form of
 	// an ArrayList
-	public ArrayList<String> getData() {
-		ArrayList<String> data = new ArrayList<String>();
+	public ArrayList<BufferedImage> getData() {
+		ArrayList<BufferedImage> data = new ArrayList<BufferedImage>();
 		for (Image img : slices) {
 			data.add(img.getData());
 		}
