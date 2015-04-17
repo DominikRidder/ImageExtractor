@@ -20,7 +20,6 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JMenuBar;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -66,7 +65,7 @@ public class Gui extends JFrame implements ActionListener {
 	BufferedImage image = new BufferedImage(1, 1, 1);
 
 	boolean displayAll = true;
-
+	
 	public Gui() {
 		JButton apply_path = new JButton("create Volume");
 		JButton browse_path = new JButton("browse");
@@ -111,8 +110,7 @@ public class Gui extends JFrame implements ActionListener {
 				Box.createRigidArea(new Dimension(80, 0)), slice, index,
 				Box.createRigidArea(new Dimension(10, 0)));
 		addComponents(att, show_attributes,
-				Box.createRigidArea(new Dimension(10, 0)), search,
-				Box.createRigidArea(new Dimension(10, 0)), filter);
+				Box.createRigidArea(new Dimension(10, 0)), search, filter);
 		addComponents(panel, Box.createRigidArea(new Dimension(0, 10)), path,
 				dir, img, att, scroll);
 
@@ -150,7 +148,7 @@ public class Gui extends JFrame implements ActionListener {
 			}
 		});
 		setVisible(true);
-
+		
 		lifeupdate();
 	}
 
@@ -183,6 +181,7 @@ public class Gui extends JFrame implements ActionListener {
 			}
 			if (!filter.getText().equals("")) {
 				if (!lasttime_filter.equals(filter.getText())) {
+					//Text got changed
 					lasttime_filter = filter.getText();
 					lasttime_number = index.getText();
 					displayAll = false;
