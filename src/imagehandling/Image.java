@@ -1,8 +1,16 @@
 package imagehandling;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
+
+import javax.swing.SortingFocusTraversalPolicy;
 
 import ij.plugin.DICOM;
 import ij.util.WildcardMatch;
@@ -278,6 +286,70 @@ public class Image implements Comparable {
 			return -1;
 		}
 		return 0;
+	}
+	
+	public void sortInDir(String dir){
+		String study_id = this.getAttribute(KeyMap.KEY_STUDY_ID).replace(" ", "");
+		String patient_id = this.getAttribute(KeyMap.KEY_PATIENT_ID).replace(" ", "");
+		String patients_birth_date = this.getAttribute(KeyMap.KEY_PATIENTS_BIRTH_DATE).replace(" ", "");
+		String protocol_name = this.getAttribute(KeyMap.KEY_PROTOCOL_NAME).replace(" ", "");
+		String image_number = this.getAttribute(KeyMap.KEY_IMAGE_NUMBER).replace(" ", "");
+		
+		StringBuilder path = new StringBuilder();
+		path.append(dir);
+		existOrCreate(path);
+		path.append("/"+patient_id);
+		existOrCreate(path);
+		path.append("/"+protocol_name+"_"+study_id);
+		existOrCreate(path);
+		path.append("/"+patients_birth_date);
+		existOrCreate(path);
+		path.append("/"+image_number+".IMA");
+		
+		File test = new File(path.toString());
+		if (!test.exists()){
+			try{
+				Files.copy(new File(this.path).toPath(),test.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			}catch(IOException e){
+				e.printStackTrace();
+			}
+		}
+		
+		test = new File(dir + "/README");
+		if (!test.exists()){
+			try{
+				test.createNewFile();
+				try (BufferedWriter bw = new BufferedWriter(new FileWriter(test.getAbsolutePath()))){
+					bw.write("The Sorting structur is the following:\n"+dir+"\tPatient id/Protocol Name _ Study id/Patient Birth Date/\nAdditionally the name of a Dicom is renamed to his Image number.");
+				}
+			}catch(IOException e){
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private static void existOrCreate(StringBuilder path){
+		File test = new File(path.toString());
+		if (!test.exists()){
+			test.mkdir();
+		}
+	}
+	
+	public static void searchAndSortIn(String searchin, String sortInDir){
+		File file = new File(searchin);
+		File[] list = file.listFiles();
+		
+		if (list == null){
+			return;
+		}
+		
+		for (File l: list){
+			if (l.getAbsolutePath().endsWith(".IMA") || l.getAbsolutePath().endsWith(".dcm")){
+				new Image(l.getAbsolutePath()).sortInDir(sortInDir);
+			}else{
+				searchAndSortIn(l.getAbsolutePath(), sortInDir);
+			}
+		}
 	}
 
 }

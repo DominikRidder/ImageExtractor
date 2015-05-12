@@ -330,4 +330,14 @@ public class Volume {
 			img.extractData();
 		}
 	}
+	
+	public void sortInDir(String dir){
+		for (Image img : slices){
+			img.sortInDir(dir);
+		}
+	}
+	
+	public static void searchAndSortIn(String searchin, String sortInDir){
+		Image.searchAndSortIn(searchin, sortInDir);
+	}
 }

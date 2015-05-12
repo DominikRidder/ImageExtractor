@@ -6,8 +6,8 @@ import java.util.Vector;
 
 public class Main {
 	public static void main(String agrs[]) {
-		String filepath = "/opt/dridder_local/TestDicoms/Testfolder";
-		Volume vol = new Volume(filepath);
+//		String filepath = "/opt/dridder_local/TestDicoms/Testfolder";
+//		Volume vol = new Volume(filepath);
 //		                   
 //		// try to get a Attribute
 //		String str = vol
@@ -39,6 +39,6 @@ public class Main {
 //		
 //		new Gui();
 		
-		System.out.println(vol.getSlice(0).getData());
+		Volume.searchAndSortIn("C:/Users/Dominik/Desktop/Dominik ordner/Learning", "C:/Users/Dominik/Desktop/Dominik ordner/SortTest");
 	}
 }
