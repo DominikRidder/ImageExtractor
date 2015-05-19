@@ -323,12 +323,12 @@ public class Image implements Comparable {
 		existOrCreate(path);
 		int i;
 		loop: for (i = 1; i < 100; i++) {
-			File test2 = new File(path.toString() + "/" + i + "_" + att[1]);
+			File test2 = new File(path.toString() + "/" + att[1]+ "_"+i);
 			if (!test2.exists()) {
 				break;
 			}
 			for (int j = 1; j < 10; j++) {
-				File test3 = new File(path.toString() + "/" + i + "_" + att[1]
+				File test3 = new File(path.toString() + "/" + att[1]+ "_"+i
 						+ "/000" + j + ".dcm");
 				if (test3.exists()) {
 					KeyMap oneElement[] = { KeyMap.KEY_MODALITY };
@@ -342,7 +342,7 @@ public class Image implements Comparable {
 			}
 			break;
 		}
-		path.append("/" + i + "_" + att[1]);
+		path.append("/" + att[1]+ "_"+i);
 		existOrCreate(path);
 		path.append("/" + fourDigits(att[2]) + ".dcm");
 
@@ -395,7 +395,7 @@ public class Image implements Comparable {
 						test.getAbsolutePath()))) {
 					bw.write("The Sorting structur is the following:\n"
 							+ sortInDir
-							+ "\tPatient id/DEPENDS_ Protocol Name/\nAdditionally the name of a Dicom is renamed to his Image number + .dcm\nThe DEPENDS value is equal to the first dir, where the Modality is equal to the Image Modality.");
+							+ "\tPatient id/Protocol Name_DEPENDS/\nAdditionally the name of a Dicom is renamed to his Image number + .dcm\nThe DEPENDS value is equal to the first dir, where the Modality is equal to the Image Modality.");
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
