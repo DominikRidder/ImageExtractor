@@ -6,8 +6,8 @@ import java.util.Vector;
 
 public class Main {
 	public static void main(String agrs[]) {
-//		String filepath = "/opt/dridder_local/TestDicoms/Testfolder";
-//		Volume vol = new Volume(filepath);
+		String filepath = "C:/Users/Dominik/Desktop/Dominik ordner/Learning/Dicom/Testfolder";
+		Volume vol = new Volume(filepath);
 //		                   
 //		// try to get a Attribute
 //		String str = vol
@@ -38,6 +38,8 @@ public class Main {
 //		System.out.println(vol.getAttribute("pixel data",choice ));
 //		
 //		new Gui();
+		
+//		System.out.println(">>"+vol.getSlice(0).getAttribute(KeyMap.KEY_ACQUISITION_DATE)+"<<");
 		
 		Volume.searchAndSortIn("C:/Users/Dominik/Desktop/Dominik ordner/Learning", "C:/Users/Dominik/Desktop/Dominik ordner/SortTest");
 	}

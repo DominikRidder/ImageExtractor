@@ -13,7 +13,7 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 	 * This method returning the Header of the given Dicom Image.
 	 */
 	public String getHeader(String path) {
-			return new DICOM().getInfo(path);
+		return new DICOM().getInfo(path);
 	}
 
 	/**
@@ -35,7 +35,8 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		// check if header file already exist
 		File file = new File(path);
 		if (file.exists()) {
-			throw new RuntimeException("DicomExtractor failed. File already exist: "+ path);
+			throw new RuntimeException(
+					"DicomExtractor failed. File already exist: " + path);
 		} else {
 			try {
 				// just to find out if it is a Dicom
@@ -59,6 +60,47 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public String getInfo(String path, String item) {
+		StringBuilder att = new StringBuilder();
+		for (String line : getHeader(path).split("\n")){
+			if (!line.startsWith(item)){
+				continue;
+			}
+			int i =item.length();
+			while(line.charAt(i++) != ':');
+			while(line.charAt(i) == ' ' && ++i<line.length());
+			while(i<line.length() && line.charAt(i)!= ' '){
+				att.append(line.charAt(i++));
+			}
+			
+		}
+		return att.toString();
+	}
+
+	public String[] getInfo(String path, String[] items) {
+		int numberOfItems = items.length;
+		DICOM dcm = new DICOM();
+		dcm.open(path);
+		String[] infos = new String[numberOfItems];
+		for (int index = 0; index < numberOfItems; index++) {
+			StringBuilder att = new StringBuilder();
+			for (String line : getHeader(path).split("\n")){
+				if (!line.startsWith(items[index])){
+					continue;
+				}
+				int i =items[index].length();
+				while(line.charAt(i++) != ':');
+				while(line.charAt(i) == ' ' && ++i<line.length());
+				while(i<line.length() && line.charAt(i)!= ' '){
+					att.append(line.charAt(i++));
+				}
+				
+			}
+			infos[index] = att.toString();
+		}
+		return infos;
 	}
 
 }

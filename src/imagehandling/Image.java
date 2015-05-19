@@ -1,5 +1,6 @@
 package imagehandling;
 
+import java.awt.RenderingHints.Key;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -21,6 +22,8 @@ public class Image implements Comparable {
 
 	private String path;
 
+	private static int found;
+	
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
 	 * of the image dont end with a known ending, the images handeld as a IMA
@@ -229,24 +232,29 @@ public class Image implements Comparable {
 		}
 	}
 
+	// private String getAttributeDicom2(KeyMap en) {
+	// String key = en.getValue(type);
+	// String header = getHeader();
+	// String attribute = "";
+	// try {
+	// // cutting the start of the header until the given key appear.
+	// // Than splitting the rows and taking the the first row. Finally
+	// // getting the attribute by splitting with ": " and taking the
+	// // second argument
+	// attribute = header.substring(header.indexOf(key),
+	// header.length() - 1).split("\n")[0].split(": ")[1];
+	// } catch (ArrayIndexOutOfBoundsException
+	// | StringIndexOutOfBoundsException e) {
+	// //System.out.println("The attribute to the given key " + key
+	// // + " wasnt found.");
+	// attribute = "<<no attribute found>>";
+	// }
+	// return attribute;
+	// }
+
 	private String getAttributeDicom(KeyMap en) {
 		String key = en.getValue(type);
-		String header = getHeader();
-		String attribute = "";
-		try {
-			// cutting the start of the header until the given key appear.
-			// Than splitting the rows and taking the the first row. Finally
-			// getting the attribute by splitting with ": " and taking the
-			// second argument
-			attribute = header.substring(header.indexOf(key),
-					header.length() - 1).split("\n")[0].split(": ")[1];
-		} catch (ArrayIndexOutOfBoundsException
-				| StringIndexOutOfBoundsException e) {
-			//System.out.println("The attribute to the given key " + key
-			//		+ " wasnt found.");
-			attribute = "<<no attribute found>>";
-		}
-		return attribute;
+		return new DicomHeaderExtractor().getInfo(this.path, key);
 	}
 
 	private String getAttributeDicom(String keyword) {
@@ -274,6 +282,18 @@ public class Image implements Comparable {
 		return str;
 	}
 
+	private String[] getAttributesDicom(KeyMap en[]) {
+		return Image.getAttributesDicom(path, en);
+	}
+
+	private static String[] getAttributesDicom(String input, KeyMap en[]) {
+		String key[] = new String[en.length];
+		for (int i = 0; i < key.length; i++) {
+			key[i] = en[i].getValue("dcm");
+		}
+		return new DicomHeaderExtractor().getInfo(input, key);
+	}
+
 	// Comparing by ImageNumber
 	public int compareTo(Object o) {
 		int thisnumb = Integer.parseInt(this.getAttribute("image number")
@@ -287,67 +307,131 @@ public class Image implements Comparable {
 		}
 		return 0;
 	}
-	
-	public void sortInDir(String dir){
-		String study_id = this.getAttribute(KeyMap.KEY_STUDY_ID).replace(" ", "");
-		String patient_id = this.getAttribute(KeyMap.KEY_PATIENT_ID).replace(" ", "");
-		String patients_birth_date = this.getAttribute(KeyMap.KEY_PATIENTS_BIRTH_DATE).replace(" ", "");
-		String protocol_name = this.getAttribute(KeyMap.KEY_PROTOCOL_NAME).replace(" ", "");
-		String image_number = this.getAttribute(KeyMap.KEY_IMAGE_NUMBER).replace(" ", "");
-		
-		StringBuilder path = new StringBuilder();
-		path.append(dir);
-		existOrCreate(path);
-		path.append("/"+patient_id);
-		existOrCreate(path);
-		path.append("/"+protocol_name+"_"+study_id);
-		existOrCreate(path);
-		path.append("/"+patients_birth_date);
-		existOrCreate(path);
-		path.append("/"+image_number+".IMA");
-		
-		File test = new File(path.toString());
-		if (!test.exists()){
-			try{
-				Files.copy(new File(this.path).toPath(),test.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			}catch(IOException e){
-				e.printStackTrace();
-			}
-		}
-		
-		test = new File(dir + "/README");
-		if (!test.exists()){
-			try{
-				test.createNewFile();
-				try (BufferedWriter bw = new BufferedWriter(new FileWriter(test.getAbsolutePath()))){
-					bw.write("The Sorting structur is the following:\n"+dir+"\tPatient id/Protocol Name _ Study id/Patient Birth Date/\nAdditionally the name of a Dicom is renamed to his Image number.");
-				}
-			}catch(IOException e){
-				e.printStackTrace();
-			}
-		}
+
+	public void sortInDir(String dir) {
+		Image.sortInDir(path, dir);
 	}
-	
-	private static void existOrCreate(StringBuilder path){
+
+	public static void sortInDir(String input, String dir) {
+		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
+				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_MODALITY };
+		String[] att = getAttributesDicom(input, info);
+
+		// Check existing
+		StringBuilder path = new StringBuilder();
+		path.append(dir + "/" + att[0]);
+		existOrCreate(path);
+		int i;
+		loop: for (i = 1; i < 100; i++) {
+			File test2 = new File(path.toString() + "/" + i + "_" + att[1]);
+			if (!test2.exists()) {
+				break;
+			}
+			for (int j = 1; j < 10; j++) {
+				File test3 = new File(path.toString() + "/" + i + "_" + att[1]
+						+ "/000" + j + ".dcm");
+				if (test3.exists()) {
+					KeyMap oneElement[] = { KeyMap.KEY_MODALITY };
+					if (att[3].equals(Image.getAttributesDicom(
+							test3.getAbsolutePath(), oneElement)[0])) {
+						break;
+					} else {
+						continue loop;
+					}
+				}
+			}
+			break;
+		}
+		path.append("/" + i + "_" + att[1]);
+		existOrCreate(path);
+		path.append("/" + fourDigits(att[2]) + ".dcm");
+
+		// Copy data
 		File test = new File(path.toString());
-		if (!test.exists()){
+		if (!test.exists()) {
+			try {
+				Files.copy(new File(input).toPath(), test.toPath(),
+						StandardCopyOption.REPLACE_EXISTING);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	private static String fourDigits(String image_number) {
+		StringBuilder fourdigits = new StringBuilder(4);
+		for (int i = 0; i < 4 - image_number.length(); i++) {
+			fourdigits.append("0");
+		}
+		return fourdigits.toString() + image_number;
+	}
+
+	private static void existOrCreate(StringBuilder path) {
+		File test = new File(path.toString());
+		if (!test.exists()) {
 			test.mkdir();
 		}
 	}
-	
-	public static void searchAndSortIn(String searchin, String sortInDir){
+
+	public static void searchAndSortIn(String searchin, String sortInDir) {
 		File file = new File(searchin);
 		File[] list = file.listFiles();
-		
-		if (list == null){
+
+		found=0;
+		if (list == null) {
+			System.out.println("The Given Path seems to be incorrect.");
 			return;
 		}
+
+		existOrCreate(new StringBuilder(sortInDir));
 		
-		for (File l: list){
-			if (l.getAbsolutePath().endsWith(".IMA") || l.getAbsolutePath().endsWith(".dcm")){
-				new Image(l.getAbsolutePath()).sortInDir(sortInDir);
-			}else{
-				searchAndSortIn(l.getAbsolutePath(), sortInDir);
+		// README
+		File test = new File(sortInDir + "/README");
+		if (!test.exists()) {
+			try {
+				test.createNewFile();
+				try (BufferedWriter bw = new BufferedWriter(new FileWriter(
+						test.getAbsolutePath()))) {
+					bw.write("The Sorting structur is the following:\n"
+							+ sortInDir
+							+ "\tPatient id/DEPENDS_ Protocol Name/\nAdditionally the name of a Dicom is renamed to his Image number + .dcm\nThe DEPENDS value is equal to the first dir, where the Modality is equal to the Image Modality.");
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		for (File l : list) {
+			if (l.getAbsolutePath().endsWith(".IMA")
+					|| l.getAbsolutePath().endsWith(".dcm")) {
+				Image.sortInDir(l.getAbsolutePath(), sortInDir);
+				if (++found%50 == 0){
+					System.out.println("I found and sorted so far "+found+" Dicoms.");
+				}
+			} else {
+				Image.searchAndSortInReku(l.getAbsolutePath(), sortInDir);
+			}
+		}
+	}
+
+	public static void searchAndSortInReku(String searchin, String sortInDir) {
+		File file = new File(searchin);
+		File[] list = file.listFiles();
+
+		if (list == null) {
+			return;
+		}
+
+		for (File l : list) {
+			if (l.getAbsolutePath().endsWith(".IMA")
+					|| l.getAbsolutePath().endsWith(".dcm")) {
+				Image.sortInDir(l.getAbsolutePath(), sortInDir);
+				if (++found%50 == 0){
+					System.out.println("I found and sorted so far "+found+" Dicoms.");
+				}
+			} else {
+				searchAndSortInReku(l.getAbsolutePath(), sortInDir);
 			}
 		}
 	}
