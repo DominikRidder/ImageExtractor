@@ -1,6 +1,5 @@
 package imagehandling;
 
-import java.awt.RenderingHints.Key;
 import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,18 +10,18 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import javax.swing.SortingFocusTraversalPolicy;
-
 import ij.plugin.DICOM;
 import ij.util.WildcardMatch;
 
-public class Image implements Comparable {
+public class Image implements Comparable<Image> {
 
 	private String type;
 
 	private String path;
 
 	private static int found;
+	
+	private static int copyd;
 	
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
@@ -208,7 +207,6 @@ public class Image implements Comparable {
 	}
 
 	public void extractData() {
-		// TODO
 	}
 
 	protected void extractHeader(boolean bool) {
@@ -282,6 +280,7 @@ public class Image implements Comparable {
 		return str;
 	}
 
+	@SuppressWarnings("unused")
 	private String[] getAttributesDicom(KeyMap en[]) {
 		return Image.getAttributesDicom(path, en);
 	}
@@ -295,10 +294,10 @@ public class Image implements Comparable {
 	}
 
 	// Comparing by ImageNumber
-	public int compareTo(Object o) {
+	public int compareTo(Image o) {
 		int thisnumb = Integer.parseInt(this.getAttribute("image number")
 				.replace(" ", "").replace("\n", "").split(":")[1]);
-		int objnumb = Integer.parseInt(((Image) o).getAttribute("image number")
+		int objnumb = Integer.parseInt(o.getAttribute("image number")
 				.replace(" ", "").replace("\n", "").split(":")[1]);
 		if (thisnumb > objnumb) {
 			return 1;
@@ -314,7 +313,7 @@ public class Image implements Comparable {
 
 	public static void sortInDir(String input, String dir) {
 		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
-				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_MODALITY };
+				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_MODALITY, KeyMap.KEY_SOP_INSTANCE_UID };
 		String[] att = getAttributesDicom(input, info);
 
 		// Check existing
@@ -329,10 +328,10 @@ public class Image implements Comparable {
 			}
 			for (int j = 1; j < 10; j++) {
 				File test3 = new File(path.toString() + "/" + att[1]+ "_"+i
-						+ "/000" + j + ".dcm");
+						+ "/0000" + j + ".dcm");
 				if (test3.exists()) {
-					KeyMap oneElement[] = { KeyMap.KEY_MODALITY };
-					if (att[3].equals(Image.getAttributesDicom(
+					KeyMap oneElement[] = { KeyMap.KEY_SOP_INSTANCE_UID };
+					if (att[4].equals(Image.getAttributesDicom(
 							test3.getAbsolutePath(), oneElement)[0])) {
 						break;
 					} else {
@@ -344,7 +343,7 @@ public class Image implements Comparable {
 		}
 		path.append("/" + att[1]+ "_"+i);
 		existOrCreate(path);
-		path.append("/" + fourDigits(att[2]) + ".dcm");
+		path.append("/" + fiveDigits(att[2]) + ".dcm");
 
 		// Copy data
 		File test = new File(path.toString());
@@ -352,6 +351,7 @@ public class Image implements Comparable {
 			try {
 				Files.copy(new File(input).toPath(), test.toPath(),
 						StandardCopyOption.REPLACE_EXISTING);
+				copyd++;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -359,9 +359,9 @@ public class Image implements Comparable {
 
 	}
 
-	private static String fourDigits(String image_number) {
-		StringBuilder fourdigits = new StringBuilder(4);
-		for (int i = 0; i < 4 - image_number.length(); i++) {
+	private static String fiveDigits(String image_number) {
+		StringBuilder fourdigits = new StringBuilder(5);
+		for (int i = 0; i < 5 - image_number.length(); i++) {
 			fourdigits.append("0");
 		}
 		return fourdigits.toString() + image_number;
@@ -370,6 +370,7 @@ public class Image implements Comparable {
 	private static void existOrCreate(StringBuilder path) {
 		File test = new File(path.toString());
 		if (!test.exists()) {
+			System.out.println("Creating "+test.getAbsolutePath()+"...");
 			test.mkdir();
 		}
 	}
@@ -379,6 +380,7 @@ public class Image implements Comparable {
 		File[] list = file.listFiles();
 
 		found=0;
+		copyd=0;
 		if (list == null) {
 			System.out.println("The Given Path seems to be incorrect.");
 			return;
@@ -413,6 +415,7 @@ public class Image implements Comparable {
 				Image.searchAndSortInReku(l.getAbsolutePath(), sortInDir);
 			}
 		}
+		System.out.println("I found and sorted "+found+" Dicoms! I copyd "+copyd+" of them to the Output directory.");
 	}
 
 	public static void searchAndSortInReku(String searchin, String sortInDir) {

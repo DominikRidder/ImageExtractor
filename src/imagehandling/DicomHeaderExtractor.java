@@ -84,9 +84,10 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		DICOM dcm = new DICOM();
 		dcm.open(path);
 		String[] infos = new String[numberOfItems];
+		String lines[] = getHeader(path).split("\n");
 		for (int index = 0; index < numberOfItems; index++) {
 			StringBuilder att = new StringBuilder();
-			for (String line : getHeader(path).split("\n")){
+			for (String line : lines){
 				if (!line.startsWith(items[index])){
 					continue;
 				}
