@@ -10,6 +10,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import org.omg.Messaging.SyncScopeHelper;
+
 import ij.plugin.DICOM;
 import ij.util.WildcardMatch;
 
@@ -22,6 +24,8 @@ public class Image implements Comparable<Image> {
 	private static int found;
 	
 	private static int copyd;
+	
+	private static double start;
 	
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
@@ -285,7 +289,7 @@ public class Image implements Comparable<Image> {
 		return Image.getAttributesDicom(path, en);
 	}
 
-	private static String[] getAttributesDicom(String input, KeyMap en[]) {
+	public static String[] getAttributesDicom(String input, KeyMap en[]) {
 		String key[] = new String[en.length];
 		for (int i = 0; i < key.length; i++) {
 			key[i] = en[i].getValue("dcm");
@@ -312,8 +316,9 @@ public class Image implements Comparable<Image> {
 	}
 
 	public static void sortInDir(String input, String dir) {
+		// Getting the necessarie Informations
 		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
-				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_MODALITY, KeyMap.KEY_SOP_INSTANCE_UID };
+				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID };
 		String[] att = getAttributesDicom(input, info);
 
 		// Check existing
@@ -321,27 +326,29 @@ public class Image implements Comparable<Image> {
 		path.append(dir + "/" + att[0]);
 		existOrCreate(path);
 		int i;
-		loop: for (i = 1; i < 100; i++) {
-			File test2 = new File(path.toString() + "/" + att[1]+ "_"+i);
+		loop: for (i = 1; i < 1000; i++) {
+			File test2 = new File(path.toString() + "/" + att[1]+ "/"+i);
 			if (!test2.exists()) {
 				break;
 			}
-			for (int j = 1; j < 10; j++) {
-				File test3 = new File(path.toString() + "/" + att[1]+ "_"+i
-						+ "/0000" + j + ".dcm");
+			for (int j = 1; j < 1000; j++) {
+				File test3 = new File(test2.getAbsolutePath()
+						+ "/"+fiveDigits(""+j) + ".dcm");
 				if (test3.exists()) {
-					KeyMap oneElement[] = { KeyMap.KEY_SOP_INSTANCE_UID };
-					if (att[4].equals(Image.getAttributesDicom(
+					KeyMap oneElement[] = { KeyMap.KEY_SERIES_INSTANCE_UID };
+					if (att[3].equals(Image.getAttributesDicom(
 							test3.getAbsolutePath(), oneElement)[0])) {
-						break;
+						break loop;
 					} else {
 						continue loop;
 					}
 				}
 			}
-			break;
+//			System.out.println("HERE "+test2.getAbsolutePath());
 		}
-		path.append("/" + att[1]+ "_"+i);
+		path.append("/" + att[1]);
+		existOrCreate(path);
+		path.append("/"+i);
 		existOrCreate(path);
 		path.append("/" + fiveDigits(att[2]) + ".dcm");
 
@@ -376,6 +383,8 @@ public class Image implements Comparable<Image> {
 	}
 
 	public static void searchAndSortIn(String searchin, String sortInDir) {
+		start = System.currentTimeMillis();
+		double start2 = start;
 		File file = new File(searchin);
 		File[] list = file.listFiles();
 
@@ -409,13 +418,14 @@ public class Image implements Comparable<Image> {
 					|| l.getAbsolutePath().endsWith(".dcm")) {
 				Image.sortInDir(l.getAbsolutePath(), sortInDir);
 				if (++found%50 == 0){
-					System.out.println("I found and sorted so far "+found+" Dicoms.");
+					System.out.println("I found and sorted so far "+found+" Dicoms. (DeltaTime: "+deltaTime()+" millis.)");
 				}
 			} else {
 				Image.searchAndSortInReku(l.getAbsolutePath(), sortInDir);
 			}
 		}
-		System.out.println("I found and sorted "+found+" Dicoms! I copyd "+copyd+" of them to the Output directory.");
+		start2 = System.currentTimeMillis()-start2;
+		System.out.println("I found and sorted "+found+" Dicoms in "+start2/1000+" seconds! I copied "+copyd+" of them to the Output directory.");
 	}
 
 	public static void searchAndSortInReku(String searchin, String sortInDir) {
@@ -431,12 +441,19 @@ public class Image implements Comparable<Image> {
 					|| l.getAbsolutePath().endsWith(".dcm")) {
 				Image.sortInDir(l.getAbsolutePath(), sortInDir);
 				if (++found%50 == 0){
-					System.out.println("I found and sorted so far "+found+" Dicoms.");
+					System.out.println("I found and sorted so far "+found+" Dicoms. (DeltaTime: "+deltaTime()+" millis.)");
 				}
 			} else {
 				searchAndSortInReku(l.getAbsolutePath(), sortInDir);
 			}
 		}
+	}
+	
+	private static double deltaTime(){
+		double atm = System.currentTimeMillis();
+		double time = atm-start;
+		start=atm;
+		return time;
 	}
 
 }

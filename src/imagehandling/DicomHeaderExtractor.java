@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import ij.plugin.DICOM;
 
@@ -81,8 +83,6 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 
 	public String[] getInfo(String path, String[] items) {
 		int numberOfItems = items.length;
-		DICOM dcm = new DICOM();
-		dcm.open(path);
 		String[] infos = new String[numberOfItems];
 		String lines[] = getHeader(path).split("\n");
 		for (int index = 0; index < numberOfItems; index++) {
@@ -103,5 +103,37 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		}
 		return infos;
 	}
+	
+//	public String[] getInfo(String path, String[] items) {
+//        int numberOfItems = items.length;
+//        ArrayList<String>itemsort = new ArrayList<String>(numberOfItems);
+//        for (String item: items){
+//            itemsort.add(item);
+//        }
+//        Collections.sort(itemsort);
+//       
+//        String[] infos = new String[numberOfItems];
+//        String lines[] = getHeader(path).split("\n");
+//        int index = 0;
+//        StringBuilder att;
+//            for (String line : lines){
+//                att = new StringBuilder();
+//                if (!line.startsWith(itemsort.get(index))){
+//                    continue;
+//                }
+//                int i =items[index].length();
+//                while(line.charAt(i++) != ':');
+//                while(line.charAt(i) == ' ' && ++i<line.length());
+//                while(i<line.length() && line.charAt(i)!= ' '){
+//                    att.append(line.charAt(i++));
+//                }
+//                infos[index] = att.toString();
+//                if (++index==numberOfItems){
+//                    break;
+//                }
+//            }
+//       
+//        return infos;
+//    }
 
 }
