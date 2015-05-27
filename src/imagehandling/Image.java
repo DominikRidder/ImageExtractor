@@ -10,8 +10,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import org.omg.Messaging.SyncScopeHelper;
-
 import ij.plugin.DICOM;
 import ij.util.WildcardMatch;
 
@@ -22,11 +20,11 @@ public class Image implements Comparable<Image> {
 	private String path;
 
 	private static int found;
-	
+
 	private static int copyd;
-	
+
 	private static double start;
-	
+
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
 	 * of the image dont end with a known ending, the images handeld as a IMA
@@ -99,7 +97,12 @@ public class Image implements Comparable<Image> {
 		while (i < words.size()) {
 			String word = words.get(i);
 			word = word.substring(0, word.length() - 1);
-			if (!wm.match(word, st)) {
+			try {
+				if (!wm.match(word, st)) {
+					words.remove(i);
+					i--;
+				}
+			} catch (StringIndexOutOfBoundsException e) {
 				words.remove(i);
 				i--;
 			}
@@ -124,6 +127,9 @@ public class Image implements Comparable<Image> {
 	}
 
 	public String getAttribute(String key) {
+		if (key.contains("*") || key.contains("?")) {
+			return getAttribute(Image.getKeyWords(key));
+		}
 		String attribute = "";
 		switch (type) {
 		case "dcm":
@@ -318,7 +324,7 @@ public class Image implements Comparable<Image> {
 	public static void sortInDir(String input, String dir) {
 		// Getting the necessarie Informations
 		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
-				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID };
+				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID , KeyMap.KEY_PATIENTS_BIRTH_DATE};
 		String[] att = getAttributesDicom(input, info);
 
 		// Check existing
@@ -327,28 +333,28 @@ public class Image implements Comparable<Image> {
 		existOrCreate(path);
 		int i;
 		loop: for (i = 1; i < 1000; i++) {
-			File test2 = new File(path.toString() + "/" + att[1]+ "/"+i);
+			File test2 = new File(path.toString() + "/" + att[1] + "/" + i);
 			if (!test2.exists()) {
 				break;
 			}
 			for (int j = 1; j < 1000; j++) {
-				File test3 = new File(test2.getAbsolutePath()
-						+ "/"+fiveDigits(""+j) + ".dcm");
+				File test3 = new File(test2.getAbsolutePath() + "/"
+						+ fiveDigits("" + j) + ".dcm");
 				if (test3.exists()) {
-					KeyMap oneElement[] = { KeyMap.KEY_SERIES_INSTANCE_UID };
-					if (att[3].equals(Image.getAttributesDicom(
-							test3.getAbsolutePath(), oneElement)[0])) {
+					KeyMap twoElement[] = { KeyMap.KEY_SERIES_INSTANCE_UID , KeyMap.KEY_PATIENTS_BIRTH_DATE};
+					String[] comparing = Image.getAttributesDicom(test3.getAbsolutePath(), twoElement);
+					if (att[3].equals(comparing[0]) && att[4].equals(comparing[1])) {
 						break loop;
 					} else {
 						continue loop;
 					}
 				}
 			}
-//			System.out.println("HERE "+test2.getAbsolutePath());
+			// System.out.println("HERE "+test2.getAbsolutePath());
 		}
 		path.append("/" + att[1]);
 		existOrCreate(path);
-		path.append("/"+i);
+		path.append("/" + i);
 		existOrCreate(path);
 		path.append("/" + fiveDigits(att[2]) + ".dcm");
 
@@ -377,7 +383,7 @@ public class Image implements Comparable<Image> {
 	private static void existOrCreate(StringBuilder path) {
 		File test = new File(path.toString());
 		if (!test.exists()) {
-			System.out.println("Creating "+test.getAbsolutePath()+"...");
+			System.out.println("Creating " + test.getAbsolutePath());
 			test.mkdir();
 		}
 	}
@@ -388,15 +394,15 @@ public class Image implements Comparable<Image> {
 		File file = new File(searchin);
 		File[] list = file.listFiles();
 
-		found=0;
-		copyd=0;
+		found = 0;
+		copyd = 0;
 		if (list == null) {
 			System.out.println("The Given Path seems to be incorrect.");
 			return;
 		}
 
 		existOrCreate(new StringBuilder(sortInDir));
-		
+
 		// README
 		File test = new File(sortInDir + "/README");
 		if (!test.exists()) {
@@ -417,15 +423,19 @@ public class Image implements Comparable<Image> {
 			if (l.getAbsolutePath().endsWith(".IMA")
 					|| l.getAbsolutePath().endsWith(".dcm")) {
 				Image.sortInDir(l.getAbsolutePath(), sortInDir);
-				if (++found%50 == 0){
-					System.out.println("I found and sorted so far "+found+" Dicoms. (DeltaTime: "+deltaTime()+" millis.)");
+				if (++found % 50 == 0) {
+					System.out.println("I found and sorted so far " + found
+							+ " Dicoms. (DeltaTime: " + deltaTime()
+							+ " millis.)");
 				}
 			} else {
 				Image.searchAndSortInReku(l.getAbsolutePath(), sortInDir);
 			}
 		}
-		start2 = System.currentTimeMillis()-start2;
-		System.out.println("I found and sorted "+found+" Dicoms in "+start2/1000+" seconds! I copied "+copyd+" of them to the Output directory.");
+		start2 = System.currentTimeMillis() - start2;
+		System.out.println("I found and sorted " + found + " Dicoms in "
+				+ start2 / 1000 + " seconds! I copied " + copyd
+				+ " of them to the Output directory.");
 	}
 
 	public static void searchAndSortInReku(String searchin, String sortInDir) {
@@ -440,19 +450,21 @@ public class Image implements Comparable<Image> {
 			if (l.getAbsolutePath().endsWith(".IMA")
 					|| l.getAbsolutePath().endsWith(".dcm")) {
 				Image.sortInDir(l.getAbsolutePath(), sortInDir);
-				if (++found%50 == 0){
-					System.out.println("I found and sorted so far "+found+" Dicoms. (DeltaTime: "+deltaTime()+" millis.)");
+				if (++found % 50 == 0) {
+					System.out.println("I found and sorted so far " + found
+							+ " Dicoms. (DeltaTime: " + deltaTime()
+							+ " millis.)");
 				}
 			} else {
 				searchAndSortInReku(l.getAbsolutePath(), sortInDir);
 			}
 		}
 	}
-	
-	private static double deltaTime(){
+
+	private static double deltaTime() {
 		double atm = System.currentTimeMillis();
-		double time = atm-start;
-		start=atm;
+		double time = atm - start;
+		start = atm;
 		return time;
 	}
 

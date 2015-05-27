@@ -92,7 +92,7 @@ public class Gui extends JFrame implements ActionListener {
 		JScrollPane scroll = new JScrollPane(output);
 		scroll.setPreferredSize(new Dimension(100, 100));
 
-		chooser.setCurrentDirectory(new java.io.File("."));
+		chooser.setCurrentDirectory(new java.io.File("/opt/dridder_local/TestDicoms/Testfolder"));
 		chooser.setDialogTitle("Search Path of Volume");
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
