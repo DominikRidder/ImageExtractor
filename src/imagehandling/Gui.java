@@ -208,13 +208,6 @@ public class Gui extends JFrame implements ActionListener {
 	}
 
 	private void addComponents(JPanel here, Component addthis,
-			Component addthis2, Component addthis3) {
-		here.add(addthis);
-		here.add(addthis2);
-		here.add(addthis3);
-	}
-
-	private void addComponents(JPanel here, Component addthis,
 			Component addthis2, Component addthis3, Component addthis4) {
 		here.add(addthis);
 		here.add(addthis2);

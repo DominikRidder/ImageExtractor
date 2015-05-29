@@ -10,6 +10,10 @@ public class Volume {
 
 	private ArrayList<Image> slices;
 
+	/**
+	 * This default construktur should not be used. If you use this method, it
+	 * gonna print some information into the console and call System.exit(1).
+	 */
 	public Volume() {
 		System.out
 				.println("You have to use the Volume(String path) construktor to work with Volume.\nThe path should be the path of the repository, where the images are stored in.");
@@ -45,6 +49,14 @@ public class Volume {
 		}
 	}
 
+	/**
+	 * This construktur is used by the gui class. The diffence is, that the
+	 * normal construktur would call System.exit(1) if the Volume path is not
+	 * correct, while this method throws a RuntimeException.
+	 * 
+	 * @param path
+	 * @param gui
+	 */
 	protected Volume(String path, Gui gui) {
 		slices = new ArrayList<Image>();
 
@@ -70,7 +82,7 @@ public class Volume {
 	}
 
 	/**
-	 * returns the specific Image, starting with int i = 0
+	 * Returns the specific Image, starting with int i = 0
 	 *
 	 * @param i
 	 * @return
@@ -102,10 +114,18 @@ public class Volume {
 		return slices.get(0).getType();
 	}
 
+	/**
+	 * This method calls the Image.getKeyWords() method. Take a look at the Java-doc of Image.getKeyWords() for more informations.
+	 * @return
+	 */
 	public static String getKeyWords() {
 		return Image.getKeyWords();
 	}
 
+	/**
+	 * This method calls the Image.getKeyWords(str) method. Take a look at the Java-doc of Image.getKeyWords(String str) for more informations.
+	 * @return
+	 */
 	public static String getKeyWords(String str) {
 		return Image.getKeyWords(str);
 	}
@@ -193,6 +213,12 @@ public class Volume {
 		return str;
 	}
 
+	/**
+	 * 
+	 * @param key
+	 * @param v
+	 * @return
+	 */
 	public String getAttribute(String key, Vector<Integer> v) {
 		String att = "";
 		Integer[] a = new Integer[0];
@@ -201,11 +227,11 @@ public class Volume {
 		}
 		return att;
 	}
-	
+
 	/**
 	 * Returning the number of Images, which are contained in the Volume.
 	 */
-	public int size(){
+	public int size() {
 		return slices.size();
 	}
 
@@ -281,12 +307,12 @@ public class Volume {
 	}
 
 	/**
-	 * returning the headers of all images separated in a ArrayList
+	 * Returning the headers of all images separated in a ArrayList
 	 * 
 	 * @return
 	 */
 	public ArrayList<String> getHeader() {
-		ArrayList<String> header = new ArrayList<String>();
+		ArrayList<String> header = new ArrayList<String>(slices.size());
 		for (Image img : slices) {
 			header.add(img.getHeader());
 		}
@@ -329,15 +355,5 @@ public class Volume {
 		for (Image img : slices) {
 			img.extractData();
 		}
-	}
-	
-	public void sortInDir(String dir){
-		for (Image img : slices){
-			img.sortInDir(dir);
-		}
-	}
-	
-	public static void searchAndSortIn(String searchin, String sortInDir){
-		Image.searchAndSortIn(searchin, sortInDir);
 	}
 }

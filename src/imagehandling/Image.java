@@ -1,12 +1,6 @@
 package imagehandling;
 
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -18,12 +12,6 @@ public class Image implements Comparable<Image> {
 	private String type;
 
 	private String path;
-
-	private static int found;
-
-	private static int copyd;
-
-	private static double start;
 
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
@@ -315,157 +303,6 @@ public class Image implements Comparable<Image> {
 			return -1;
 		}
 		return 0;
-	}
-
-	public void sortInDir(String dir) {
-		Image.sortInDir(path, dir);
-	}
-
-	public static void sortInDir(String input, String dir) {
-		// Getting the necessarie Informations
-		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
-				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID , KeyMap.KEY_PATIENTS_BIRTH_DATE};
-		String[] att = getAttributesDicom(input, info);
-
-		// Check existing
-		StringBuilder path = new StringBuilder();
-		path.append(dir + "/" + att[0]);
-		existOrCreate(path);
-		int i;
-		loop: for (i = 1; i < 1000; i++) {
-			File test2 = new File(path.toString() + "/" + att[1] + "/" + i);
-			if (!test2.exists()) {
-				break;
-			}
-			for (int j = 1; j < 1000; j++) {
-				File test3 = new File(test2.getAbsolutePath() + "/"
-						+ fiveDigits("" + j) + ".dcm");
-				if (test3.exists()) {
-					KeyMap twoElement[] = { KeyMap.KEY_SERIES_INSTANCE_UID , KeyMap.KEY_PATIENTS_BIRTH_DATE};
-					String[] comparing = Image.getAttributesDicom(test3.getAbsolutePath(), twoElement);
-					if (att[3].equals(comparing[0]) && att[4].equals(comparing[1])) {
-						break loop;
-					} else {
-						continue loop;
-					}
-				}
-			}
-			// System.out.println("HERE "+test2.getAbsolutePath());
-		}
-		path.append("/" + att[1]);
-		existOrCreate(path);
-		path.append("/" + i);
-		existOrCreate(path);
-		path.append("/" + fiveDigits(att[2]) + ".dcm");
-
-		// Copy data
-		File test = new File(path.toString());
-		if (!test.exists()) {
-			try {
-				Files.copy(new File(input).toPath(), test.toPath(),
-						StandardCopyOption.REPLACE_EXISTING);
-				copyd++;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-	}
-
-	private static String fiveDigits(String image_number) {
-		StringBuilder fourdigits = new StringBuilder(5);
-		for (int i = 0; i < 5 - image_number.length(); i++) {
-			fourdigits.append("0");
-		}
-		return fourdigits.toString() + image_number;
-	}
-
-	private static void existOrCreate(StringBuilder path) {
-		File test = new File(path.toString());
-		if (!test.exists()) {
-			System.out.println("Creating " + test.getAbsolutePath());
-			test.mkdir();
-		}
-	}
-
-	public static void searchAndSortIn(String searchin, String sortInDir) {
-		start = System.currentTimeMillis();
-		double start2 = start;
-		File file = new File(searchin);
-		File[] list = file.listFiles();
-
-		found = 0;
-		copyd = 0;
-		if (list == null) {
-			System.out.println("The Given Path seems to be incorrect.");
-			return;
-		}
-
-		existOrCreate(new StringBuilder(sortInDir));
-
-		// README
-		File test = new File(sortInDir + "/README");
-		if (!test.exists()) {
-			try {
-				test.createNewFile();
-				try (BufferedWriter bw = new BufferedWriter(new FileWriter(
-						test.getAbsolutePath()))) {
-					bw.write("The Sorting structur is the following:\n"
-							+ sortInDir
-							+ "\tPatient id/Protocol Name_DEPENDS/\nAdditionally the name of a Dicom is renamed to his Image number + .dcm\nThe DEPENDS value is equal to the first dir, where the Modality is equal to the Image Modality.");
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
-		for (File l : list) {
-			if (l.getAbsolutePath().endsWith(".IMA")
-					|| l.getAbsolutePath().endsWith(".dcm")) {
-				Image.sortInDir(l.getAbsolutePath(), sortInDir);
-				if (++found % 50 == 0) {
-					System.out.println("I found and sorted so far " + found
-							+ " Dicoms. (DeltaTime: " + deltaTime()
-							+ " millis.)");
-				}
-			} else {
-				Image.searchAndSortInReku(l.getAbsolutePath(), sortInDir);
-			}
-		}
-		start2 = System.currentTimeMillis() - start2;
-		System.out.println("I found and sorted " + found + " Dicoms in "
-				+ start2 / 1000 + " seconds! I copied " + copyd
-				+ " of them to the Output directory.");
-	}
-
-	public static void searchAndSortInReku(String searchin, String sortInDir) {
-		File file = new File(searchin);
-		File[] list = file.listFiles();
-
-		if (list == null) {
-			return;
-		}
-
-		for (File l : list) {
-			if (l.getAbsolutePath().endsWith(".IMA")
-					|| l.getAbsolutePath().endsWith(".dcm")) {
-				Image.sortInDir(l.getAbsolutePath(), sortInDir);
-				if (++found % 50 == 0) {
-					System.out.println("I found and sorted so far " + found
-							+ " Dicoms. (DeltaTime: " + deltaTime()
-							+ " millis.)");
-				}
-			} else {
-				searchAndSortInReku(l.getAbsolutePath(), sortInDir);
-			}
-		}
-	}
-
-	private static double deltaTime() {
-		double atm = System.currentTimeMillis();
-		double time = atm - start;
-		start = atm;
-		return time;
 	}
 
 }
