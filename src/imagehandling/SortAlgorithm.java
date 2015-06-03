@@ -6,7 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class SortAlgorithm {
@@ -25,7 +24,7 @@ public class SortAlgorithm {
 	/**
 	 * The start value is used to calculate the Deltatime.
 	 */
-	private double start;
+	private double deltaTimeHelp;
 
 	/**
 	 * For some informations, take a look at the setSubfolders method.
@@ -44,7 +43,8 @@ public class SortAlgorithm {
 
 	/**
 	 * The index is important for the case, that subfolder is false. The index
-	 * is used to set the praefix of a protocol folder than.
+	 * is used to set the praefix of a protocol folder than. The key of this
+	 * HashMap is the patient id.
 	 */
 	private HashMap<String, Integer> index;
 
@@ -56,9 +56,16 @@ public class SortAlgorithm {
 
 	/**
 	 * This is the default construktur. This construktur setting the following
-	 * defaults value: - subfolders = false; - image digits = 5; -
-	 * protocol_digits = 3; Take a look in the Java-doc of the setter methods of
-	 * these values for more informations.
+	 * defaults value:
+	 * <p>
+	 * - subfolders = false
+	 * <p>
+	 * - image digits = 5
+	 * <p>
+	 * - protocol_digits = 3
+	 * <p>
+	 * Take a look in the Java-doc of the setter methods of these values for
+	 * more informations.
 	 */
 	public SortAlgorithm() {
 		subfolders = false;
@@ -68,8 +75,12 @@ public class SortAlgorithm {
 
 	/**
 	 * This construktur contains the following default setter: - image digits =
-	 * 5; - protocol digits = 3; Take a look in the Java-doc of the setter
-	 * methods of these values for more informations.
+	 * 5
+	 * <p>
+	 * - protocol digits = 3
+	 * <p>
+	 * Take a look in the Java-doc of the setter methods of these values for
+	 * more informations.
 	 * 
 	 * @param subfolders
 	 */
@@ -81,8 +92,10 @@ public class SortAlgorithm {
 
 	/**
 	 * This construktur contains the following default setter: - protocol digits
-	 * = 3; Take a look in the Java-doc of the setter methods of these values
-	 * for more informations.
+	 * = 3
+	 * <p>
+	 * Take a look in the Java-doc of the setter methods of these values for
+	 * more informations.
 	 * 
 	 * @param subfolders
 	 * @param protocol_digits
@@ -109,30 +122,31 @@ public class SortAlgorithm {
 	}
 
 	/**
-	 * The img_digits contains the information, how many digits are used to save
-	 * the image number of a dicom in the file name. If the image number is
-	 * larger than the img_digits number, than the image number is taken.
+	 * The imgDigits contains the information, how many digits are used to save
+	 * the image number of a DICOM in the file name. If the image number of a
+	 * DICOM is larger than the imgDigits number, than the image number of the
+	 * DICOM is taken.
 	 */
 	public void setImgDigits(int i) {
 		img_digits = i;
 	}
 
 	/**
-	 * The protocol_digits contains the Information how many digits are used at
-	 * a special position. If subfolders is true, than protocol_digits contains
-	 * the information for the number of digits for the subfolder of a protocol.
-	 * Else, the protocol_digits contains the information, how many digits are
-	 * used as a Praefix of a protocol folder.
+	 * The protocolDigits contains the Information how many digits are used at a
+	 * special position. If subfolders is true, than protocolDigits contains the
+	 * information for the number of digits for the subfolder of a protocol name
+	 * folder. Else, the protocolDigits contains the information, how many
+	 * digits are used as a Praefix of a protocol folder.
 	 */
-	public void setProtocolPraefixDigits(int i) {
+	public void setProtocolDigits(int i) {
 		protocol_digits = i;
 	}
 
 	/**
-	 * The boolean value subfolders contains the information, if the different
-	 * angel of the scans are sorted in subfolders in the protocol directorys or
-	 * if the different angel are save as the protocol name with a certain
-	 * praefix.
+	 * The boolean value subfolders contains the information, whether the
+	 * different angel of the scans are sorted in subfolders in the protocol
+	 * name directorys or the different angel are save as the protocol name with
+	 * a certain praefix.
 	 */
 	public void useSubfolders(boolean b) {
 		subfolders = b;
@@ -192,17 +206,19 @@ public class SortAlgorithm {
 	}
 
 	/**
-	 * This method searching in the path "searchin" for dicoms and subfolders,
-	 * which contains dicoms. These dicoms are sorted in the value "sortInDir".
+	 * This method searching in the path "searchin" for DICOMs and subfolders,
+	 * which contains DICOMs. These DICOMs are sorted in the value "sortInDir".
 	 * If "sortInDir" not exists, it gonna be created. To specify the behaivor
 	 * of this method, you can use the setter methods.
 	 * 
 	 * @param searchin
+	 *            The Folder, where the Algorithm search for DICOMs.
 	 * @param sortInDir
+	 *            The Folder, where the Algorithm move and sort the DICOMs.
 	 */
 	public void searchAndSortIn(String searchin, String sortInDir) {
-		start = System.currentTimeMillis();
-		double start2 = start;
+		deltaTimeHelp = System.currentTimeMillis();
+		double start = deltaTimeHelp;
 		File file = new File(searchin);
 
 		found = 0;
@@ -221,9 +237,15 @@ public class SortAlgorithm {
 				test.createNewFile();
 				try (BufferedWriter bw = new BufferedWriter(new FileWriter(
 						test.getAbsolutePath()))) {
-					bw.write("The Sorting structur is the following:\n"
-							+ sortInDir
-							+ "\tPatient id/Protocol Name_DEPENDS/\nAdditionally the name of a Dicom is renamed to his Image number + .dcm\nThe DEPENDS value is equal to the first dir, where the Modality is equal to the Image Modality.");
+					if (subfolders) {
+						bw.write("The Sorting structur is the following:\n"
+								+ sortInDir
+								+ "\tPatient id/Protocol Name/(protocol digits)/img digits.dcm\nThe protocol digits folder is a index, that is generated by the SortAlgorim. If there is only one protocol digit subfolder in a Protocol Name folder, than the DICOMS moved to the parent folder of the protocol digit folder and the protocol digit folder gonna be removed.");
+					} else {
+						bw.write("The Sorting structur is the following:\n"
+								+ sortInDir
+								+ "\tPatient id/protocol digits_Protocol Name/img digits.dcm\nThe protocol digits praefix is generated by the SortAlgorithm. If new protocol Name folders are generated, than the next highest protocol digit praefix will be used.");
+					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -231,91 +253,97 @@ public class SortAlgorithm {
 		}
 
 		if (subfolders) {
-			for (File f : new File(sortInDir).listFiles()) {
-				if (f.isDirectory()) {
-					for (File f2 : f.listFiles()) {
-						File helpfile = new File(f2.getAbsolutePath()+"/"+toProtocolDigits(1+""));
-						if (!helpfile.exists()){
-							helpfile.mkdir();
-						}
-						boolean empty = true;
-						for (File f3 : f2.listFiles()) {
-							if (f3.getAbsolutePath().endsWith(".dcm")) {
-								try {
-									Files.move(f3.toPath(), new File(helpfile.getAbsolutePath()+"/"+f3.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
-									empty = false;
-								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
+			SASInSubfoldersWrapper(searchin, sortInDir);
+		} else {
+			SASInNoSubfolderWrapper(searchin, sortInDir);
+		}
+
+		start = System.currentTimeMillis() - start;
+		System.out.println("I found and sorted " + found + " Dicoms in "
+				+ start / 1000 + " seconds! I copied " + copyd
+				+ " of them to the Output directory.");
+	}
+
+	private void SASInSubfoldersWrapper(String searchin, String sortInDir) {
+		for (File patientIdFolder : new File(sortInDir).listFiles()) {
+			if (patientIdFolder.isDirectory()) {
+				for (File protocolNameFolder : patientIdFolder.listFiles()) {
+					File helpfile = new File(
+							protocolNameFolder.getAbsolutePath() + "/"
+									+ toProtocolDigits(1 + ""));
+					if (!helpfile.exists()) {
+						helpfile.mkdir();
+					}
+					boolean empty = true;
+					for (File protocolsubfolder : protocolNameFolder
+							.listFiles()) {
+						if (protocolsubfolder.getAbsolutePath()
+								.endsWith(".dcm")) {
+							try {
+								Files.move(
+										protocolsubfolder.toPath(),
+										new File(helpfile.getAbsolutePath()
+												+ "/"
+												+ protocolsubfolder.getName())
+												.toPath(),
+										StandardCopyOption.REPLACE_EXISTING);
+								empty = false;
+							} catch (IOException e) {
+								e.printStackTrace();
 							}
 						}
-						if (empty){
-							helpfile.delete();
-						}
+					}
+					if (empty) {
+						helpfile.delete();
 					}
 				}
 			}
-			searchAndSortInSubfolders(searchin, sortInDir);
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			for (File f : new File(sortInDir).listFiles()) {
-				if (f.isDirectory()) {
-					for (File f2 : f.listFiles()) {
-						boolean onlyone = true;
-						if (f2.isDirectory()) {
-							for (File f3 : f2.listFiles()) {
-								if (f3.isDirectory()) {
-									if (!f3.getName().startsWith(
-											toProtocolDigits(1 + ""))) {
-										onlyone = false;
-										break;
-									}
+		}
+		SASInSubfoldersSearch(searchin, sortInDir);
+		for (File patientIdFolder : new File(sortInDir).listFiles()) {
+			if (patientIdFolder.isDirectory()) {
+				for (File protocolNameFolder : patientIdFolder.listFiles()) {
+					boolean onlyone = true;
+					if (protocolNameFolder.isDirectory()) {
+						for (File protocolSubfolder : protocolNameFolder
+								.listFiles()) {
+							if (protocolSubfolder.isDirectory()) {
+								if (!protocolSubfolder.getName().startsWith(
+										toProtocolDigits(1 + ""))) {
+									onlyone = false;
+									break;
 								}
 							}
 						}
-						if (onlyone) {
-							for (File f3 : f2.listFiles()) {
-								if (f3.isDirectory()) {
-									f3.deleteOnExit();
-									for (File f4 : f3.listFiles()) {
-										if (f4.getAbsolutePath().endsWith(
-												".dcm")) {
-											try {
-												Files.move(
-														f4.toPath(),
-														new File(
-																f2.getAbsoluteFile()
-																		+ "/"
-																		+ f4.getName())
-																.toPath(),
-														StandardCopyOption.REPLACE_EXISTING);
-											} catch (IOException e) {
-												// TODO Auto-generated catch
-												// block
-												e.printStackTrace();
-											}
+					}
+					if (onlyone) {
+						for (File protocolSubfolder : protocolNameFolder
+								.listFiles()) {
+							if (protocolSubfolder.isDirectory()) {
+								protocolSubfolder.deleteOnExit();
+								for (File f4 : protocolSubfolder.listFiles()) {
+									if (f4.getAbsolutePath().endsWith(".dcm")) {
+										try {
+											Files.move(
+													f4.toPath(),
+													new File(protocolNameFolder
+															.getAbsoluteFile()
+															+ "/"
+															+ f4.getName())
+															.toPath(),
+													StandardCopyOption.REPLACE_EXISTING);
+										} catch (IOException e) {
+											e.printStackTrace();
 										}
 									}
 								}
 							}
-
 						}
+
 					}
 				}
 			}
-		} else {
-			searchAndSortInNoSubfolders(searchin, sortInDir);
 		}
-
-		start2 = System.currentTimeMillis() - start2;
-		System.out.println("I found and sorted " + found + " Dicoms in "
-				+ start2 / 1000 + " seconds! I copied " + copyd
-				+ " of them to the Output directory.");
 	}
 
 	/**
@@ -327,7 +355,7 @@ public class SortAlgorithm {
 	 * @param searchin
 	 * @param sortInDir
 	 */
-	private void searchAndSortInSubfolders(String searchin, String sortInDir) {
+	private void SASInSubfoldersSearch(String searchin, String sortInDir) {
 		File file = new File(searchin);
 		File[] list = file.listFiles();
 
@@ -336,16 +364,16 @@ public class SortAlgorithm {
 		}
 
 		for (File l : list) {
-			if (l.getAbsolutePath().endsWith(".IMA")
-					|| l.getAbsolutePath().endsWith(".dcm")) {
-				sortInDirWithSubfolders(l.getAbsolutePath(), sortInDir);
+			String path = l.getAbsolutePath();
+			if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
+				SASInSubfoldersSort(path, sortInDir);
 				if (++found % 50 == 0) {
 					System.out.println("I found and sorted so far " + found
 							+ " Dicoms. (DeltaTime: " + deltaTime()
 							+ " millis.)");
 				}
 			} else {
-				searchAndSortInSubfolders(l.getAbsolutePath(), sortInDir);
+				SASInSubfoldersSearch(path, sortInDir);
 			}
 		}
 	}
@@ -357,7 +385,7 @@ public class SortAlgorithm {
 	 * @param input
 	 * @param dir
 	 */
-	private void sortInDirWithSubfolders(String input, String dir) {
+	private void SASInSubfoldersSort(String input, String dir) {
 		// Getting the necessarie Informations
 		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
 				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID,
@@ -375,10 +403,6 @@ public class SortAlgorithm {
 			File test2 = new File(path.toString() + "/" + att[1] + "/"
 					+ toProtocolDigits(i + ""));
 			if (!test2.exists()) {
-				// if (i == 1) {
-				// test2 = new File(path.toString() + "/" + att[1]);
-				// protocol = false;
-				// }
 				break;
 			}
 			for (int j = 1; j < 1000; j++) {
@@ -430,12 +454,11 @@ public class SortAlgorithm {
 	 * @param searchin
 	 * @param sortInDir
 	 */
-	private void searchAndSortInNoSubfolders(String searchin, String sortInDir) {
+	private void SASInNoSubfolderWrapper(String searchin, String sortInDir) {
 		File file = new File(sortInDir);
 		File[] list = file.listFiles();
 		index = new HashMap<>();
-		ArrayList<Integer> existingPraefix = new ArrayList<Integer>();
-		
+
 		if (list != null) {
 			for (File patient : list) {
 				File[] newlist = patient.listFiles();
@@ -448,14 +471,14 @@ public class SortAlgorithm {
 								protocol_digits);
 						// is test a number?
 						try {
-							existingPraefix.add(Integer.parseInt(test));
-							if (Integer.parseInt(test) > index.get(patient
-									.getName())) {
-								index.put(patient.getName(),
-										Integer.parseInt(test));
+							int nextParse = Integer.parseInt(test);
+							if (nextParse > index.get(patient.getName())) {
+								index.put(patient.getName(), nextParse);
 							}
 						} catch (NullPointerException e) {
 							index.put(patient.getName(), 1);
+						} catch (NumberFormatException e) {
+							continue;
 						}
 						int i = 1;
 						while (true) {
@@ -483,8 +506,7 @@ public class SortAlgorithm {
 				}
 			}
 		}
-//		System.out.println(existingPraefix);
-		searchAndSortInNoSubfolders2(searchin, sortInDir);
+		SASInNoSubfoldersSearch(searchin, sortInDir);
 	}
 
 	/**
@@ -495,7 +517,7 @@ public class SortAlgorithm {
 	 * @param searchin
 	 * @param sortInDir
 	 */
-	private void searchAndSortInNoSubfolders2(String searchin, String sortInDir) {
+	private void SASInNoSubfoldersSearch(String searchin, String sortInDir) {
 		File file = new File(searchin);
 		File[] list = file.listFiles();
 
@@ -504,16 +526,16 @@ public class SortAlgorithm {
 		}
 
 		for (File l : list) {
-			if (l.getAbsolutePath().endsWith(".IMA")
-					|| l.getAbsolutePath().endsWith(".dcm")) {
-				sortInDirWithoutSubfolders(l.getAbsolutePath(), sortInDir);
+			String path = l.getAbsolutePath();
+			if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
+				SASInNoSubfoldersSort(path, sortInDir);
 				if (++found % 50 == 0) {
 					System.out.println("I found and sorted so far " + found
 							+ " Dicoms. (DeltaTime: " + deltaTime()
 							+ " millis.)");
 				}
 			} else {
-				searchAndSortInNoSubfolders2(l.getAbsolutePath(), sortInDir);
+				SASInNoSubfoldersSearch(path, sortInDir);
 			}
 		}
 	}
@@ -527,7 +549,7 @@ public class SortAlgorithm {
 	 * @param input
 	 * @param dir
 	 */
-	private void sortInDirWithoutSubfolders(String input, String dir) {
+	private void SASInNoSubfoldersSort(String input, String dir) {
 		// Getting the necessarie Informations
 		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
 				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID,
@@ -572,7 +594,6 @@ public class SortAlgorithm {
 					}
 				}
 			}
-			// System.out.println("HERE "+test2.getAbsolutePath());
 		}
 		path.append("/" + protocolnames.get(path.toString() + "/" + att[1] + i)
 				+ "_" + att[1]);
@@ -603,8 +624,8 @@ public class SortAlgorithm {
 	 */
 	private double deltaTime() {
 		double atm = System.currentTimeMillis();
-		double time = atm - start;
-		start = atm;
+		double time = atm - deltaTimeHelp;
+		deltaTimeHelp = atm;
 		return time;
 	}
 }

@@ -216,14 +216,14 @@ public class Volume {
 	/**
 	 * 
 	 * @param key
-	 * @param v
+	 * @param slices
 	 * @return
 	 */
-	public String getAttribute(String key, Vector<Integer> v) {
+	public String getAttribute(String key, Vector<Integer> slices) {
 		String att = "";
 		Integer[] a = new Integer[0];
-		for (int slice : v.toArray(a)) {
-			att += slices.get(slice).getAttribute(key);
+		for (int slice : slices.toArray(a)) {
+			att += this.slices.get(slice).getAttribute(key);
 		}
 		return att;
 	}
@@ -235,11 +235,11 @@ public class Volume {
 		return slices.size();
 	}
 
-	public String getAttribute(KeyMap en, Vector<Integer> v) {
+	public String getAttribute(KeyMap en, Vector<Integer> slices) {
 		String att = "";
 		Integer[] a = new Integer[0];
-		for (int slice : v.toArray(a)) {
-			att += slices.get(slice).getAttribute(en);
+		for (int slice : slices.toArray(a)) {
+			att += this.slices.get(slice).getAttribute(en);
 		}
 		return att;
 	}

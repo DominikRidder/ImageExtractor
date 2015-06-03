@@ -278,6 +278,7 @@ public class Image implements Comparable<Image> {
 		return str;
 	}
 
+
 	@SuppressWarnings("unused")
 	private String[] getAttributesDicom(KeyMap en[]) {
 		return Image.getAttributesDicom(path, en);

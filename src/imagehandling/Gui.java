@@ -65,7 +65,7 @@ public class Gui extends JFrame implements ActionListener {
 	BufferedImage image = new BufferedImage(1, 1, 1);
 
 	boolean displayAll = true;
-	
+
 	public Gui() {
 		JButton apply_path = new JButton("create Volume");
 		JButton browse_path = new JButton("browse");
@@ -92,7 +92,8 @@ public class Gui extends JFrame implements ActionListener {
 		JScrollPane scroll = new JScrollPane(output);
 		scroll.setPreferredSize(new Dimension(100, 100));
 
-		chooser.setCurrentDirectory(new java.io.File("/opt/dridder_local/TestDicoms/Testfolder"));
+		chooser.setCurrentDirectory(new java.io.File(
+				"/opt/dridder_local/TestDicoms/Testfolder"));
 		chooser.setDialogTitle("Search Path of Volume");
 		chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		chooser.setAcceptAllFileFilterUsed(false);
@@ -105,14 +106,18 @@ public class Gui extends JFrame implements ActionListener {
 		setfinalSize(img, new Dimension(1000, 1000));
 		setfinalSize(dir, new Dimension(500, 1000));
 
-		addComponents(dir, browse_path, apply_path);
-		addComponents(img, current_path,
+		Component[] dirstuff = { browse_path, apply_path };
+		Component[] imgstuff = { current_path,
 				Box.createRigidArea(new Dimension(80, 0)), slice, index,
-				Box.createRigidArea(new Dimension(10, 0)));
-		addComponents(att, show_attributes,
-				Box.createRigidArea(new Dimension(10, 0)), search, filter);
-		addComponents(panel, Box.createRigidArea(new Dimension(0, 10)), path,
-				dir, img, att, scroll);
+				Box.createRigidArea(new Dimension(10, 0)) };
+		Component[] attstuff = { show_attributes,
+				Box.createRigidArea(new Dimension(10, 0)), search, filter };
+		Component[] panelstuff = { Box.createRigidArea(new Dimension(0, 10)),
+				path, dir, img, att, scroll };
+		addComponents(dir, dirstuff);
+		addComponents(img, imgstuff);
+		addComponents(att, attstuff);
+		addComponents(panel, panelstuff);
 
 		panel.add(new JLabel(new ImageIcon(image)));
 		add(panel);
@@ -148,7 +153,7 @@ public class Gui extends JFrame implements ActionListener {
 			}
 		});
 		setVisible(true);
-		
+
 		lifeupdate();
 	}
 
@@ -181,7 +186,7 @@ public class Gui extends JFrame implements ActionListener {
 			}
 			if (!filter.getText().equals("")) {
 				if (!lasttime_filter.equals(filter.getText())) {
-					//Text got changed
+					// Text got changed
 					lasttime_filter = filter.getText();
 					lasttime_number = index.getText();
 					displayAll = false;
@@ -201,39 +206,10 @@ public class Gui extends JFrame implements ActionListener {
 		b3.addActionListener(this);
 	}
 
-	private void addComponents(JPanel here, Component addthis,
-			Component addthis2) {
-		here.add(addthis);
-		here.add(addthis2);
-	}
-
-	private void addComponents(JPanel here, Component addthis,
-			Component addthis2, Component addthis3, Component addthis4) {
-		here.add(addthis);
-		here.add(addthis2);
-		here.add(addthis3);
-		here.add(addthis4);
-	}
-
-	private void addComponents(JPanel here, Component addthis,
-			Component addthis2, Component addthis3, Component addthis4,
-			Component addthis5) {
-		here.add(addthis);
-		here.add(addthis2);
-		here.add(addthis3);
-		here.add(addthis4);
-		here.add(addthis5);
-	}
-
-	private void addComponents(JPanel here, Component addthis,
-			Component addthis2, Component addthis3, Component addthis4,
-			Component addthis5, Component addthis6) {
-		here.add(addthis);
-		here.add(addthis2);
-		here.add(addthis3);
-		here.add(addthis4);
-		here.add(addthis5);
-		here.add(addthis6);
+	private void addComponents(JPanel here, Component[] toadd) {
+		for (int i = 0; i < toadd.length; i++) {
+			here.add(toadd[i]);
+		}
 	}
 
 	public void actionPerformed(ActionEvent e) {

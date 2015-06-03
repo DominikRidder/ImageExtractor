@@ -4,15 +4,7 @@ public class Main {
 	public static void main(String agrs[]) {
 		// String filepath = "/opt/dridder_local/TestDicoms/Testfolder";
 		// Volume vol = new Volume(filepath);
-		// String compare = vol.getAttribute(KeyMap.KEY_SERIES_INSTANCE_UID);
-		// for (int i = 1; i < 11; i++) {
-		// filepath =
-		// "/opt/dridder_local/TestDicoms/TestSort2/112233/si_gre_m0w__w2dfl/"
-		// + i;
-		// vol = new Volume(filepath);
-		// System.out.println(compare.equals(vol.getAttribute(KeyMap.KEY_SERIES_INSTANCE_UID)));
-		// }
-
+		 
 		// // try to get a Attribute
 		// String str = vol
 		// .getAttribute("I have no clue what i should type here.");
@@ -44,17 +36,16 @@ public class Main {
 		// System.out.println(vol.getAttribute("pixel data",choice ));
 		//
 		// new Gui();
-
-		// System.out.println(">>"+vol.getSlice(0).getAttribute(KeyMap.KEY_ACQUISITION_DATE)+"<<");
+		//
+		// System.out.println(">>"
+		// + vol.getSlice(0).getAttribute(KeyMap.KEY_ACQUISITION_DATE)
+		// + "<<");
 
 		SortAlgorithm sa = new SortAlgorithm();
-		sa.useSubfolders(true);
+		sa.useSubfolders(false);
 		sa.setImgDigits(4);
-		sa.setProtocolPraefixDigits(3);
+		sa.setProtocolDigits(3);
 		sa.searchAndSortIn("/opt/dridder_local/TestDicoms/30000",
 				"/opt/dridder_local/TestDicoms/TestSort");
-		//
-		// Volume.searchAndSortIn("/data/mr_qi/zabbas/Dominik/",
-		// "/opt/dridder_local/TestDicoms/TestSort");
 	}
 }
