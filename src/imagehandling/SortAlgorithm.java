@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class SortAlgorithm {
@@ -45,7 +46,7 @@ public class SortAlgorithm {
 	 * The index is important for the case, that subfolder is false. The index
 	 * is used to set the praefix of a protocol folder than.
 	 */
-	private int index;
+	private HashMap<String, Integer> index;
 
 	/**
 	 * The HashMap protocolnames is used, if subfolders is false. The
@@ -230,31 +231,79 @@ public class SortAlgorithm {
 		}
 
 		if (subfolders) {
-			searchAndSortInSubfolders(searchin, sortInDir);
 			for (File f : new File(sortInDir).listFiles()) {
 				if (f.isDirectory()) {
 					for (File f2 : f.listFiles()) {
-						if (f2.isDirectory()) {
-							if (!new File(f2.getAbsolutePath() + "/"
-									+ toProtocolDigits(1 + "")).exists()) {
-								new File(f2.getAbsolutePath() + "/"
-										+ toProtocolDigits(1 + "")).mkdir();
-							} else {
-								continue;
-							}
-							for (File f3 : f2.listFiles()) {
-								if (f3.getAbsolutePath().endsWith(".dcm")) {
-									System.out.println("moving "
-											+ f3.getAbsolutePath()
-											+ " to "
-											+ new File(f2.getAbsolutePath()
-													+ "/"
-													+ toProtocolDigits(1 + ""))
-													.getAbsolutePath());
-									f3.renameTo(new File(f2.getAbsolutePath()
-											+ "/" + toProtocolDigits(1 + "")));
+						File helpfile = new File(f2.getAbsolutePath()+"/"+toProtocolDigits(1+""));
+						if (!helpfile.exists()){
+							helpfile.mkdir();
+						}
+						boolean empty = true;
+						for (File f3 : f2.listFiles()) {
+							if (f3.getAbsolutePath().endsWith(".dcm")) {
+								try {
+									Files.move(f3.toPath(), new File(helpfile.getAbsolutePath()+"/"+f3.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+									empty = false;
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
 								}
 							}
+						}
+						if (empty){
+							helpfile.delete();
+						}
+					}
+				}
+			}
+			searchAndSortInSubfolders(searchin, sortInDir);
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			for (File f : new File(sortInDir).listFiles()) {
+				if (f.isDirectory()) {
+					for (File f2 : f.listFiles()) {
+						boolean onlyone = true;
+						if (f2.isDirectory()) {
+							for (File f3 : f2.listFiles()) {
+								if (f3.isDirectory()) {
+									if (!f3.getName().startsWith(
+											toProtocolDigits(1 + ""))) {
+										onlyone = false;
+										break;
+									}
+								}
+							}
+						}
+						if (onlyone) {
+							for (File f3 : f2.listFiles()) {
+								if (f3.isDirectory()) {
+									f3.deleteOnExit();
+									for (File f4 : f3.listFiles()) {
+										if (f4.getAbsolutePath().endsWith(
+												".dcm")) {
+											try {
+												Files.move(
+														f4.toPath(),
+														new File(
+																f2.getAbsoluteFile()
+																		+ "/"
+																		+ f4.getName())
+																.toPath(),
+														StandardCopyOption.REPLACE_EXISTING);
+											} catch (IOException e) {
+												// TODO Auto-generated catch
+												// block
+												e.printStackTrace();
+											}
+										}
+									}
+								}
+							}
+
 						}
 					}
 				}
@@ -326,10 +375,10 @@ public class SortAlgorithm {
 			File test2 = new File(path.toString() + "/" + att[1] + "/"
 					+ toProtocolDigits(i + ""));
 			if (!test2.exists()) {
-				if (i == 1) {
-					test2 = new File(path.toString() + "/" + att[1]);
-					protocol = false;
-				}
+				// if (i == 1) {
+				// test2 = new File(path.toString() + "/" + att[1]);
+				// protocol = false;
+				// }
 				break;
 			}
 			for (int j = 1; j < 1000; j++) {
@@ -384,8 +433,9 @@ public class SortAlgorithm {
 	private void searchAndSortInNoSubfolders(String searchin, String sortInDir) {
 		File file = new File(sortInDir);
 		File[] list = file.listFiles();
-		index = 0;
-
+		index = new HashMap<>();
+		ArrayList<Integer> existingPraefix = new ArrayList<Integer>();
+		
 		if (list != null) {
 			for (File patient : list) {
 				File[] newlist = patient.listFiles();
@@ -397,9 +447,15 @@ public class SortAlgorithm {
 						String test = protocol.getName().substring(0,
 								protocol_digits);
 						// is test a number?
-						System.out.println(Integer.parseInt(test));
-						if (Integer.parseInt(test) > index) {
-							index = Integer.parseInt(test);
+						try {
+							existingPraefix.add(Integer.parseInt(test));
+							if (Integer.parseInt(test) > index.get(patient
+									.getName())) {
+								index.put(patient.getName(),
+										Integer.parseInt(test));
+							}
+						} catch (NullPointerException e) {
+							index.put(patient.getName(), 1);
 						}
 						int i = 1;
 						while (true) {
@@ -427,10 +483,7 @@ public class SortAlgorithm {
 				}
 			}
 		}
-		System.out.println(protocolnames.keySet());
-		index++;
-		System.out.println("index = " + index);
-		System.out.println("starting part 2");
+//		System.out.println(existingPraefix);
 		searchAndSortInNoSubfolders2(searchin, sortInDir);
 	}
 
@@ -488,8 +541,13 @@ public class SortAlgorithm {
 		int i;
 		loop: for (i = 1; i < 1000; i++) {
 			if (!protocolnames.containsKey(path.toString() + "/" + att[1] + i)) {
+				try {
+					index.put(att[0], index.get(att[0]) + 1);
+				} catch (NullPointerException e) {
+					index.put(att[0], 1);
+				}
 				protocolnames.put(path.toString() + "/" + att[1] + i,
-						toProtocolDigits(index++ + ""));
+						toProtocolDigits(index.get(att[0]) + ""));
 			}
 
 			File test2 = new File(path.toString() + "/"
