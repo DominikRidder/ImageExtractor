@@ -205,6 +205,16 @@ public class Image implements Comparable<Image> {
 	}
 
 	public void extractData() {
+		DataExtractor de = null;
+		switch (type) {
+		case "dcm":
+		case "IMA":
+			de = new DicomDataExtractor();
+			break;
+		default:
+			throw new RuntimeException("The Image Type can't be handeld.");
+		}
+		de.extractData(path);
 	}
 
 	protected void extractHeader(boolean bool) {

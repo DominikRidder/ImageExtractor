@@ -8,7 +8,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.Box;
@@ -41,6 +44,12 @@ public class Gui extends JFrame implements ActionListener {
 	JPanel img = new JPanel();
 
 	JPanel panel = new JPanel();
+	
+	JPanel toppanel = new JPanel();
+	
+	JLabel imagepanel;
+	
+	ImageIcon ic;
 
 	JPanel contentPane = (JPanel) this.getContentPane();
 
@@ -62,7 +71,7 @@ public class Gui extends JFrame implements ActionListener {
 
 	Volume vol;
 
-	BufferedImage image = new BufferedImage(1, 1, 1);
+	BufferedImage image = new BufferedImage(500, 500, BufferedImage.TYPE_BYTE_GRAY);
 
 	boolean displayAll = true;
 
@@ -118,9 +127,13 @@ public class Gui extends JFrame implements ActionListener {
 		addComponents(img, imgstuff);
 		addComponents(att, attstuff);
 		addComponents(panel, panelstuff);
-
-		panel.add(new JLabel(new ImageIcon(image)));
-		add(panel);
+		toppanel.setLayout(new BoxLayout(toppanel, BoxLayout.LINE_AXIS));
+		toppanel.add(panel);
+		ic = new ImageIcon(image);
+		imagepanel = new JLabel(ic);
+		toppanel.add(imagepanel);
+//		panel.add(new JLabel(new ImageIcon(image)));
+		add(toppanel);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("ImageExtractor");
@@ -219,8 +232,17 @@ public class Gui extends JFrame implements ActionListener {
 				vol = new Volume(path.getText(), this);
 				output.setText("Volume created");
 				current_path.setText("Volume: " + path.getText());
+				vol.getSlice(0).getData().getScaledInstance(image.getWidth(), image.getHeight(), BufferedImage.SCALE_SMOOTH);
+//				image.setData(vol.getSlice(0).getData().getData());
+				image.getGraphics().drawImage(vol.getSlice(0).getData().getScaledInstance(image.getWidth(), image.getHeight(), BufferedImage.SCALE_FAST), 0, 0, null);
+//				image =vol.getSlice(0).getData();
+//				ic = new ImageIcon(image);
+//				imagepanel = new JLabel(ic);
+//				toppanel.add(imagepanel);
+				toppanel.repaint();
+				repaint();
 			} catch (RuntimeException ert) {
-				output.setText(ert.getMessage());
+				ert.printStackTrace();
 			}
 			break;
 		case "browse":
