@@ -6,7 +6,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Stack;
+
+import javax.swing.plaf.synth.SynthSpinnerUI;
 
 public class SortAlgorithm {
 
@@ -53,6 +58,14 @@ public class SortAlgorithm {
 	 * protocolnames contains the praefix to a given protocol name.
 	 */
 	private HashMap<String, String> protocolnames = new HashMap<String, String>();
+
+	/**
+	 * Missing is used, to fill gaps in the protocol praefix (in the no
+	 * subfolder sort). If someone would delete the folder 010_protocolname,
+	 * than the next folder would use the praefix 010_, even if there are higher
+	 * praefix numbers.
+	 */
+	private HashMap<String, ArrayList<Integer>> missing;
 
 	/**
 	 * This is the default construktur. This construktur setting the following
@@ -299,7 +312,7 @@ public class SortAlgorithm {
 				}
 			}
 		}
-		SASInSubfoldersSearch(searchin, sortInDir);
+		SASSearch(searchin, sortInDir);
 		for (File patientIdFolder : new File(sortInDir).listFiles()) {
 			if (patientIdFolder.isDirectory()) {
 				for (File protocolNameFolder : patientIdFolder.listFiles()) {
@@ -308,6 +321,9 @@ public class SortAlgorithm {
 						for (File protocolSubfolder : protocolNameFolder
 								.listFiles()) {
 							if (protocolSubfolder.isDirectory()) {
+								if (protocolSubfolder.getName().length() != protocol_digits){
+									continue;
+								}
 								if (!protocolSubfolder.getName().startsWith(
 										toProtocolDigits(1 + ""))) {
 									onlyone = false;
@@ -320,6 +336,10 @@ public class SortAlgorithm {
 						for (File protocolSubfolder : protocolNameFolder
 								.listFiles()) {
 							if (protocolSubfolder.isDirectory()) {
+								if (!protocolSubfolder.getName().startsWith(
+										toProtocolDigits(1 + "")) || protocolSubfolder.getName().length() != protocol_digits){
+									continue;
+								}
 								protocolSubfolder.deleteOnExit();
 								for (File f4 : protocolSubfolder.listFiles()) {
 									if (f4.getAbsolutePath().endsWith(".dcm")) {
@@ -348,14 +368,14 @@ public class SortAlgorithm {
 
 	/**
 	 * This method is the rekursiv search for the dicoms. If this methods finds
-	 * dicoms, than this methods calls the sortInDirWithSubfolders method with
+	 * dicoms, than this methods calls the SASInSubfoldersSort/SASInNoSubfoldersSort method with
 	 * the dicom path and the output folder, where the sorted structur is build
 	 * in.
 	 * 
 	 * @param searchin
 	 * @param sortInDir
 	 */
-	private void SASInSubfoldersSearch(String searchin, String sortInDir) {
+	private void SASSearch(String searchin, String sortInDir) {
 		File file = new File(searchin);
 		File[] list = file.listFiles();
 
@@ -366,14 +386,18 @@ public class SortAlgorithm {
 		for (File l : list) {
 			String path = l.getAbsolutePath();
 			if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
-				SASInSubfoldersSort(path, sortInDir);
+				if (subfolders){
+					SASInSubfoldersSort(path, sortInDir);
+				}else{
+					SASInNoSubfoldersSort(path,sortInDir);
+				}
 				if (++found % 50 == 0) {
 					System.out.println("I found and sorted so far " + found
 							+ " Dicoms. (DeltaTime: " + deltaTime()
 							+ " millis.)");
 				}
 			} else {
-				SASInSubfoldersSearch(path, sortInDir);
+				SASSearch(path, sortInDir);
 			}
 		}
 	}
@@ -445,11 +469,11 @@ public class SortAlgorithm {
 	}
 
 	/**
-	 * This methods perpares the sorting structur for dicoms, where the protocol
+	 * This methods prepares the sorting structur for dicoms, where the protocol
 	 * folders wont contain subfolder of the different angles. Instead of the
 	 * subfolders the protocol name is used with a praefix of some digits. After
 	 * the preparation is finish, this method calls the rekursiv dicom search
-	 * searchAndSortInNoSubfolders2.
+	 * SASSearch.
 	 * 
 	 * @param searchin
 	 * @param sortInDir
@@ -458,21 +482,41 @@ public class SortAlgorithm {
 		File file = new File(sortInDir);
 		File[] list = file.listFiles();
 		index = new HashMap<>();
+		missing = new HashMap<String, ArrayList<Integer>>();
 
 		if (list != null) {
 			for (File patient : list) {
+				if (missing.get(patient.getName()) == null) {
+					missing.put(patient.getName(), new ArrayList<Integer>());
+				}
+				if (index.get(patient.getName()) == null){
+					index.put(patient.getName(), 0);
+				}
 				File[] newlist = patient.listFiles();
 				if (newlist == null) {
 					continue;
 				}
 				for (File protocol : newlist) {
+					if (protocol.getName().length()< protocol_digits+1 || protocol.getName().charAt(protocol_digits) != '_'){
+						continue;
+					}
 					try {
 						String test = protocol.getName().substring(0,
 								protocol_digits);
 						// is test a number?
 						try {
 							int nextParse = Integer.parseInt(test);
+							if (missing.get(patient.getName()).contains(
+									nextParse)) {
+								missing.get(patient.getName()).remove(
+										new Integer(nextParse));
+							}
 							if (nextParse > index.get(patient.getName())) {
+								if (nextParse - index.get(patient.getName()) > 1) {
+									for (int i = index.get(patient.getName()) + 1; i < nextParse; i++) {
+										missing.get(patient.getName()).add(i);
+									}
+								}
 								index.put(patient.getName(), nextParse);
 							}
 						} catch (NullPointerException e) {
@@ -506,38 +550,7 @@ public class SortAlgorithm {
 				}
 			}
 		}
-		SASInNoSubfoldersSearch(searchin, sortInDir);
-	}
-
-	/**
-	 * This method is the rekursiv search for dicoms in the directory searchin,
-	 * when the subfolder value is set to false. If this method finds dicoms,
-	 * than it calls the method sortInDirWithoutSubfolders.
-	 * 
-	 * @param searchin
-	 * @param sortInDir
-	 */
-	private void SASInNoSubfoldersSearch(String searchin, String sortInDir) {
-		File file = new File(searchin);
-		File[] list = file.listFiles();
-
-		if (list == null) {
-			return;
-		}
-
-		for (File l : list) {
-			String path = l.getAbsolutePath();
-			if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
-				SASInNoSubfoldersSort(path, sortInDir);
-				if (++found % 50 == 0) {
-					System.out.println("I found and sorted so far " + found
-							+ " Dicoms. (DeltaTime: " + deltaTime()
-							+ " millis.)");
-				}
-			} else {
-				SASInNoSubfoldersSearch(path, sortInDir);
-			}
-		}
+		SASSearch(searchin, sortInDir);
 	}
 
 	/**
@@ -563,13 +576,20 @@ public class SortAlgorithm {
 		int i;
 		loop: for (i = 1; i < 1000; i++) {
 			if (!protocolnames.containsKey(path.toString() + "/" + att[1] + i)) {
-				try {
-					index.put(att[0], index.get(att[0]) + 1);
-				} catch (NullPointerException e) {
-					index.put(att[0], 1);
+				if (missing.get(att[0]) == null || missing.get(att[0]).isEmpty()) {
+					try {
+						index.put(att[0], index.get(att[0]) + 1);
+					} catch (NullPointerException e) {
+						index.put(att[0], 1);
+					}
+					protocolnames.put(path.toString() + "/" + att[1] + i,
+							toProtocolDigits(index.get(att[0]) + ""));
+				} else {
+					protocolnames.put(path.toString() + "/" + att[1] + i,
+							toProtocolDigits(missing.get(att[0]).get(0) + ""));
+					missing.get(att[0]).remove(0);
 				}
-				protocolnames.put(path.toString() + "/" + att[1] + i,
-						toProtocolDigits(index.get(att[0]) + ""));
+
 			}
 
 			File test2 = new File(path.toString() + "/"

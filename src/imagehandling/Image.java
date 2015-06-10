@@ -1,6 +1,7 @@
 package imagehandling;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -114,9 +115,9 @@ public class Image implements Comparable<Image> {
 		return path;
 	}
 
-	public String getAttribute(String key) {
+	public String getAttribute(String key, TextOptions to) {
 		if (key.contains("*") || key.contains("?")) {
-			return getAttribute(Image.getKeyWords(key));
+			return getAttribute(Image.getKeyWords(key), to);
 		}
 		String attribute = "";
 		switch (type) {
@@ -150,6 +151,10 @@ public class Image implements Comparable<Image> {
 		return attribute;
 	}
 
+	public String[] getAttributeList(String key){
+		return getAttribute(key, null).split("\n");
+	}
+	
 	/**
 	 * Returns the Header of the Image, given by the path.
 	 */
@@ -201,10 +206,30 @@ public class Image implements Comparable<Image> {
 	 * information of the Image.
 	 */
 	public void extractHeader() {
-		extractHeader(false);
+		extractHeader(getFatherFolder());
+	}
+	
+	/**
+	 * Creates ***.header txt document in the outputdir with the header
+	 * information of the Image.
+	 * @param outputdir
+	 */
+	public void extractHeader(String outputdir){
+		extractHeader(false, outputdir);
 	}
 
+	/**
+	 * Creates png files of the image, in the folder, where is image is stored in.
+	 */
 	public void extractData() {
+		extractData(getFatherFolder());
+	}
+	
+	/**
+	 * Creates png files of the image, in the outputdir folder.
+	 * @param outputdir
+	 */
+	public void extractData(String outputdir){
 		DataExtractor de = null;
 		switch (type) {
 		case "dcm":
@@ -214,10 +239,10 @@ public class Image implements Comparable<Image> {
 		default:
 			throw new RuntimeException("The Image Type can't be handeld.");
 		}
-		de.extractData(path);
+		de.extractData(path, outputdir);
 	}
 
-	protected void extractHeader(boolean bool) {
+	protected void extractHeader(boolean bool, String outputdir) {
 		HeaderExtractor he = null;
 		switch (type) {
 		case "dcm":
@@ -228,7 +253,7 @@ public class Image implements Comparable<Image> {
 			throw new RuntimeException("The Image Type can't be handeld.");
 		}
 		try {
-			he.extractHeader(path);
+			he.extractHeader(path, outputdir);
 		} catch (Exception e) {
 			if (bool) {
 				throw new RuntimeException(e.getMessage());
@@ -238,6 +263,10 @@ public class Image implements Comparable<Image> {
 		}
 	}
 
+	public String getFatherFolder(){
+		File f = new File(path);
+		return f.getAbsolutePath().substring(0, f.getAbsolutePath().length()-f.getName().length());
+	}
 	// private String getAttributeDicom2(KeyMap en) {
 	// String key = en.getValue(type);
 	// String header = getHeader();
@@ -304,9 +333,9 @@ public class Image implements Comparable<Image> {
 
 	// Comparing by ImageNumber
 	public int compareTo(Image o) {
-		int thisnumb = Integer.parseInt(this.getAttribute("image number")
+		int thisnumb = Integer.parseInt(this.getAttribute("image number", null)
 				.replace(" ", "").replace("\n", "").split(":")[1]);
-		int objnumb = Integer.parseInt(o.getAttribute("image number")
+		int objnumb = Integer.parseInt(o.getAttribute("image number", null)
 				.replace(" ", "").replace("\n", "").split(":")[1]);
 		if (thisnumb > objnumb) {
 			return 1;

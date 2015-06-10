@@ -6,6 +6,6 @@ interface DataExtractor {
 	
 	BufferedImage getData(String path);
 
-	void extractData(String path);
+	void extractData(String path, String outputdir);
 	
 }

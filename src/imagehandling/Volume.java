@@ -8,6 +8,8 @@ import java.util.Vector;
 
 public class Volume {
 
+	private String path;
+
 	private ArrayList<Image> slices;
 
 	/**
@@ -29,6 +31,7 @@ public class Volume {
 	 */
 	public Volume(String path) {
 		slices = new ArrayList<Image>();
+		this.path = path;
 
 		// getting the files inhabited in the path
 		File file = new File(path);
@@ -59,6 +62,7 @@ public class Volume {
 	 */
 	protected Volume(String path, Gui gui) {
 		slices = new ArrayList<Image>();
+		this.path = path;
 
 		// getting the files inhabited in the path
 		File file = new File(path);
@@ -115,7 +119,16 @@ public class Volume {
 	}
 
 	/**
-	 * This method calls the Image.getKeyWords() method. Take a look at the Java-doc of Image.getKeyWords() for more informations.
+	 * Returning the number of Images, which are contained in the Volume.
+	 */
+	public int size() {
+		return slices.size();
+	}
+
+	/**
+	 * This method calls the Image.getKeyWords() method. Take a look at the
+	 * Java-doc of Image.getKeyWords() for more informations.
+	 * 
 	 * @return
 	 */
 	public static String getKeyWords() {
@@ -123,7 +136,9 @@ public class Volume {
 	}
 
 	/**
-	 * This method calls the Image.getKeyWords(str) method. Take a look at the Java-doc of Image.getKeyWords(String str) for more informations.
+	 * This method calls the Image.getKeyWords(str) method. Take a look at the
+	 * Java-doc of Image.getKeyWords(String str) for more informations.
+	 * 
 	 * @return
 	 */
 	public static String getKeyWords(String str) {
@@ -219,27 +234,22 @@ public class Volume {
 	 * @param slices
 	 * @return
 	 */
-	public String getAttribute(String key, Vector<Integer> slices) {
-		String att = "";
+	public String[] getAttribute(String key, Vector<Integer> slices) {
 		Integer[] a = new Integer[0];
+		String[] att = new String[slices.size()];
+		int index = 0;
 		for (int slice : slices.toArray(a)) {
-			att += this.slices.get(slice).getAttribute(key);
+			att[index++] = this.slices.get(slice).getAttribute(key, null);
 		}
 		return att;
 	}
 
-	/**
-	 * Returning the number of Images, which are contained in the Volume.
-	 */
-	public int size() {
-		return slices.size();
-	}
-
-	public String getAttribute(KeyMap en, Vector<Integer> slices) {
-		String att = "";
+	public String[] getAttribute(KeyMap en, Vector<Integer> slices) {
+		String[] att = new String[slices.size()];
+		int index = 0;
 		Integer[] a = new Integer[0];
 		for (int slice : slices.toArray(a)) {
-			att += this.slices.get(slice).getAttribute(en);
+			att[index++] = this.slices.get(slice).getAttribute(en);
 		}
 		return att;
 	}
@@ -267,7 +277,7 @@ public class Volume {
 					.println("The given element is 'null'. Cant search without a String.");
 			return "<<no key given>>";
 		}
-		return slices.get(slice).getAttribute(key);
+		return slices.get(slice).getAttribute(key, null);
 	}
 
 	/**
@@ -277,29 +287,30 @@ public class Volume {
 	 * @param en
 	 * @return
 	 */
-	public ArrayList<String> getAttributeList(KeyMap en) {
+	public String[] getAttributeForEachSlice(KeyMap en) {
 		if (en == null) {
 			System.out
 					.println("The given element is 'null'. Cant search without a real KeyMap enum.");
-			return new ArrayList<String>();
+			return null;
 		}
-		ArrayList<String> attributes = new ArrayList<String>();
+		String[] attributes = new String[this.size()];
+		int index = 0;
 		for (int i = 0; i < slices.size(); i++) {
-			attributes.add(getAttribute(en, i));
+			attributes[index++] = getAttribute(en, i);
 		}
 		return attributes;
 	}
 
-	public ArrayList<String> getAttributeList(String key) {
+	public String[] getAttributeForEachSlice(String key) {
 		if (key == null) {
 			System.out
 					.println("The given element is 'null'. Cant search without a String.");
-			return new ArrayList<String>();
+			return null;
 		}
-		ArrayList<String> attributes = new ArrayList<String>();
+		String[] attributes = new String[this.size()];
 		for (int i = 0; i < slices.size(); i++) {
-			attributes.add(getAttribute(key, i));
-			if (attributes.get(i).equals("<<key not found>>")) {
+			attributes[i] = getAttribute(key, i);
+			if (attributes[i].equals("<<key not found>>")) {
 				return attributes;
 			}
 		}
@@ -319,8 +330,36 @@ public class Volume {
 		return header;
 	}
 
-	// This method maybe have to be chnaged, if u dont want the Data in form of
-	// an ArrayList
+	public String[] getAttributeList(String key) {
+		return getAttribute(key).split("\n");
+	}
+
+	public String[][] getAttributeList(String key, Vector<Integer> slices) {
+		String[][] str = new String[size()][];
+		String[] tosplitt = getAttribute(key, slices);
+		for (int i=0; i<tosplitt.length; i++){
+			str[i] = tosplitt[i].split("\n");
+		}
+		return str;
+	}
+
+	public String[] getAttributeList(String key, int slice){
+		return getAttribute(key, slice).split("\n");
+	}
+	
+	public String[][] getAttributeListForEachSlice(String key){
+		String[][] str = new String[size()][];
+		String[] tosplitt = getAttributeForEachSlice(key);
+		for (int i=0; i<tosplitt.length; i++){
+			str[i] = tosplitt[i].split("\n");
+		}
+		return str;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
 	public ArrayList<BufferedImage> getData() {
 		ArrayList<BufferedImage> data = new ArrayList<BufferedImage>();
 		for (Image img : slices) {
@@ -330,14 +369,24 @@ public class Volume {
 	}
 
 	/**
-	 * Creates ***.header txt documents in the given path with the header
-	 * information.
+	 * Creates ***.header txt document in the given path with the header
+	 * information of the Images.
 	 */
 	public void extractHeader() {
+		extractHeader(path);
+	}
+
+	/**
+	 * Creates ***.header txt documents in the outputdir with the header
+	 * information of the Images.
+	 * 
+	 * @param outputdir
+	 */
+	public void extractHeader(String outputdir) {
 		int excounter = 0;
 		for (Image img : slices) {
 			try {
-				img.extractHeader(true);
+				img.extractHeader(true, outputdir);
 			} catch (RuntimeException e) {
 				excounter++;
 			}
@@ -349,11 +398,22 @@ public class Volume {
 		}
 	}
 
-	// This method dont work yet. This method should later create files with the
-	// data of the given volume. Implement some kind of DataExtractor therefore.
+	/**
+	 * Creates png files of the images, in the folder, where is image is stored
+	 * in.
+	 */
 	public void extractData() {
+		extractData(path);
+	}
+
+	/**
+	 * Creates png files of the images, in the outputdir folder.
+	 * 
+	 * @param outputdir
+	 */
+	public void extractData(String Outputdir) {
 		for (Image img : slices) {
-			img.extractData();
+			img.extractData(Outputdir);
 		}
 	}
 }

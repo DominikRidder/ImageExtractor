@@ -16,11 +16,13 @@ public class DicomDataExtractor implements DataExtractor {
 		return dcm.getBufferedImage();
 	}
 
-	public void extractData(String path) {
+	public void extractData(String path, String outputdir) {
 		BufferedImage bi = getData(path);
-		File testoutput = new File(path.substring(0,path.length()-3)+"png");
+		File img = new File(path);
+//		File output = new File(path.substring(0,path.length()-3)+"png");
+		File output = new File(outputdir+"/"+img.getName().substring(0, img.getName().length()-3)+"png");
 		try {
-			ImageIO.write(bi, "png", testoutput);
+			ImageIO.write(bi, "png", output);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

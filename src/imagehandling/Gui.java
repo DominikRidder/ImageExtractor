@@ -25,16 +25,19 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
+
+
 public class Gui extends JFrame implements ActionListener {
 
-	public static void main(String[] agrs) {
+	public static void main(String [] agrs){
 		new Gui();
 	}
-
+	
 	private static final long serialVersionUID = 1L;
 
 	JPanel att = new JPanel();
@@ -75,6 +78,10 @@ public class Gui extends JFrame implements ActionListener {
 
 	boolean displayAll = true;
 
+	JButton apply_path;
+	JButton browse_path;
+	JButton show_attributes;
+	
 	public Gui() {
 		JButton apply_path = new JButton("create Volume");
 		JButton browse_path = new JButton("browse");
@@ -86,7 +93,7 @@ public class Gui extends JFrame implements ActionListener {
 		JTextField search = new JTextField("Search:");
 		search.setEditable(false);
 
-		setfinalSize(this, new Dimension(1000, 700));
+		setfinalSize(this, new Dimension(1100, 500));
 		setfinalSize(path, new Dimension(10000, 100));
 		setfinalSize(output, new Dimension(100, 1000));
 		setfinalSize(current_path, new Dimension(800, 100));
@@ -132,7 +139,7 @@ public class Gui extends JFrame implements ActionListener {
 		ic = new ImageIcon(image);
 		imagepanel = new JLabel(ic);
 		toppanel.add(imagepanel);
-//		panel.add(new JLabel(new ImageIcon(image)));
+
 		add(toppanel);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -166,7 +173,7 @@ public class Gui extends JFrame implements ActionListener {
 			}
 		});
 		setVisible(true);
-
+		
 		lifeupdate();
 	}
 
@@ -189,6 +196,8 @@ public class Gui extends JFrame implements ActionListener {
 					if (!lasttime_number.equals(index.getText())) {
 						lasttime_number = index.getText();
 						displayAttributes();
+						image.getGraphics().drawImage(vol.getSlice(Integer.parseInt(index.getText())).getData().getScaledInstance(image.getWidth(), image.getHeight(), BufferedImage.SCALE_SMOOTH), 0, 0, null);
+						repaint();
 					}
 				} catch (NumberFormatException | NullPointerException e) {
 					if (index.getText().equals(lasttime_number)) {
@@ -228,22 +237,7 @@ public class Gui extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		switch (e.getActionCommand()) {
 		case "create Volume":
-			try {
-				vol = new Volume(path.getText(), this);
-				output.setText("Volume created");
-				current_path.setText("Volume: " + path.getText());
-				vol.getSlice(0).getData().getScaledInstance(image.getWidth(), image.getHeight(), BufferedImage.SCALE_SMOOTH);
-//				image.setData(vol.getSlice(0).getData().getData());
-				image.getGraphics().drawImage(vol.getSlice(0).getData().getScaledInstance(image.getWidth(), image.getHeight(), BufferedImage.SCALE_FAST), 0, 0, null);
-//				image =vol.getSlice(0).getData();
-//				ic = new ImageIcon(image);
-//				imagepanel = new JLabel(ic);
-//				toppanel.add(imagepanel);
-				toppanel.repaint();
-				repaint();
-			} catch (RuntimeException ert) {
-				ert.printStackTrace();
-			}
+			createVolume();
 			break;
 		case "browse":
 			if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
@@ -253,16 +247,29 @@ public class Gui extends JFrame implements ActionListener {
 		case "Display all Attributes":
 			displayAll = true;
 			displayAttributes();
-			image = vol.getSlice(0).getData();
-			repaint();
 			break;
 		default:
 			break;
 		}
 	}
 
+	private void createVolume(){
+		try {
+			vol = new Volume(path.getText(), this);
+			output.setText("Volume created");
+			current_path.setText("Volume: " + path.getText());
+			image.getGraphics().drawImage(vol.getSlice(Integer.parseInt(index.getText())).getData().getScaledInstance(image.getWidth(), image.getHeight(), BufferedImage.SCALE_SMOOTH), 0, 0, null);
+			repaint();
+		} catch (RuntimeException ert) {
+			output.setText("Creating Volume didnt work. Please check the path.");
+		}
+	}
+	
 	public void displayAttributes() {
 		try {
+			if (vol == null){
+				createVolume();
+			}
 			if (vol != null) {
 				if (displayAll) {
 					output.setText(vol.getSlice(

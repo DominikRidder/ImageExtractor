@@ -8,5 +8,5 @@ interface HeaderExtractor {
 	
 	String[] getInfo(String path, String items[]);
 	
-	void extractHeader(String path);
+	void extractHeader(String path, String outputdir);
 }

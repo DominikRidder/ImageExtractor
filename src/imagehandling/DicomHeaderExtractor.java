@@ -21,7 +21,7 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 	 * the Image is. The Name of the information file is the name of the Image,
 	 * with ".header" instead of ".IMA" or ".dcm".
 	 */
-	public void extractHeader(String path) {
+	public void extractHeader(String path, String outputdir) {
 		String dicom = path;
 
 		// cutting of ending like IMA or dcm
@@ -32,19 +32,19 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		}
 		path += ".header";
 
-		// check if header file already exist
-		File file = new File(path);
-		if (file.exists()) {
-			throw new RuntimeException(
-					"DicomExtractor failed. File already exist: " + path);
-		} else {
-			try {
-				// just to find out if it is a Dicom
-				new DICOM().open(dicom);
-			} catch (IndexOutOfBoundsException e) {
-				return;
-			}
-		}
+//		// check if header file already exist
+//		File file = new File(outputdir+"/"+new File(path).getName());
+//		if (file.exists()) {
+//			throw new RuntimeException(
+//					"DicomExtractor failed. File already exist: " + path);
+//		} else {
+//			try {
+//				// just to find out if it is a Dicom
+//				new DICOM().open(dicom);
+//			} catch (IndexOutOfBoundsException e) {
+//				return;
+//			}
+//		}
 
 		// str = headers
 		String str;
@@ -55,7 +55,7 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		}
 
 		// creating the file
-		try (PrintWriter pw = new PrintWriter(new FileWriter(path))) {
+		try (PrintWriter pw = new PrintWriter(new FileWriter(outputdir+"/"+new File(path).getName()))) {
 			pw.print(str);
 		} catch (IOException e) {
 			e.printStackTrace();
