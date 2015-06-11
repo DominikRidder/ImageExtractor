@@ -16,6 +16,11 @@ import javax.swing.plaf.synth.SynthSpinnerUI;
 public class SortAlgorithm {
 
 	/**
+	 * This boolean decide, whether the dicoms are moved or if they copied.
+	 */
+	private boolean move = false;
+
+	/**
 	 * Found is the number of dicoms, that are found in the subfolders of the
 	 * input directory.
 	 */
@@ -165,6 +170,14 @@ public class SortAlgorithm {
 		subfolders = b;
 	}
 
+	public void setFilesOptionCopy() {
+		move = false;
+	}
+
+	public void setFilesOptionMove() {
+		move = true;
+	}
+
 	/**
 	 * This method calls toNDigits(protocol_digits, given number String).
 	 * 
@@ -272,8 +285,14 @@ public class SortAlgorithm {
 		}
 
 		start = System.currentTimeMillis() - start;
+		String operation = "";
+		if (move) {
+			operation = "moved";
+		} else {
+			operation = "copied";
+		}
 		System.out.println("I found and sorted " + found + " Dicoms in "
-				+ start / 1000 + " seconds! I copied " + copyd
+				+ start / 1000 + " seconds! I " + operation + " " + copyd
 				+ " of them to the Output directory.");
 	}
 
@@ -321,7 +340,7 @@ public class SortAlgorithm {
 						for (File protocolSubfolder : protocolNameFolder
 								.listFiles()) {
 							if (protocolSubfolder.isDirectory()) {
-								if (protocolSubfolder.getName().length() != protocol_digits){
+								if (protocolSubfolder.getName().length() != protocol_digits) {
 									continue;
 								}
 								if (!protocolSubfolder.getName().startsWith(
@@ -337,12 +356,15 @@ public class SortAlgorithm {
 								.listFiles()) {
 							if (protocolSubfolder.isDirectory()) {
 								if (!protocolSubfolder.getName().startsWith(
-										toProtocolDigits(1 + "")) || protocolSubfolder.getName().length() != protocol_digits){
+										toProtocolDigits(1 + ""))
+										|| protocolSubfolder.getName().length() != protocol_digits) {
 									continue;
 								}
 								protocolSubfolder.deleteOnExit();
-								for (File dicoms : protocolSubfolder.listFiles()) {
-									if (dicoms.getAbsolutePath().endsWith(".dcm")) {
+								for (File dicoms : protocolSubfolder
+										.listFiles()) {
+									if (dicoms.getAbsolutePath().endsWith(
+											".dcm")) {
 										try {
 											Files.move(
 													dicoms.toPath(),
@@ -368,9 +390,9 @@ public class SortAlgorithm {
 
 	/**
 	 * This method is the rekursiv search for the dicoms. If this methods finds
-	 * dicoms, than this methods calls the SASInSubfoldersSort/SASInNoSubfoldersSort method with
-	 * the dicom path and the output folder, where the sorted structur is build
-	 * in.
+	 * dicoms, than this methods calls the
+	 * SASInSubfoldersSort/SASInNoSubfoldersSort method with the dicom path and
+	 * the output folder, where the sorted structur is build in.
 	 * 
 	 * @param searchin
 	 * @param sortInDir
@@ -386,10 +408,10 @@ public class SortAlgorithm {
 		for (File l : list) {
 			String path = l.getAbsolutePath();
 			if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
-				if (subfolders){
+				if (subfolders) {
 					SASInSubfoldersSort(path, sortInDir);
-				}else{
-					SASInNoSubfoldersSort(path,sortInDir);
+				} else {
+					SASInNoSubfoldersSort(path, sortInDir);
 				}
 				if (++found % 50 == 0) {
 					System.out.println("I found and sorted so far " + found
@@ -420,7 +442,7 @@ public class SortAlgorithm {
 		String imageNumber = att[2];
 		String instanceUID = att[3];
 		String birthDate = att[4];
-		
+
 		// Check existing
 		boolean protocol = true;
 		StringBuilder path = new StringBuilder();
@@ -430,8 +452,8 @@ public class SortAlgorithm {
 		loop: for (i = 1; i < 1000; i++) {
 			// finding protocols Subfolders
 			protocol = true;
-			File protocolsubfolder = new File(path.toString() + "/" + protocolName + "/"
-					+ toProtocolDigits(i + ""));
+			File protocolsubfolder = new File(path.toString() + "/"
+					+ protocolName + "/" + toProtocolDigits(i + ""));
 			if (!protocolsubfolder.exists()) {
 				break;
 			}
@@ -465,8 +487,13 @@ public class SortAlgorithm {
 		File test = new File(path.toString());
 		if (!test.exists()) {
 			try {
-				Files.copy(new File(input).toPath(), test.toPath(),
-						StandardCopyOption.REPLACE_EXISTING);
+				if (move) {
+					Files.move(new File(input).toPath(), test.toPath(),
+							StandardCopyOption.REPLACE_EXISTING);
+				} else {
+					Files.copy(new File(input).toPath(), test.toPath(),
+							StandardCopyOption.REPLACE_EXISTING);
+				}
 				copyd++;
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -496,7 +523,7 @@ public class SortAlgorithm {
 				if (missing.get(patient.getName()) == null) {
 					missing.put(patient.getName(), new ArrayList<Integer>());
 				}
-				if (index.get(patient.getName()) == null){
+				if (index.get(patient.getName()) == null) {
 					index.put(patient.getName(), 0);
 				}
 				File[] newlist = patient.listFiles();
@@ -504,7 +531,8 @@ public class SortAlgorithm {
 					continue;
 				}
 				for (File protocol : newlist) {
-					if (protocol.getName().length()< protocol_digits+1 || protocol.getName().charAt(protocol_digits) != '_'){
+					if (protocol.getName().length() < protocol_digits + 1
+							|| protocol.getName().charAt(protocol_digits) != '_') {
 						continue;
 					}
 					try {
@@ -531,25 +559,26 @@ public class SortAlgorithm {
 						} catch (NumberFormatException e) {
 							continue;
 						}
-						int i = 1;
-						while (true) {
-							if (!protocolnames.containsKey(patient
-									.getAbsolutePath()
-									+ "/"
-									+ protocol.getName().substring(
-											protocol_digits + 1,
-											protocol.getName().length()) + i)) {
-								protocolnames.put(
-										patient.getAbsolutePath()
-												+ "/"
-												+ protocol.getName().substring(
-														protocol_digits + 1,
-														protocol.getName()
-																.length()) + i,
-										test);
+						KeyMap info[] = { KeyMap.KEY_SERIES_INSTANCE_UID,
+								KeyMap.KEY_PATIENTS_BIRTH_DATE };
+						String[] att = null;
+						for (File dicom : protocol.listFiles()) {
+							if (dicom.getAbsolutePath().endsWith(".dcm")) {
+								att = Image.getAttributesDicom(
+										dicom.getAbsolutePath(), info);
 								break;
 							}
-							i++;
+						}
+						while (true) {
+							String key = patient.getName()
+									+ protocol.getName().substring(
+											protocol_digits + 1,
+											protocol.getName().length())
+									+ att[0] + att[1];
+							if (!protocolnames.containsKey(key)) {
+								protocolnames.put(key, test);
+								break;
+							}
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -580,55 +609,83 @@ public class SortAlgorithm {
 		String imageNumber = att[2];
 		String instanceUID = att[3];
 		String birthDate = att[4];
-		
+
 		// Check existing
 		StringBuilder path = new StringBuilder();
 		path.append(dir + "/" + patientID);
 		existOrCreate(path);
-		int i;
-		loop: for (i = 1; i < 1000; i++) {
-			if (!protocolnames.containsKey(path.toString() + "/" + protocolName + i)) {
-				if (missing.get(patientID) == null || missing.get(patientID).isEmpty()) {
-					try {
-						index.put(patientID, index.get(patientID) + 1);
-					} catch (NullPointerException e) {
-						index.put(patientID, 1);
-					}
-					protocolnames.put(path.toString() + "/" + att[1] + i,
-							toProtocolDigits(index.get(patientID) + ""));
-				} else {
-					protocolnames.put(path.toString() + "/" + att[1] + i,
-							toProtocolDigits(missing.get(patientID).get(0) + ""));
-					missing.get(patientID).remove(0);
+		// int i;
+		// loop: for (i = 1; i < 1000; i++) {
+		// if (!protocolnames.containsKey(path.toString() + "/" + protocolName
+		// + instanceUID + birthDate)) {
+		// if (missing.get(patientID) == null
+		// || missing.get(patientID).isEmpty()) {
+		// try {
+		// index.put(patientID, index.get(patientID) + 1);
+		// } catch (NullPointerException e) {
+		// index.put(patientID, 1);
+		// }
+		// protocolnames.put(path.toString() + "/" + protocolName +instanceUID +
+		// birthDate,
+		// toProtocolDigits(index.get(patientID) + ""));
+		// } else {
+		// protocolnames
+		// .put(path.toString() + "/" + protocolName + i,
+		// toProtocolDigits(missing.get(patientID)
+		// .get(0) + ""));
+		// missing.get(patientID).remove(0);
+		// }
+		//
+		// }
+		//
+		// File test2 = new File(path.toString()
+		// + "/"
+		// + protocolnames.get(path.toString() + "/" + protocolName
+		// + instanceUID + birthDate) + "_" + protocolName);
+		// if (!test2.exists()) {
+		// break;
+		// }
+		// //Comparing dicom info
+		// for (int j = 1; j < 1000; j++) {
+		// File test3 = new File(test2.getAbsolutePath() + "/"
+		// + toImgDigits("" + j) + ".dcm");
+		// if (test3.exists()) {
+		// KeyMap twoElement[] = { KeyMap.KEY_SERIES_INSTANCE_UID,
+		// KeyMap.KEY_PATIENTS_BIRTH_DATE };
+		// String[] comparing = Image.getAttributesDicom(
+		// test3.getAbsolutePath(), twoElement);
+		// if (instanceUID.equals(comparing[0])
+		// && birthDate.equals(comparing[1])) {
+		// break loop;
+		// } else {
+		// continue loop;
+		// }
+		// }
+		// }
+		// }
+		if (!protocolnames.containsKey(patientID + protocolName + instanceUID
+				+ birthDate)) {
+			String numb;
+			if (missing.get(patientID) != null
+					&& missing.get(patientID).size() != 0) {
+				numb = toProtocolDigits(missing.get(patientID).get(0) + "");
+				missing.get(patientID).remove(0);
+			} else {
+				if (index.get(patientID) == null) {
+					index.put(patientID, 1);
 				}
-
-			}
-
-			File test2 = new File(path.toString() + "/"
-					+ protocolnames.get(path.toString() + "/" + protocolName + i)
-					+ "_" + protocolName);
-			if (!test2.exists()) {
-				break;
-			}
-			for (int j = 1; j < 1000; j++) {
-				File test3 = new File(test2.getAbsolutePath() + "/"
-						+ toImgDigits("" + j) + ".dcm");
-				if (test3.exists()) {
-					KeyMap twoElement[] = { KeyMap.KEY_SERIES_INSTANCE_UID,
-							KeyMap.KEY_PATIENTS_BIRTH_DATE };
-					String[] comparing = Image.getAttributesDicom(
-							test3.getAbsolutePath(), twoElement);
-					if (instanceUID.equals(comparing[0])
-							&& birthDate.equals(comparing[1])) {
-						break loop;
-					} else {
-						continue loop;
-					}
+				if (index.get(patientID) == 0) {
+					index.put(patientID, 1);
 				}
+				numb = toProtocolDigits(index.get(patientID) + "");
+				index.put(patientID, index.get(patientID) + 1);
 			}
+			protocolnames.put(patientID + protocolName + instanceUID
+					+ birthDate, numb);
 		}
-		path.append("/" + protocolnames.get(path.toString() + "/" + protocolName + i)
-				+ "_" + protocolName);
+		path.append("/"
+				+ protocolnames.get(patientID + protocolName + instanceUID
+						+ birthDate) + "_" + protocolName);
 		existOrCreate(path);
 		path.append("/" + toImgDigits(imageNumber) + ".dcm");
 
@@ -636,8 +693,13 @@ public class SortAlgorithm {
 		File test = new File(path.toString());
 		if (!test.exists()) {
 			try {
-				Files.copy(new File(input).toPath(), test.toPath(),
-						StandardCopyOption.REPLACE_EXISTING);
+				if (move) {
+					Files.move(new File(input).toPath(), test.toPath(),
+							StandardCopyOption.REPLACE_EXISTING);
+				} else {
+					Files.copy(new File(input).toPath(), test.toPath(),
+							StandardCopyOption.REPLACE_EXISTING);
+				}
 				copyd++;
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -660,4 +722,5 @@ public class SortAlgorithm {
 		deltaTimeHelp = atm;
 		return time;
 	}
+
 }

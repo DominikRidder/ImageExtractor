@@ -46,11 +46,12 @@ public class Main {
 		 sa.useSubfolders(false);
 		 sa.setImgDigits(4);
 		 sa.setProtocolDigits(3);
-		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms/",
-		 "/opt/dridder_local/TestDicoms/TestSort");
+		 sa.setFilesOptionMove();
+		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms/TestSort6",
+		 "/opt/dridder_local/TestDicoms/TestSort6");
 
-		 sa.useSubfolders(true);
-		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms",
-		 "/opt/dridder_local/TestDicoms/TestSort2");
+//		 sa.useSubfolders(true);
+//		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms",
+//		 "/opt/dridder_local/TestDicoms/TestSort2");
 	}
 }

@@ -8,10 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.Box;
@@ -25,7 +22,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
@@ -196,7 +192,8 @@ public class Gui extends JFrame implements ActionListener {
 					if (!lasttime_number.equals(index.getText())) {
 						lasttime_number = index.getText();
 						displayAttributes();
-						image.getGraphics().drawImage(vol.getSlice(Integer.parseInt(index.getText())).getData().getScaledInstance(image.getWidth(), image.getHeight(), BufferedImage.SCALE_SMOOTH), 0, 0, null);
+						image.getGraphics().drawImage(vol.getSlice(Integer.parseInt(index.getText())).getData().getScaledInstance(image.getWidth(), image.getHeight(), BufferedImage.SCALE_FAST
+								), 0, 0, null);
 						repaint();
 					}
 				} catch (NumberFormatException | NullPointerException e) {
