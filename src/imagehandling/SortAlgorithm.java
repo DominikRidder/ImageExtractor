@@ -341,15 +341,15 @@ public class SortAlgorithm {
 									continue;
 								}
 								protocolSubfolder.deleteOnExit();
-								for (File f4 : protocolSubfolder.listFiles()) {
-									if (f4.getAbsolutePath().endsWith(".dcm")) {
+								for (File dicoms : protocolSubfolder.listFiles()) {
+									if (dicoms.getAbsolutePath().endsWith(".dcm")) {
 										try {
 											Files.move(
-													f4.toPath(),
+													dicoms.toPath(),
 													new File(protocolNameFolder
 															.getAbsoluteFile()
 															+ "/"
-															+ f4.getName())
+															+ dicoms.getName())
 															.toPath(),
 													StandardCopyOption.REPLACE_EXISTING);
 										} catch (IOException e) {
@@ -415,30 +415,37 @@ public class SortAlgorithm {
 				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID,
 				KeyMap.KEY_PATIENTS_BIRTH_DATE };
 		String[] att = Image.getAttributesDicom(input, info);
-
+		String patientID = att[0];
+		String protocolName = att[1];
+		String imageNumber = att[2];
+		String instanceUID = att[3];
+		String birthDate = att[4];
+		
 		// Check existing
 		boolean protocol = true;
 		StringBuilder path = new StringBuilder();
-		path.append(dir + "/" + att[0]);
+		path.append(dir + "/" + patientID);
 		existOrCreate(path);
 		int i;
 		loop: for (i = 1; i < 1000; i++) {
+			// finding protocols Subfolders
 			protocol = true;
-			File test2 = new File(path.toString() + "/" + att[1] + "/"
+			File protocolsubfolder = new File(path.toString() + "/" + protocolName + "/"
 					+ toProtocolDigits(i + ""));
-			if (!test2.exists()) {
+			if (!protocolsubfolder.exists()) {
 				break;
 			}
 			for (int j = 1; j < 1000; j++) {
-				File test3 = new File(test2.getAbsolutePath() + "/"
+				// Try to find a Dicom for the comparission.
+				File dicom = new File(protocolsubfolder.getAbsolutePath() + "/"
 						+ toImgDigits("" + j) + ".dcm");
-				if (test3.exists()) {
+				if (dicom.exists()) {
 					KeyMap twoElement[] = { KeyMap.KEY_SERIES_INSTANCE_UID,
 							KeyMap.KEY_PATIENTS_BIRTH_DATE };
 					String[] comparing = Image.getAttributesDicom(
-							test3.getAbsolutePath(), twoElement);
-					if (att[3].equals(comparing[0])
-							&& att[4].equals(comparing[1])) {
+							dicom.getAbsolutePath(), twoElement);
+					if (instanceUID.equals(comparing[0])
+							&& birthDate.equals(comparing[1])) {
 						break loop;
 					}
 					continue loop;
@@ -446,13 +453,13 @@ public class SortAlgorithm {
 			}
 		}
 
-		path.append("/" + att[1]);
+		path.append("/" + protocolName);
 		existOrCreate(path);
 		if (protocol) {
 			path.append("/" + toProtocolDigits(i + ""));
 			existOrCreate(path);
 		}
-		path.append("/" + toImgDigits(att[2]) + ".dcm");
+		path.append("/" + toImgDigits(imageNumber) + ".dcm");
 
 		// Copy data
 		File test = new File(path.toString());
@@ -568,33 +575,38 @@ public class SortAlgorithm {
 				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID,
 				KeyMap.KEY_PATIENTS_BIRTH_DATE };
 		String[] att = Image.getAttributesDicom(input, info);
-
+		String patientID = att[0];
+		String protocolName = att[1];
+		String imageNumber = att[2];
+		String instanceUID = att[3];
+		String birthDate = att[4];
+		
 		// Check existing
 		StringBuilder path = new StringBuilder();
-		path.append(dir + "/" + att[0]);
+		path.append(dir + "/" + patientID);
 		existOrCreate(path);
 		int i;
 		loop: for (i = 1; i < 1000; i++) {
-			if (!protocolnames.containsKey(path.toString() + "/" + att[1] + i)) {
-				if (missing.get(att[0]) == null || missing.get(att[0]).isEmpty()) {
+			if (!protocolnames.containsKey(path.toString() + "/" + protocolName + i)) {
+				if (missing.get(patientID) == null || missing.get(patientID).isEmpty()) {
 					try {
-						index.put(att[0], index.get(att[0]) + 1);
+						index.put(patientID, index.get(patientID) + 1);
 					} catch (NullPointerException e) {
-						index.put(att[0], 1);
+						index.put(patientID, 1);
 					}
 					protocolnames.put(path.toString() + "/" + att[1] + i,
-							toProtocolDigits(index.get(att[0]) + ""));
+							toProtocolDigits(index.get(patientID) + ""));
 				} else {
 					protocolnames.put(path.toString() + "/" + att[1] + i,
-							toProtocolDigits(missing.get(att[0]).get(0) + ""));
-					missing.get(att[0]).remove(0);
+							toProtocolDigits(missing.get(patientID).get(0) + ""));
+					missing.get(patientID).remove(0);
 				}
 
 			}
 
 			File test2 = new File(path.toString() + "/"
-					+ protocolnames.get(path.toString() + "/" + att[1] + i)
-					+ "_" + att[1]);
+					+ protocolnames.get(path.toString() + "/" + protocolName + i)
+					+ "_" + protocolName);
 			if (!test2.exists()) {
 				break;
 			}
@@ -606,8 +618,8 @@ public class SortAlgorithm {
 							KeyMap.KEY_PATIENTS_BIRTH_DATE };
 					String[] comparing = Image.getAttributesDicom(
 							test3.getAbsolutePath(), twoElement);
-					if (att[3].equals(comparing[0])
-							&& att[4].equals(comparing[1])) {
+					if (instanceUID.equals(comparing[0])
+							&& birthDate.equals(comparing[1])) {
 						break loop;
 					} else {
 						continue loop;
@@ -615,10 +627,10 @@ public class SortAlgorithm {
 				}
 			}
 		}
-		path.append("/" + protocolnames.get(path.toString() + "/" + att[1] + i)
-				+ "_" + att[1]);
+		path.append("/" + protocolnames.get(path.toString() + "/" + protocolName + i)
+				+ "_" + protocolName);
 		existOrCreate(path);
-		path.append("/" + toImgDigits(att[2]) + ".dcm");
+		path.append("/" + toImgDigits(imageNumber) + ".dcm");
 
 		// Copy data
 		File test = new File(path.toString());

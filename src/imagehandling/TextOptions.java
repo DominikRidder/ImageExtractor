@@ -13,8 +13,9 @@ public class TextOptions {
 	public static final int SEARCH_IN_ATTRIBUTE_VALUE = 3;
 	
 	public static final int RETURN_ATTRIBUTE_NUMBER = -1;
-	public static final int RETURN_ATTRIBUTE_NAME = -2;
-	public static final int RETURN_ATTRIBUTE_VALUE = -3;
+	public static final int RETURN_ATTRIBUTE_NAME_WITHOUT_COLON = -2;
+	public static final int RETURN_ATTRIBUTE_NAME_WITH_COLON = -3;
+	public static final int RETURN_ATTRIBUTE_VALUE = -4;
 	
 	private ArrayList<Integer> searchoptions;
 	private ArrayList<Integer> returnoptions;

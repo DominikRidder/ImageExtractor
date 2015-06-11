@@ -46,7 +46,7 @@ public class Main {
 		 sa.useSubfolders(false);
 		 sa.setImgDigits(4);
 		 sa.setProtocolDigits(3);
-		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms/30000",
+		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms/",
 		 "/opt/dridder_local/TestDicoms/TestSort");
 
 		 sa.useSubfolders(true);

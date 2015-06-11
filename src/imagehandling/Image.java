@@ -115,9 +115,9 @@ public class Image implements Comparable<Image> {
 		return path;
 	}
 
-	public String getAttribute(String key, TextOptions to) {
+	public String getAttribute(String key) {
 		if (key.contains("*") || key.contains("?")) {
-			return getAttribute(Image.getKeyWords(key), to);
+			return getAttribute(Image.getKeyWords(key));
 		}
 		String attribute = "";
 		switch (type) {
@@ -152,7 +152,7 @@ public class Image implements Comparable<Image> {
 	}
 
 	public String[] getAttributeList(String key){
-		return getAttribute(key, null).split("\n");
+		return getAttribute(key).split("\n");
 	}
 	
 	/**
@@ -333,9 +333,9 @@ public class Image implements Comparable<Image> {
 
 	// Comparing by ImageNumber
 	public int compareTo(Image o) {
-		int thisnumb = Integer.parseInt(this.getAttribute("image number", null)
+		int thisnumb = Integer.parseInt(this.getAttribute("image number")
 				.replace(" ", "").replace("\n", "").split(":")[1]);
-		int objnumb = Integer.parseInt(o.getAttribute("image number", null)
+		int objnumb = Integer.parseInt(o.getAttribute("image number")
 				.replace(" ", "").replace("\n", "").split(":")[1]);
 		if (thisnumb > objnumb) {
 			return 1;

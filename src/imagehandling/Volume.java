@@ -239,7 +239,7 @@ public class Volume {
 		String[] att = new String[slices.size()];
 		int index = 0;
 		for (int slice : slices.toArray(a)) {
-			att[index++] = this.slices.get(slice).getAttribute(key, null);
+			att[index++] = this.slices.get(slice).getAttribute(key);
 		}
 		return att;
 	}
@@ -277,7 +277,7 @@ public class Volume {
 					.println("The given element is 'null'. Cant search without a String.");
 			return "<<no key given>>";
 		}
-		return slices.get(slice).getAttribute(key, null);
+		return slices.get(slice).getAttribute(key);
 	}
 
 	/**
