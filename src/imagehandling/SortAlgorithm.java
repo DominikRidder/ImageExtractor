@@ -62,7 +62,7 @@ public class SortAlgorithm {
 	 * The HashMap protocolnames is used, if subfolders is false. The
 	 * protocolnames contains the praefix to a given protocol name.
 	 */
-	private HashMap<String, String> protocolnames = new HashMap<String, String>();
+	private HashMap<String, String> protocolnames = new HashMap<String, String>(100);
 
 	/**
 	 * Missing is used, to fill gaps in the protocol praefix (in the no
@@ -570,11 +570,9 @@ public class SortAlgorithm {
 							}
 						}
 						while (true) {
-							String key = patient.getName()
-									+ protocol.getName().substring(
-											protocol_digits + 1,
-											protocol.getName().length())
-									+ att[0] + att[1];
+							String key = patient.getName()+protocol.getName().substring(
+									protocol_digits + 1,
+									protocol.getName().length())+att[0]+att[1];
 							if (!protocolnames.containsKey(key)) {
 								protocolnames.put(key, test);
 								break;
@@ -663,8 +661,7 @@ public class SortAlgorithm {
 		// }
 		// }
 		// }
-		if (!protocolnames.containsKey(patientID + protocolName + instanceUID
-				+ birthDate)) {
+		if (!protocolnames.containsKey(patientID+protocolName+instanceUID+birthDate)) {
 			String numb;
 			if (missing.get(patientID) != null
 					&& missing.get(patientID).size() != 0) {
@@ -680,12 +677,10 @@ public class SortAlgorithm {
 				numb = toProtocolDigits(index.get(patientID) + "");
 				index.put(patientID, index.get(patientID) + 1);
 			}
-			protocolnames.put(patientID + protocolName + instanceUID
-					+ birthDate, numb);
+			protocolnames.put(patientID+protocolName+instanceUID+birthDate, numb);
 		}
 		path.append("/"
-				+ protocolnames.get(patientID + protocolName + instanceUID
-						+ birthDate) + "_" + protocolName);
+				+ protocolnames.get(patientID+protocolName+instanceUID+birthDate) + "_" + protocolName);
 		existOrCreate(path);
 		path.append("/" + toImgDigits(imageNumber) + ".dcm");
 
@@ -707,7 +702,7 @@ public class SortAlgorithm {
 		}
 
 	}
-
+	
 	/**
 	 * This method is used, to get the time diffence from the last call of this
 	 * method and this time. If you use this method for the first time, you may
