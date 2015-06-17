@@ -2,9 +2,9 @@ package imagehandling;
 
 public class Main {
 	public static void main(String agrs[]) {
-//		String filepath = "/opt/dridder_local/TestDicoms/Testfolder";
-//		Volume vol = new Volume(filepath);
-
+		String filepath = "/opt/dridder_local/TestDicoms/Testfolder";
+		Volume vol = new Volume(filepath);
+		vol.extractData();
 		
 		// // try to get a Attribute
 		// String str = vol
@@ -42,13 +42,13 @@ public class Main {
 		// + vol.getSlice(0).getAttribute(KeyMap.KEY_ACQUISITION_DATE)
 		// + "<<");
 
-		 SortAlgorithm sa = new SortAlgorithm();
-		 sa.useSubfolders(false);
-		 sa.setImgDigits(4);
-		 sa.setProtocolDigits(3);
-		 sa.setFilesOptionMove();
-		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms/TestSort6",
-		 "/opt/dridder_local/TestDicoms/TestSort6");
+//		 SortAlgorithm sa = new SortAlgorithm();
+//		 sa.useSubfolders(false);
+//		 sa.setImgDigits(4);
+//		 sa.setProtocolDigits(3);
+//		 sa.setFilesOptionMove();
+//		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms/TestSort6",
+//		 "/opt/dridder_local/TestDicoms/TestSort6");
 
 //		 sa.useSubfolders(true);
 //		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms",

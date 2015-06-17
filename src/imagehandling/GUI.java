@@ -53,6 +53,9 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		public String getClassName() {
 			return "SorterTab";
 		}
+		
+		
+		
 	}
 
 	class VolumeTab extends JPanel implements ActionListener, MyTab {
@@ -348,7 +351,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		pnlTab.setOpaque(false);
 		JLabel lblTitle = new JLabel(title);
 		JButton btnClose = new JButton("x");
-		btnClose.setMaximumSize(new Dimension(30, 30));
+		btnClose.setMaximumSize(new Dimension(30, 15));
 		btnClose.setMargin(new Insets(0, 0, 0, 0));
 
 		GridBagConstraints gbc = new GridBagConstraints();
