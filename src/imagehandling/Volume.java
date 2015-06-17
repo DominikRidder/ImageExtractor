@@ -1,5 +1,7 @@
 package imagehandling;
 
+import imagehandling.GUI.VolumeTab;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -60,7 +62,7 @@ public class Volume {
 	 * @param path
 	 * @param gui
 	 */
-	protected Volume(String path, Gui gui) {
+	protected Volume(String path, GUI gui) {
 		slices = new ArrayList<Image>();
 		this.path = path;
 
@@ -81,6 +83,43 @@ public class Volume {
 			}
 		}
 
+		// sort images
+		Collections.sort(slices);
+	}
+	/**
+	 * This construktur is used by the gui class. The diffence is, that the
+	 * normal construktur would call System.exit(1) if the Volume path is not
+	 * correct, while this method throws a RuntimeException.
+	 * 
+	 * @param path
+	 * @param gui
+	 */
+	protected Volume(String path, VolumeTab volumetab) {
+		slices = new ArrayList<Image>();
+		this.path = path;
+
+		// getting the files inhabited in the path
+		File file = new File(path);
+		File[] list = file.listFiles();
+
+		if (list == null) {
+			throw new RuntimeException(
+					"The given Volume path seems to be not correct. Please check the path.");
+		}
+
+		// adding the Images
+		for (File l : list) {
+			try {
+				slices.add(new Image(l.getAbsolutePath()));
+			} catch (RuntimeException e) {
+			}
+		}
+
+		if (size() == 0){
+			throw new RuntimeException(
+					"The given Volume path seems to be not correct. Please check the path.");
+		}
+		
 		// sort images
 		Collections.sort(slices);
 	}
