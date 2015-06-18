@@ -40,22 +40,81 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 	class SorterTab extends JPanel implements ActionListener, MyTab {
 
+		SortAlgorithm sa;
+		JTextArea output;
+		JTextField input1;
+		JTextField outputfolder;
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 1L;
 
-		@Override
-		public void actionPerformed(ActionEvent e) {
+		public SorterTab() {
+			sa = new SortAlgorithm();
+			sa.setFilesOptionCopy();
+			sa.setImgDigits(4);
+			sa.setProtocolDigits(3);
+			
+			//upperleft rectangle
+			JTextField upperleft_header = new JTextField(
+					"Search in and Sort to:");
+			setfinalSize(upperleft_header, new Dimension(200, 30));
+			upperleft_header.setEditable(false);
+			
+			input1 = new JTextField("/input/dir");
+			setfinalSize(input1, new Dimension(200,30));
 
+			JPanel upperleft = new JPanel();
+			upperleft.setLayout(new BoxLayout(upperleft, BoxLayout.PAGE_AXIS));
+			setfinalSize(upperleft, new Dimension(550, 250));
+			upperleft.add(upperleft_header);
+			upperleft.add(input1);
+
+			//upperright rectangle
+			JTextField upperright_header = new JTextField("Target Folder:");
+			setfinalSize(upperright_header, new Dimension(100, 30));
+			upperright_header.setEditable(false);
+			
+			outputfolder = new JTextField("/output/dir");
+			setfinalSize(outputfolder, new Dimension(200,30));
+			
+			JButton sort = new JButton("Start Sort");
+			sort.addActionListener(this);
+			
+			JPanel upperright = new JPanel();
+			upperright
+					.setLayout(new BoxLayout(upperright, BoxLayout.PAGE_AXIS));
+			setfinalSize(upperright, new Dimension(550, 250));
+			upperright.add(upperright_header);
+			upperright.add(outputfolder);
+			upperright.add(sort);
+
+			output = new JTextArea();
+			output.setEditable(false);
+			setfinalSize(output, new Dimension(1100, 250));
+
+			JPanel upper = new JPanel();
+			upper.setLayout(new BoxLayout(upper, BoxLayout.LINE_AXIS));
+			upper.add(upperleft);
+			upper.add(upperright);
+
+			this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+			this.add(upper);
+			this.add(output);
+		}
+
+		
+		public void actionPerformed(ActionEvent e) {
+			switch(e.getActionCommand()){
+			case "Start Sort": sa.searchAndSortIn(input1.getText(), outputfolder.getText());
+			default:break;
+			}
 		}
 
 		public String getClassName() {
 			return "SorterTab";
 		}
-		
-		
-		
+
 	}
 
 	class VolumeTab extends JPanel implements ActionListener, MyTab {
@@ -65,73 +124,79 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 */
 		private static final long serialVersionUID = 1L;
 
-		JPanel att = new JPanel();
+		private JPanel att = new JPanel();
 
-		JPanel dir = new JPanel();
+		private JPanel dir = new JPanel();
 
-		JPanel img = new JPanel();
+		private JPanel img = new JPanel();
 
-		JPanel panel = new JPanel();
+		private JPanel panel = new JPanel();
 
-		JPanel toppanel = new JPanel();
+		private JPanel toppanel = new JPanel();
 
-		JLabel imagepanel;
+		private JLabel imagepanel;
 
-		ImageIcon ic;
+		private ImageIcon ic;
 
-		int change = 0;
+		private int change = 0;
 
-		JTextField filter = new JTextField("");
+		private JTextField filter = new JTextField("");
 
-		JTextField index = new JTextField("0");
+		private JTextField index = new JTextField("0");
 
-		JTextField path = new JTextField("/opt/dridder_local/TestDicoms/");
+		private JTextField max = new JTextField("/0");
 
-		JTextField text_slice = new JTextField("0");
+		private JTextField path = new JTextField(
+				"/opt/dridder_local/TestDicoms/");
 
-		JTextField current_path = new JTextField("Volume: <<not set>>");
+		private JTextField current_path = new JTextField("Volume: <<not set>>");
 
-		JTextArea output = new JTextArea("status");
+		private JTextArea output = new JTextArea("status");
 
-		JFileChooser chooser = new JFileChooser();
+		private JFileChooser chooser = new JFileChooser();
 
-		Volume vol;
+		private Volume vol;
 
-		BufferedImage image = new BufferedImage(450, 450,
+		private BufferedImage image = new BufferedImage(450, 450,
 				BufferedImage.TYPE_BYTE_GRAY);
 
-		boolean displayAll = true;
+		private boolean displayAll = true;
 
-		JButton apply_path;
-		JButton browse_path;
-		JButton show_attributes;
+		private JButton apply_path;
+		private JButton browse_path;
+		private JButton show_attributes;
 
 		public VolumeTab() {
-			JButton apply_path = new JButton("create Volume");
-			JButton browse_path = new JButton("browse");
-			JButton show_attributes = new JButton("Display all Attributes");
+			ic = new ImageIcon(image);
+			imagepanel = new JLabel(ic);
+
+			apply_path = new JButton("create Volume");
+			browse_path = new JButton("browse");
+			show_attributes = new JButton("Display all Attributes");
 			addActionListerners(apply_path, browse_path, show_attributes);
+
+			max.setEditable(false);
+			setfinalSize(max, new Dimension(50, 100));
 
 			JTextField slice = new JTextField("Slice: ");
 			slice.setEditable(false);
+			setfinalSize(slice, new Dimension(50, 100));
+
 			JTextField search = new JTextField("Search:");
 			search.setEditable(false);
-
-			setfinalSize(this, new Dimension(1100, 450));
-			setfinalSize(toppanel, new Dimension(1100, 450));
-			setfinalSize(path, new Dimension(500, 100));
-			setfinalSize(output, new Dimension(100, 1000));
-			setfinalSize(current_path, new Dimension(300, 100));
-			setfinalSize(index, new Dimension(75, 100));
-			setfinalSize(slice, new Dimension(50, 100));
 			setfinalSize(search, new Dimension(50, 100));
+
+			setfinalSize(path, new Dimension(500, 100));
+			setfinalSize(index, new Dimension(75, 100));
 			setfinalSize(show_attributes, new Dimension(500, 100));
 			setfinalSize(filter, new Dimension(500, 100));
-			setfinalSize(panel, new Dimension(650, 1000));
-			setfinalSize(img, new Dimension(500, 500));
 
 			output.setEditable(false);
+			setfinalSize(output, new Dimension(100, 1050));
+
 			current_path.setEditable(false);
+			setfinalSize(current_path, new Dimension(300, 100));
+
 			JScrollPane scroll = new JScrollPane(output);
 			scroll.setPreferredSize(new Dimension(100, 100));
 
@@ -141,34 +206,40 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			chooser.setAcceptAllFileFilterUsed(false);
 
 			panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-			dir.setLayout(new GridLayout(1, 2, 20, 1));
-			att.setLayout(new BoxLayout(att, BoxLayout.LINE_AXIS));
-			img.setLayout(new BoxLayout(img, BoxLayout.LINE_AXIS));
-			toppanel.setLayout(new BoxLayout(toppanel, BoxLayout.LINE_AXIS));
-			this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-			setfinalSize(att, new Dimension(550, 400));
-			setfinalSize(img, new Dimension(1000, 1000));
-			setfinalSize(dir, new Dimension(500, 1000));
-
-			Component[] dirstuff = { browse_path, apply_path };
-			Component[] imgstuff = { current_path,
-					Box.createRigidArea(new Dimension(80, 0)), slice, index,
-					Box.createRigidArea(new Dimension(10, 0)) };
-			Component[] attstuff = { show_attributes,
-					Box.createRigidArea(new Dimension(10, 0)), search, filter };
+			setfinalSize(panel, new Dimension(650, 1000));
 			Component[] panelstuff = {
 					Box.createRigidArea(new Dimension(0, 10)), path, dir, img,
 					att, scroll };
-			addComponents(dir, dirstuff);
-			addComponents(img, imgstuff);
-			addComponents(att, attstuff);
 			addComponents(panel, panelstuff);
+
+			dir.setLayout(new GridLayout(1, 2, 20, 1));
+			setfinalSize(dir, new Dimension(500, 1000));
+			Component[] dirstuff = { browse_path, apply_path };
+			addComponents(dir, dirstuff);
+
+			att.setLayout(new BoxLayout(att, BoxLayout.LINE_AXIS));
+			setfinalSize(att, new Dimension(550, 400));
+			Component[] attstuff = { show_attributes,
+					Box.createRigidArea(new Dimension(10, 0)), search, filter };
+			addComponents(att, attstuff);
+
+			img.setLayout(new BoxLayout(img, BoxLayout.LINE_AXIS));
+			setfinalSize(img, new Dimension(500, 500));
+			Component[] imgstuff = { current_path,
+					Box.createRigidArea(new Dimension(80, 0)), slice, index,
+					max, Box.createRigidArea(new Dimension(10, 0)) };
+			addComponents(img, imgstuff);
+
+			toppanel.setLayout(new BoxLayout(toppanel, BoxLayout.LINE_AXIS));
+			setfinalSize(toppanel, new Dimension(1100, 450));
 			toppanel.add(panel);
-			ic = new ImageIcon(image);
-			imagepanel = new JLabel(ic);
 			toppanel.add(imagepanel);
+
+			this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+			setfinalSize(this, new Dimension(1100, 450));
 			this.add(toppanel);
 
+			// Arrow input reaction:
 			int condition = JComponent.WHEN_IN_FOCUSED_WINDOW;
 			InputMap inputMap = this.getInputMap(condition);
 			ActionMap actionMap = this.getActionMap();
@@ -197,7 +268,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				}
 			});
 
-			setVisible(true);
+			this.setVisible(true);
 		}
 
 		public void displayAttributes() {
@@ -241,6 +312,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 												image.getHeight(),
 												BufferedImage.SCALE_SMOOTH), 0,
 								0, null);
+				max.setText("/" + (vol.size()-1));
 				repaint();
 			} catch (RuntimeException ert) {
 				output.setText("Creating Volume didnt work. Please check the path.");
@@ -277,23 +349,19 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 	private static final long serialVersionUID = 1L;
 
-	JTabbedPane tabber;
+	private JTabbedPane tabber;
 
-	boolean forceEnd;
+	private boolean forceEnd;
 
-	static int windows = 0;
+	private static int windows = 0;
 
-	int tabint = 0;
+	private int tabint = 0;
 
 	public GUI(boolean forceProgrammEndIfThereIsNoWindow) {
 		forceEnd = forceProgrammEndIfThereIsNoWindow;
 		JMenuBar menuBar;
-		JMenu menu /** ,submenu */
-		;
-		JMenuItem /** menuItem, */
-		newGuiWindow, newVolumeTab, newSortTab;
-		// JRadioButtonMenuItem rbMenuItem;
-		// JCheckBoxMenuItem cbMenuItem;
+		JMenu menu;
+		JMenuItem newGuiWindow, newVolumeTab, newSortTab;
 
 		// Create the menu bar.
 		menuBar = new JMenuBar();
@@ -319,7 +387,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		// Menu stuff ends here
 
 		tabber = new JTabbedPane();
-		newTab(new VolumeTab());
+		// newTab(new VolumeTab());
+		newTab(new SorterTab());
 
 		add(tabber);
 		setLocationRelativeTo(null);
@@ -337,8 +406,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		}
 		tabint++;
 		String title = (tabint) + "";
-		if (((MyTab) comp)
-				.getClassName() == "VolumeTab") {
+		if (((MyTab) comp).getClassName() == "VolumeTab") {
 			title += ": Volume";
 		} else {
 			title += ": Sorter";
@@ -411,10 +479,17 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	}
 
 	private void lifeupdate() {
-		VolumeTab actual = (VolumeTab) tabber.getComponentAt(tabber
-				.getSelectedIndex());
-		String lasttime_number = actual.index.getText();
-		String lasttime_filter = actual.filter.getText();
+		VolumeTab actual = null;
+		String lasttime_number = "0";
+		String lasttime_filter = "";
+		if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
+				.getClassName().equals("VolumeTab")) {
+			actual = (VolumeTab) tabber.getComponentAt(tabber
+					.getSelectedIndex());
+			lasttime_number = actual.index.getText();
+			lasttime_filter = actual.filter.getText();
+		}
+
 		while (this.isVisible()) {
 			if (tabber.getTabCount() == 0) {
 				try {
@@ -426,10 +501,15 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 			try {
 				if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-						.getClassName() == "VolumeTab") {
+						.getClassName().equals("VolumeTab")) {
 					actual = (VolumeTab) tabber.getComponentAt(tabber
 							.getSelectedIndex());
 				} else {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e2) {
+						e2.printStackTrace();
+					}
 					continue;
 				}
 			} catch (IndexOutOfBoundsException e) {
