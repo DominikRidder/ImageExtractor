@@ -27,10 +27,12 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 
 public class GUI extends JFrame implements ActionListener, Runnable {
 
@@ -42,8 +44,9 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 		SortAlgorithm sa;
 		JTextArea output;
-		JTextField input1;
-		JTextField outputfolder;
+		JPanel[] rows_left;
+		JPanel[] rows_right;
+		private JFileChooser chooser = new JFileChooser();
 		/**
 		 * 
 		 */
@@ -54,61 +57,204 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			sa.setFilesOptionCopy();
 			sa.setImgDigits(4);
 			sa.setProtocolDigits(3);
-			
-			//upperleft rectangle
+
+			// upperleft rectangle
 			JTextField upperleft_header = new JTextField(
 					"Search in and Sort to:");
-			setfinalSize(upperleft_header, new Dimension(200, 30));
+			setfinalSize(upperleft_header, new Dimension(150, 30));
 			upperleft_header.setEditable(false);
-			
-			input1 = new JTextField("/input/dir");
-			setfinalSize(input1, new Dimension(200,30));
+
+			JPanel header_shifter_left = new JPanel();
+			header_shifter_left.setLayout(new BoxLayout(header_shifter_left,
+					BoxLayout.LINE_AXIS));
+			header_shifter_left.add(upperleft_header);
+			header_shifter_left
+					.add(Box.createRigidArea(new Dimension(1000, 0)));
+
+			JPanel table_header_left = new JPanel();
+			table_header_left.setLayout(new BoxLayout(table_header_left,
+					BoxLayout.LINE_AXIS));
+			table_header_left.add(createText("Status", 100, 30, false));
+			table_header_left.add(createText("Input Dir", 200, 30, false));
+			table_header_left.add(createText("Output Index", 100, 30, false));
 
 			JPanel upperleft = new JPanel();
 			upperleft.setLayout(new BoxLayout(upperleft, BoxLayout.PAGE_AXIS));
 			setfinalSize(upperleft, new Dimension(550, 250));
-			upperleft.add(upperleft_header);
-			upperleft.add(input1);
+			upperleft.add(header_shifter_left);
+			upperleft.add(Box.createRigidArea(new Dimension(0, 10)));
+			upperleft.add(table_header_left);
 
-			//upperright rectangle
-			JTextField upperright_header = new JTextField("Target Folder:");
-			setfinalSize(upperright_header, new Dimension(100, 30));
+			rows_left = new JPanel[5];
+			for (int i = 0; i < rows_left.length; i++) {
+				rows_left[i] = createInputRow();
+				upperleft.add(rows_left[i]);
+			}
+			// -- upperleft end
+
+			// upperright rectangle
+			JTextField upperright_header = new JTextField(
+					"Target Folder and Options:");
+			setfinalSize(upperright_header, new Dimension(175, 30));
 			upperright_header.setEditable(false);
-			
-			outputfolder = new JTextField("/output/dir");
-			setfinalSize(outputfolder, new Dimension(200,30));
-			
+
 			JButton sort = new JButton("Start Sort");
 			sort.addActionListener(this);
-			
+
+			JPanel header_shifter_right = new JPanel();
+			header_shifter_right.setLayout(new BoxLayout(header_shifter_right,
+					BoxLayout.LINE_AXIS));
+			header_shifter_right.add(upperright_header);
+			header_shifter_right.add(Box
+					.createRigidArea(new Dimension(1000, 0)));
+
+			JPanel table_header_right = new JPanel();
+			table_header_right.setLayout(new BoxLayout(table_header_right,
+					BoxLayout.LINE_AXIS));
+			table_header_right.add(createText("Index", 50, 30, false));
+			table_header_right.add(createText("Output Dir", 200, 30, false));
+			table_header_right
+					.add(createText("Protocol Digits", 100, 30, false));
+			table_header_right.add(createText("Image Digits", 100, 30, false));
+
 			JPanel upperright = new JPanel();
 			upperright
 					.setLayout(new BoxLayout(upperright, BoxLayout.PAGE_AXIS));
 			setfinalSize(upperright, new Dimension(550, 250));
-			upperright.add(upperright_header);
-			upperright.add(outputfolder);
+			upperright.add(header_shifter_right);
+			upperright.add(Box.createRigidArea(new Dimension(0, 10)));
+			upperright.add(table_header_right);
+			rows_right = new JPanel[5];
+			for (int i = 0; i < rows_left.length; i++) {
+				rows_right[i] = createOutputRow(i + 1);
+				upperright.add(rows_right[i]);
+			}
 			upperright.add(sort);
+			// -- upperright end
 
 			output = new JTextArea();
 			output.setEditable(false);
 			setfinalSize(output, new Dimension(1100, 250));
 
+			JScrollPane scroll = new JScrollPane(output);
+			setfinalSize(scroll, new Dimension(1100, 250));
+
+			JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
+			setfinalSize(separator, new Dimension(1, 250));
+
 			JPanel upper = new JPanel();
 			upper.setLayout(new BoxLayout(upper, BoxLayout.LINE_AXIS));
 			upper.add(upperleft);
+			upper.add(separator);
 			upper.add(upperright);
 
 			this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 			this.add(upper);
-			this.add(output);
+			this.add(scroll);
 		}
 
-		
+		private JPanel createOutputRow(int index) {
+			JPanel row = new JPanel();
+			row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
+			row.add(createText("" + index, 50, 30, false));
+			row.add(createText("", 200, 30, true));
+			row.add(createText("3", 100, 30, true));
+			row.add(createText("4", 100, 30, true));
+			return row;
+		}
+
+		private JPanel createInputRow() {
+			JPanel row = new JPanel();
+			row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
+			row.add(createText("Undefined", 100, 30, false));
+			row.add(createText("", 200, 30, true));
+			row.add(createText("", 100, 30, true));
+			return row;
+		}
+
+		private JTextField createText(String text, int width, int height,
+				boolean editable) {
+			JTextField jtf = new JTextField(text);
+			setfinalSize(jtf, new Dimension(width, height));
+			jtf.setEditable(editable);
+			return jtf;
+		}
+
 		public void actionPerformed(ActionEvent e) {
-			switch(e.getActionCommand()){
-			case "Start Sort": sa.searchAndSortIn(input1.getText(), outputfolder.getText());
-			default:break;
+			switch (e.getActionCommand()) {
+			case "Start Sort":
+				sort();
+			default:
+				break;
 			}
+		}
+
+		private void sort() {
+			for (int i = 0; i < rows_left.length; i++) {
+				Component[] left_stuff = rows_left[i].getComponents();
+				JTextField status = (JTextField) left_stuff[0];
+				status.setText("Unchecked");
+			}
+			for (int i = 0; i < rows_left.length; i++) {
+				Component[] left_stuff = rows_left[i].getComponents();
+				JTextField status = (JTextField) left_stuff[0];
+				JTextField inputfield = (JTextField) left_stuff[1];
+				JTextField tooutput = (JTextField) left_stuff[2];
+
+				if (inputfield.getText().equals("")) {
+					status.setText("Empty Input");
+					continue;
+				}
+
+				if (tooutput.getText().equals("")) {
+					status.setText("Index Missing");
+				}
+
+				JTextField target;
+				JTextField protocol_digits;
+				JTextField image_digits;
+				try {
+					Component[] right_stuff = rows_right[Integer
+							.parseInt(tooutput.getText()) - 1].getComponents();
+					target = (JTextField) right_stuff[1];
+					protocol_digits = (JTextField) right_stuff[2];
+					image_digits = (JTextField) right_stuff[3];
+				} catch (IndexOutOfBoundsException | NumberFormatException e) {
+					status.setText("Index Err");
+					continue;
+				}
+
+				status.setText("In Progress");
+
+				try {
+					sa.setProtocolDigits(Integer.parseInt(protocol_digits
+							.getText()));
+				} catch (NumberFormatException e) {
+					status.setText("Err Prot. Digits");
+					continue;
+				}
+				
+				try {
+					sa.setImgDigits(Integer.parseInt(image_digits.getText()));
+				} catch (NumberFormatException e) {
+					status.setText("Err Img Digits");
+					continue;
+				}
+				
+				sa.setFilesOptionCopy();
+				status.setText("In Progress...");
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+				}
+				if (sa.searchAndSortIn(inputfield.getText(), target.getText())) {
+					status.setText("Finished");
+				} else {
+					status.setText("Input Err");
+				}
+				 output.setText(output.getText() + "");
+			}
+
 		}
 
 		public String getClassName() {
@@ -312,7 +458,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 												image.getHeight(),
 												BufferedImage.SCALE_SMOOTH), 0,
 								0, null);
-				max.setText("/" + (vol.size()-1));
+				max.setText("/" + (vol.size() - 1));
 				repaint();
 			} catch (RuntimeException ert) {
 				output.setText("Creating Volume didnt work. Please check the path.");
