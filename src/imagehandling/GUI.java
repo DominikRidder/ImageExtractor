@@ -10,6 +10,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -40,12 +44,14 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		public String getClassName();
 	}
 
-	class SorterTab extends JPanel implements ActionListener, MyTab {
-
+	class SorterTab extends JPanel implements ActionListener, MyTab, Runnable {
+		Thread currentSort = null;
 		SortAlgorithm sa;
 		JTextArea output;
 		JPanel[] rows_left;
 		JPanel[] rows_right;
+		ByteArrayOutputStream baos;
+		JScrollPane scroll;
 		private JFileChooser chooser = new JFileChooser();
 		/**
 		 * 
@@ -136,7 +142,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			output.setEditable(false);
 			setfinalSize(output, new Dimension(1100, 250));
 
-			JScrollPane scroll = new JScrollPane(output);
+			scroll = new JScrollPane(output);
 			setfinalSize(scroll, new Dimension(1100, 250));
 
 			JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
@@ -151,13 +157,18 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 			this.add(upper);
 			this.add(scroll);
+
+			// Create a stream to hold the output
+			baos = new ByteArrayOutputStream();
+			PrintStream ps = new PrintStream(baos);
+			sa.setPrintStream(ps);
 		}
 
 		private JPanel createOutputRow(int index) {
 			JPanel row = new JPanel();
 			row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
 			row.add(createText("" + index, 50, 30, false));
-			row.add(createText("", 200, 30, true));
+			row.add(createText("/opt/dridder_local/TestDicoms/TestSort9", 200, 30, true));
 			row.add(createText("3", 100, 30, true));
 			row.add(createText("4", 100, 30, true));
 			return row;
@@ -167,8 +178,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			JPanel row = new JPanel();
 			row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
 			row.add(createText("Undefined", 100, 30, false));
-			row.add(createText("", 200, 30, true));
-			row.add(createText("", 100, 30, true));
+			row.add(createText("/opt/dridder_local/TestDicoms/Testfolder", 200, 30, true));
+			row.add(createText("1", 100, 30, true));
 			return row;
 		}
 
@@ -183,7 +194,18 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		public void actionPerformed(ActionEvent e) {
 			switch (e.getActionCommand()) {
 			case "Start Sort":
-				sort();
+				if (currentSort == null){
+					baos = new ByteArrayOutputStream();
+					PrintStream ps = new PrintStream(baos);
+					sa.setPrintStream(ps);
+					///opt/dridder_local/TestDicoms/Testfolder
+					///opt/dridder_local/TestDicoms/TestSort9
+					Thread t = new Thread(this);
+					t.start();
+					currentSort = t;
+				}else{
+					currentSort.interrupt();
+				}
 			default:
 				break;
 			}
@@ -195,6 +217,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				JTextField status = (JTextField) left_stuff[0];
 				status.setText("Unchecked");
 			}
+
 			for (int i = 0; i < rows_left.length; i++) {
 				Component[] left_stuff = rows_left[i].getComponents();
 				JTextField status = (JTextField) left_stuff[0];
@@ -233,14 +256,14 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					status.setText("Err Prot. Digits");
 					continue;
 				}
-				
+
 				try {
 					sa.setImgDigits(Integer.parseInt(image_digits.getText()));
 				} catch (NumberFormatException e) {
 					status.setText("Err Img Digits");
 					continue;
 				}
-				
+
 				sa.setFilesOptionCopy();
 				status.setText("In Progress...");
 				try {
@@ -250,15 +273,18 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				if (sa.searchAndSortIn(inputfield.getText(), target.getText())) {
 					status.setText("Finished");
 				} else {
-					status.setText("Input Err");
+					status.setText("Input Dir Err");
 				}
-				 output.setText(output.getText() + "");
 			}
-
+			currentSort = null;
 		}
 
 		public String getClassName() {
 			return "SorterTab";
+		}
+
+		public void run() {
+			sort();
 		}
 
 	}
@@ -609,10 +635,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 				tabber.removeTabAt(index);
 
-				// It would probably be worthwhile getting the source
-				// casting it back to a JButton and removing
-				// the action handler reference ;)
-
 			}
 
 		}
@@ -624,7 +646,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		p.setMaximumSize(d);
 	}
 
-	private void lifeupdate() {
+	private void updateVolume() {
 		VolumeTab actual = null;
 		String lasttime_number = "0";
 		String lasttime_filter = "";
@@ -638,12 +660,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 		while (this.isVisible()) {
 			if (tabber.getTabCount() == 0) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				continue;
+				break;
 			}
 			try {
 				if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
@@ -651,12 +668,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					actual = (VolumeTab) tabber.getComponentAt(tabber
 							.getSelectedIndex());
 				} else {
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e2) {
-						e2.printStackTrace();
-					}
-					continue;
+					break;
 				}
 			} catch (IndexOutOfBoundsException e) {
 				continue;
@@ -706,6 +718,79 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 						.setText(""
 								+ (Integer.parseInt(actual.index.getText()) + actual.change));
 				actual.change = 0;
+			}
+		}
+	}
+
+	private void updateSort() {
+		SorterTab actual = null;
+		if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
+				.getClassName().equals("SorterTab")) {
+			actual = (SorterTab) tabber.getComponentAt(tabber
+					.getSelectedIndex());
+		}
+
+		while (this.isVisible()) {
+			if (tabber.getTabCount() == 0) {
+				break;
+			}
+			try {
+				if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
+						.getClassName().equals("SorterTab")) {
+					actual = (SorterTab) tabber.getComponentAt(tabber
+							.getSelectedIndex());
+				} else {
+					break;
+				}
+			} catch (IndexOutOfBoundsException e) {
+				continue;
+			}
+				
+			try {
+				actual.output.setText(actual.baos.toString());
+				int i = actual.scroll.getVerticalScrollBar().getMaximum();
+				actual.scroll.getVerticalScrollBar().setValue(i);
+			} catch (NullPointerException e) {
+
+			} finally {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private void lifeupdate() {
+		while (this.isVisible()) {
+			if (tabber.getTabCount() == 0) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				continue;
+			}
+			try {
+				if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
+						.getClassName().equals("VolumeTab")) {
+					updateVolume();
+				} else if (((MyTab) tabber.getComponentAt(tabber
+						.getSelectedIndex())).getClassName()
+						.equals("SorterTab")) {
+					updateSort();
+				} else {
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e2) {
+						e2.printStackTrace();
+					}
+					continue;
+				}
+			} catch (IndexOutOfBoundsException e) {
+				continue;
 			}
 		}
 	}

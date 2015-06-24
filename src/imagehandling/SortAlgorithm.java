@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -15,6 +16,11 @@ import javax.swing.plaf.synth.SynthSpinnerUI;
 
 public class SortAlgorithm {
 
+	/**
+	 * With this value, you can change the output stream.
+	 */
+	private PrintStream out = System.out;
+	
 	/**
 	 * This boolean decide, whether the dicoms are moved or if they copied.
 	 */
@@ -62,8 +68,7 @@ public class SortAlgorithm {
 	 * The HashMap protocolnames is used, if subfolders is false. The
 	 * protocolnames contains the praefix to a given protocol name.
 	 */
-	private HashMap<String, String> protocolnames = new HashMap<String, String>(
-			100);
+	private HashMap<String, String> protocolnames;
 
 	/**
 	 * Missing is used, to fill gaps in the protocol praefix (in the no
@@ -138,6 +143,10 @@ public class SortAlgorithm {
 		this.subfolders = subfolders;
 		this.img_digits = img_digits;
 		this.protocol_digits = protocol_digits;
+	}
+
+	public void setPrintStream(PrintStream out) {
+		this.out = out;
 	}
 
 	/**
@@ -227,7 +236,7 @@ public class SortAlgorithm {
 	private void existOrCreate(StringBuilder path) {
 		File test = new File(path.toString());
 		if (!test.exists()) {
-			System.out.println("Creating " + test.getAbsolutePath());
+			out.println("Creating " + test.getAbsolutePath());
 			test.mkdir();
 		}
 	}
@@ -247,11 +256,12 @@ public class SortAlgorithm {
 		deltaTimeHelp = System.currentTimeMillis();
 		double start = deltaTimeHelp;
 		File file = new File(searchin);
+		protocolnames = new HashMap<String, String>(100);
 
 		found = 0;
 		copyd = 0;
 		if (!file.exists() | !file.isDirectory()) {
-			System.out.println("The Given Path seems to be incorrect.");
+			out.println("The Given Path seems to be incorrect.");
 			return false;
 		}
 
@@ -292,7 +302,7 @@ public class SortAlgorithm {
 		} else {
 			operation = "copied";
 		}
-		System.out.println("I found and sorted " + found + " Dicoms in "
+		out.println("I found and sorted " + found + " Dicoms in "
 				+ start / 1000 + " seconds! I " + operation + " " + copyd
 				+ " of them to the Output directory.");
 		return true;
@@ -416,7 +426,7 @@ public class SortAlgorithm {
 					SASInNoSubfoldersSort(path, sortInDir);
 				}
 				if (++found % 50 == 0) {
-					System.out.println("I found and sorted so far " + found
+					out.println("I found and sorted so far " + found
 							+ " Dicoms. (DeltaTime: " + deltaTime()
 							+ " millis.)");
 				}
@@ -571,17 +581,17 @@ public class SortAlgorithm {
 								break;
 							}
 						}
-						while (true) {
-							String key = patient.getName()
-									+ protocol.getName().substring(
-											protocol_digits + 1,
-											protocol.getName().length())
-									+ att[0] + att[1];
-							if (!protocolnames.containsKey(key)) {
-								protocolnames.put(key, test);
-								break;
-							}
+
+						String key = patient.getName()
+								+ protocol.getName().substring(
+										protocol_digits + 1,
+										protocol.getName().length()) + att[0]
+								+ att[1];
+						if (!protocolnames.containsKey(key)) {
+							protocolnames.put(key, test);
+							break;
 						}
+
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
