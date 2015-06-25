@@ -80,6 +80,7 @@ public class Image implements Comparable<Image> {
 		}
 		Collections.sort(words);
 
+		
 		int i = 0;
 		WildcardMatch wm = new WildcardMatch();
 		wm.setCaseSensitive(false);
@@ -114,7 +115,7 @@ public class Image implements Comparable<Image> {
 	public String getPath() {
 		return path;
 	}
-
+	
 	public String getAttribute(String key) {
 		if (key.contains("*") || key.contains("?")) {
 			return getAttribute(Image.getKeyWords(key));

@@ -22,6 +22,8 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -62,13 +64,19 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			sa = new SortAlgorithm();
 			sa.setFilesOptionCopy();
 			sa.setImgDigits(4);
-			sa.setProtocolDigits(3);
+			sa.setProtocolDigits(0);
+
+			chooser.setCurrentDirectory(new java.io.File("$HOME"));
+			chooser.setDialogTitle("Search Path of Volume");
+			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			chooser.setAcceptAllFileFilterUsed(false);
 
 			// upperleft rectangle
 			JTextField upperleft_header = new JTextField(
 					"Search in and Sort to:");
 			setfinalSize(upperleft_header, new Dimension(150, 30));
 			upperleft_header.setEditable(false);
+			upperleft_header.setBorder(null);
 
 			JPanel header_shifter_left = new JPanel();
 			header_shifter_left.setLayout(new BoxLayout(header_shifter_left,
@@ -82,7 +90,9 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					BoxLayout.LINE_AXIS));
 			table_header_left.add(createText("Status", 100, 30, false));
 			table_header_left.add(createText("Input Dir", 200, 30, false));
-			table_header_left.add(createText("Output Index", 100, 30, false));
+			table_header_left.add(createText("Option", 80, 30, false));
+			table_header_left.add(createText("To Output Nr.", 100, 30, false));
+			table_header_left.add(Box.createRigidArea(new Dimension(39, 30)));
 
 			JPanel upperleft = new JPanel();
 			upperleft.setLayout(new BoxLayout(upperleft, BoxLayout.PAGE_AXIS));
@@ -93,7 +103,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 			rows_left = new JPanel[5];
 			for (int i = 0; i < rows_left.length; i++) {
-				rows_left[i] = createInputRow();
+				rows_left[i] = createInputRow(i + 1);
 				upperleft.add(rows_left[i]);
 			}
 			// -- upperleft end
@@ -103,6 +113,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					"Target Folder and Options:");
 			setfinalSize(upperright_header, new Dimension(175, 30));
 			upperright_header.setEditable(false);
+			upperright_header.setBorder(null);
 
 			JButton sort = new JButton("Start Sort");
 			sort.addActionListener(this);
@@ -117,11 +128,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			JPanel table_header_right = new JPanel();
 			table_header_right.setLayout(new BoxLayout(table_header_right,
 					BoxLayout.LINE_AXIS));
-			table_header_right.add(createText("Index", 50, 30, false));
+			table_header_right.add(createText("Nr.", 50, 30, false));
 			table_header_right.add(createText("Output Dir", 200, 30, false));
-			table_header_right
-					.add(createText("Protocol Digits", 100, 30, false));
+			// table_header_right
+			// .add(createText("Protocol Digits", 100, 30, false));
 			table_header_right.add(createText("Image Digits", 100, 30, false));
+			table_header_right.add(Box.createRigidArea(new Dimension(29, 30)));
 
 			JPanel upperright = new JPanel();
 			upperright
@@ -140,10 +152,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 			output = new JTextArea();
 			output.setEditable(false);
-			setfinalSize(output, new Dimension(1100, 250));
+			// setfinalSize(output, new Dimension(1100, 250));
 
 			scroll = new JScrollPane(output);
-			setfinalSize(scroll, new Dimension(1100, 250));
+			setfinalSize(scroll, new Dimension(1100, 225));
+			scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			scroll.setPreferredSize(new Dimension(1100, 200));
 
 			JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
 			setfinalSize(separator, new Dimension(1, 250));
@@ -165,21 +179,43 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		}
 
 		private JPanel createOutputRow(int index) {
+			JButton jb = new JButton();
+			jb.setText((6 + index) + ":browse");
+			jb.setMaximumSize(new Dimension(29, 27));
+			jb.setPreferredSize(new Dimension(29, 27));
+			jb.addActionListener(this);
+
 			JPanel row = new JPanel();
 			row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
 			row.add(createText("" + index, 50, 30, false));
-			row.add(createText("/opt/dridder_local/TestDicoms/TestSort9", 200, 30, true));
-			row.add(createText("3", 100, 30, true));
+			row.add(createText("", 200, 30, true));
+			// row.add(createText("3", 100, 30, true));
 			row.add(createText("4", 100, 30, true));
+			row.add(jb);
 			return row;
 		}
 
-		private JPanel createInputRow() {
+		private JPanel createInputRow(int index) {
+			JButton jb = new JButton();
+			jb.setText(index + ":browse");
+			jb.setMaximumSize(new Dimension(29, 27));
+			jb.setPreferredSize(new Dimension(29, 27));
+			jb.addActionListener(this);
+			
+//			JCheckBox jc = new JCheckBox();
+//			setfinalSize(jc, new Dimension(40, 30));
+			String[] options = {"Move","Copy"};
+			JComboBox<String> jc = new JComboBox<String>(options);
+			setfinalSize(jc, new Dimension(80, 30));
+			
 			JPanel row = new JPanel();
 			row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
 			row.add(createText("Undefined", 100, 30, false));
-			row.add(createText("/opt/dridder_local/TestDicoms/Testfolder", 200, 30, true));
-			row.add(createText("1", 100, 30, true));
+			row.add(createText("", 200, 30, true));
+			row.add(jc);
+			row.add(createText("" + index, 100, 30, true));
+			row.add(jb);
+			row.add(Box.createRigidArea(new Dimension(10, 30)));
 			return row;
 		}
 
@@ -194,19 +230,30 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		public void actionPerformed(ActionEvent e) {
 			switch (e.getActionCommand()) {
 			case "Start Sort":
-				if (currentSort == null){
+				if (currentSort == null) {
 					baos = new ByteArrayOutputStream();
 					PrintStream ps = new PrintStream(baos);
 					sa.setPrintStream(ps);
-					///opt/dridder_local/TestDicoms/Testfolder
-					///opt/dridder_local/TestDicoms/TestSort9
 					Thread t = new Thread(this);
 					t.start();
 					currentSort = t;
-				}else{
+				} else {
 					currentSort.interrupt();
 				}
+				break;
 			default:
+				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+					int pos = Integer
+							.parseInt(e.getActionCommand().split(":")[0]);
+					if (pos < 6) {
+						((JTextField) rows_left[pos - 1].getComponents()[1])
+								.setText(chooser.getSelectedFile().toString());
+					} else {
+						pos -= 6;
+						((JTextField) rows_right[pos - 1].getComponents()[1])
+								.setText(chooser.getSelectedFile().toString());
+					}
+				}
 				break;
 			}
 		}
@@ -222,8 +269,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				Component[] left_stuff = rows_left[i].getComponents();
 				JTextField status = (JTextField) left_stuff[0];
 				JTextField inputfield = (JTextField) left_stuff[1];
-				JTextField tooutput = (JTextField) left_stuff[2];
-
+				JTextField tooutput = (JTextField) left_stuff[3];
+				JComboBox move = (JComboBox) left_stuff[2];
 				if (inputfield.getText().equals("")) {
 					status.setText("Empty Input");
 					continue;
@@ -240,8 +287,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					Component[] right_stuff = rows_right[Integer
 							.parseInt(tooutput.getText()) - 1].getComponents();
 					target = (JTextField) right_stuff[1];
-					protocol_digits = (JTextField) right_stuff[2];
-					image_digits = (JTextField) right_stuff[3];
+					// protocol_digits = (JTextField) right_stuff[2];
+					image_digits = (JTextField) right_stuff[2];
 				} catch (IndexOutOfBoundsException | NumberFormatException e) {
 					status.setText("Index Err");
 					continue;
@@ -249,13 +296,13 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 				status.setText("In Progress");
 
-				try {
-					sa.setProtocolDigits(Integer.parseInt(protocol_digits
-							.getText()));
-				} catch (NumberFormatException e) {
-					status.setText("Err Prot. Digits");
-					continue;
-				}
+				// try {
+				// sa.setProtocolDigits(Integer.parseInt(protocol_digits
+				// .getText()));
+				// } catch (NumberFormatException e) {
+				// status.setText("Err Prot. Digits");
+				// continue;
+				// }
 
 				try {
 					sa.setImgDigits(Integer.parseInt(image_digits.getText()));
@@ -263,8 +310,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					status.setText("Err Img Digits");
 					continue;
 				}
-
-				sa.setFilesOptionCopy();
+				if (((String)move.getSelectedItem()).equals("Move")) {
+					sa.setFilesOptionMove();
+				} else {
+					sa.setFilesOptionCopy();
+				}
 				status.setText("In Progress...");
 				try {
 					Thread.sleep(500);
@@ -329,7 +379,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 		private Volume vol;
 
-		private BufferedImage image = new BufferedImage(450, 450,
+		private BufferedImage image = new BufferedImage(443, 443,
 				BufferedImage.TYPE_BYTE_GRAY);
 
 		private boolean displayAll = true;
@@ -348,15 +398,18 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			addActionListerners(apply_path, browse_path, show_attributes);
 
 			max.setEditable(false);
-			setfinalSize(max, new Dimension(50, 100));
+			setfinalSize(max, new Dimension(75, 100));
+			max.setBorder(null);
 
-			JTextField slice = new JTextField("Slice: ");
+			JTextField slice = new JTextField("Slice:");
 			slice.setEditable(false);
-			setfinalSize(slice, new Dimension(50, 100));
+			setfinalSize(slice, new Dimension(35, 100));
+			slice.setBorder(null);
 
 			JTextField search = new JTextField("Search:");
 			search.setEditable(false);
 			setfinalSize(search, new Dimension(50, 100));
+			search.setBorder(null);
 
 			setfinalSize(path, new Dimension(500, 100));
 			setfinalSize(index, new Dimension(75, 100));
@@ -367,10 +420,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			setfinalSize(output, new Dimension(100, 1050));
 
 			current_path.setEditable(false);
-			setfinalSize(current_path, new Dimension(300, 100));
+			setfinalSize(current_path, new Dimension(220, 100));
 
 			JScrollPane scroll = new JScrollPane(output);
 			scroll.setPreferredSize(new Dimension(100, 100));
+			scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+			scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
 			chooser.setCurrentDirectory(new java.io.File("$HOME"));
 			chooser.setDialogTitle("Search Path of Volume");
@@ -378,7 +433,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			chooser.setAcceptAllFileFilterUsed(false);
 
 			panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-			setfinalSize(panel, new Dimension(650, 1000));
+			setfinalSize(panel, new Dimension(650, 1100));
 			Component[] panelstuff = {
 					Box.createRigidArea(new Dimension(0, 10)), path, dir, img,
 					att, scroll };
@@ -399,7 +454,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			setfinalSize(img, new Dimension(500, 500));
 			Component[] imgstuff = { current_path,
 					Box.createRigidArea(new Dimension(80, 0)), slice, index,
-					max, Box.createRigidArea(new Dimension(10, 0)) };
+					max };
 			addComponents(img, imgstuff);
 
 			toppanel.setLayout(new BoxLayout(toppanel, BoxLayout.LINE_AXIS));
@@ -559,7 +614,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		// Menu stuff ends here
 
 		tabber = new JTabbedPane();
-		// newTab(new VolumeTab());
+		newTab(new VolumeTab());
 		newTab(new SorterTab());
 
 		add(tabber);
@@ -724,6 +779,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 	private void updateSort() {
 		SorterTab actual = null;
+		boolean lastupdate = true;
 		if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
 				.getClassName().equals("SorterTab")) {
 			actual = (SorterTab) tabber.getComponentAt(tabber
@@ -745,11 +801,24 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			} catch (IndexOutOfBoundsException e) {
 				continue;
 			}
-				
+
 			try {
-				actual.output.setText(actual.baos.toString());
-				int i = actual.scroll.getVerticalScrollBar().getMaximum();
-				actual.scroll.getVerticalScrollBar().setValue(i);
+				if (actual.currentSort != null || lastupdate) {
+					if (actual.currentSort == null) {
+						lastupdate = false;
+						try {
+							Thread.sleep(100);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					} else {
+						lastupdate = true;
+					}
+					actual.output.setText(actual.baos.toString());
+					int i = actual.scroll.getVerticalScrollBar().getMaximum();
+					actual.scroll.getVerticalScrollBar().setValue(i);
+				}
 			} catch (NullPointerException e) {
 
 			} finally {

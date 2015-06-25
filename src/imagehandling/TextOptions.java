@@ -20,6 +20,15 @@ public class TextOptions {
 	private ArrayList<Integer> searchoptions;
 	private ArrayList<Integer> returnoptions;
 	
+	public ArrayList<Integer> getSearchOptions(){
+		return searchoptions;
+		
+	}
+	
+	public ArrayList<Integer> getReturnOptions(){
+		return returnoptions;
+	}
+	
 	public void setSearchOptions(int[] textoptionsvalues){
 		searchoptions = new ArrayList<Integer>();
 		for (int i : textoptionsvalues){

@@ -14,6 +14,8 @@ public class Volume {
 
 	private ArrayList<Image> slices;
 
+	private TextOptions textopt;
+	
 	/**
 	 * This default construktur should not be used. If you use this method, it
 	 * gonna print some information into the console and call System.exit(1).
@@ -23,7 +25,7 @@ public class Volume {
 				.println("You have to use the Volume(String path) construktor to work with Volume.\nThe path should be the path of the repository, where the images are stored in.");
 		System.exit(1);
 	}
-
+	
 	/**
 	 * This constructor searching in the given path for files. In this folder
 	 * there should only be one type of images. If the names of the images dont
@@ -32,6 +34,7 @@ public class Volume {
 	 * @param path
 	 */
 	public Volume(String path) {
+		resetTextOptions();
 		slices = new ArrayList<Image>();
 		this.path = path;
 
@@ -63,6 +66,7 @@ public class Volume {
 	 * @param gui
 	 */
 	protected Volume(String path, GUI gui) {
+		resetTextOptions();
 		slices = new ArrayList<Image>();
 		this.path = path;
 
@@ -95,6 +99,7 @@ public class Volume {
 	 * @param gui
 	 */
 	protected Volume(String path, VolumeTab volumetab) {
+		resetTextOptions();
 		slices = new ArrayList<Image>();
 		this.path = path;
 
@@ -124,6 +129,21 @@ public class Volume {
 		Collections.sort(slices);
 	}
 
+	public void resetTextOptions(){
+		textopt = new TextOptions();
+		
+		textopt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
+		textopt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
+		textopt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_VALUE);
+		
+		textopt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NAME_WITH_COLON);
+		textopt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
+	}
+	
+	public void setTextOptions(){
+		
+	}
+	
 	/**
 	 * Returns the specific Image, starting with int i = 0
 	 *
