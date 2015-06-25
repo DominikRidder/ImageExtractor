@@ -47,26 +47,69 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	}
 
 	class SorterTab extends JPanel implements ActionListener, MyTab, Runnable {
+		/**
+		 * The current Thread, which is using the sort method/algorithm.
+		 */
 		private Thread currentSort = null;
+		
+		/**
+		 * The SortAlgorithm, which is used to perform the sort.
+		 */
 		private SortAlgorithm sa;
+		
+		/**
+		 * JTextArea output contains the output made by the SortAlgorithm.
+		 */
 		private JTextArea output;
-		private JPanel[] rows_left;
-		private JPanel[] rows_right;
+		
+		/**
+		 * Array of JPanels, where each JPanel representing a row in the left table.
+		 */
+		private JPanel[] tablerows_left;
+		
+		/**
+		 * Array of JPanels, where each JPanel representing a row in the right table.
+		 */
+		private JPanel[] tablerows_right;
+		
+		/**
+		 * The ByteArrayOutputStream, which catches the output made by the SortAlgorithm.
+		 */
 		private ByteArrayOutputStream baos;
+		
+		/**
+		 * JScrollPane, which adding the possibility for scrolling to the TextArea "output".
+		 */
 		private JScrollPane scroll;
+		
+		/**
+		 * The JFileChooser is used to browse for a Volume dir.
+		 */
 		private JFileChooser chooser = new JFileChooser();
+		
+		/**
+		 * JButton to call the sort() method and to cancel it again.
+		 */
 		private JButton startsort;
 
+		/**
+		 * Default serialVersionUID
+		 */
 		private static final long serialVersionUID = 1L;
 
+		/**
+		 * Default Constructur.
+		 */
 		public SorterTab() {
+			// Setting up the sortalgorithm with some default stuff
 			sa = new SortAlgorithm();
 			sa.setFilesOptionCopy();
 			sa.setImgDigits(4);
 			sa.setProtocolDigits(0);
 
+			// chooser stuff
 			chooser.setCurrentDirectory(new java.io.File("$HOME"));
-			chooser.setDialogTitle("Search Path of Volume");
+			chooser.setDialogTitle("Search Directory");
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			chooser.setAcceptAllFileFilterUsed(false);
 
@@ -77,6 +120,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			upperleft_header.setEditable(false);
 			upperleft_header.setBorder(null);
 
+			// The header shifter is used to put the header to the left side,
+			// instead of letting it in the middle of a pannel
 			JPanel header_shifter_left = new JPanel();
 			header_shifter_left.setLayout(new BoxLayout(header_shifter_left,
 					BoxLayout.LINE_AXIS));
@@ -84,6 +129,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			header_shifter_left
 					.add(Box.createRigidArea(new Dimension(1000, 0)));
 
+			// Setting the headline of the table, which should be as long as the
+			// rows below it
 			JPanel table_header_left = new JPanel();
 			table_header_left.setLayout(new BoxLayout(table_header_left,
 					BoxLayout.LINE_AXIS));
@@ -93,6 +140,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			table_header_left.add(createText("To Output Nr.", 100, 30, false));
 			table_header_left.add(Box.createRigidArea(new Dimension(39, 30)));
 
+			// Panel that contains the upper left rectangle
 			JPanel upperleft = new JPanel();
 			upperleft.setLayout(new BoxLayout(upperleft, BoxLayout.PAGE_AXIS));
 			setfinalSize(upperleft, new Dimension(550, 250));
@@ -100,10 +148,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			upperleft.add(Box.createRigidArea(new Dimension(0, 10)));
 			upperleft.add(table_header_left);
 
-			rows_left = new JPanel[5];
-			for (int i = 0; i < rows_left.length; i++) {
-				rows_left[i] = createInputRow(i + 1);
-				upperleft.add(rows_left[i]);
+			tablerows_left = new JPanel[5];
+			for (int i = 0; i < tablerows_left.length; i++) {
+				tablerows_left[i] = createInputRow(i + 1);
+				upperleft.add(tablerows_left[i]);
 			}
 			// -- upperleft end
 
@@ -113,9 +161,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			upperright_header.setEditable(false);
 			upperright_header.setBorder(null);
 
+			// Button for starting/stopping a sort
 			startsort = new JButton("Start Sort");
 			startsort.addActionListener(this);
 
+			// The header shifter is used to put the header to the left side,
+			// instead of letting it in the middle of a pannel
 			JPanel header_shifter_right = new JPanel();
 			header_shifter_right.setLayout(new BoxLayout(header_shifter_right,
 					BoxLayout.LINE_AXIS));
@@ -123,16 +174,17 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			header_shifter_right.add(Box
 					.createRigidArea(new Dimension(1000, 0)));
 
+			// Setting the headline of the table, which should be as long as the
+			// rows below it
 			JPanel table_header_right = new JPanel();
 			table_header_right.setLayout(new BoxLayout(table_header_right,
 					BoxLayout.LINE_AXIS));
 			table_header_right.add(createText("Nr.", 50, 30, false));
 			table_header_right.add(createText("Output Dir", 200, 30, false));
-			// table_header_right
-			// .add(createText("Protocol Digits", 100, 30, false));
 			table_header_right.add(createText("Image Digits", 100, 30, false));
 			table_header_right.add(Box.createRigidArea(new Dimension(29, 30)));
 
+			// Panel that contains the upper right rectangle
 			JPanel upperright = new JPanel();
 			upperright
 					.setLayout(new BoxLayout(upperright, BoxLayout.PAGE_AXIS));
@@ -140,32 +192,34 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			upperright.add(header_shifter_right);
 			upperright.add(Box.createRigidArea(new Dimension(0, 10)));
 			upperright.add(table_header_right);
-			rows_right = new JPanel[5];
-			for (int i = 0; i < rows_left.length; i++) {
-				rows_right[i] = createOutputRow(i + 1);
-				upperright.add(rows_right[i]);
+			tablerows_right = new JPanel[5];
+			for (int i = 0; i < tablerows_left.length; i++) {
+				tablerows_right[i] = createOutputRow(i + 1);
+				upperright.add(tablerows_right[i]);
 			}
 			upperright.add(startsort);
 			// -- upperright end
 
+			// creating the output field
 			output = new JTextArea();
 			output.setEditable(false);
-			// setfinalSize(output, new Dimension(1100, 250));
-
 			scroll = new JScrollPane(output);
 			setfinalSize(scroll, new Dimension(1100, 225));
 			scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 			scroll.setPreferredSize(new Dimension(1100, 200));
 
+			// Seperates the left upper side from the right upper side
 			JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
 			setfinalSize(separator, new Dimension(1, 250));
 
+			// The panel over the output
 			JPanel upper = new JPanel();
 			upper.setLayout(new BoxLayout(upper, BoxLayout.LINE_AXIS));
 			upper.add(upperleft);
 			upper.add(separator);
 			upper.add(upperright);
 
+			// adding everythis to this (class)
 			this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 			this.add(upper);
 			this.add(scroll);
@@ -176,8 +230,15 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			sa.setPrintStream(ps);
 		}
 
+		/**
+		 * This method creating a table row for the output table
+		 */
 		private JPanel createOutputRow(int index) {
+			// Button for searching a dir
 			JButton jb = new JButton();
+			// the number at the start is used to know, where the browsed
+			// directory have to be set. The ":" is important for the splitt. At
+			// the end you will just the a "..." in the button.
 			jb.setText((6 + index) + ":browse");
 			jb.setMaximumSize(new Dimension(29, 27));
 			jb.setPreferredSize(new Dimension(29, 27));
@@ -185,35 +246,56 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 			JPanel row = new JPanel();
 			row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
+			// index field
 			row.add(createText("" + index, 50, 30, false));
+			// output dir field
 			row.add(createText("", 200, 30, true));
+			// image digits field
 			row.add(createText("4", 100, 30, true));
+			// browse dir button
 			row.add(jb);
 			return row;
 		}
 
+		/**
+		 * This method creating a table row for the input table
+		 */
 		private JPanel createInputRow(int index) {
+			// Button for searching a dir
 			JButton jb = new JButton();
+			// the number at the start is used to know, where the browsed
+			// directory have to be set. The ":" is important for the splitt. At
+			// the end you will just the a "..." in the button.
 			jb.setText(index + ":browse");
 			jb.setMaximumSize(new Dimension(29, 27));
 			jb.setPreferredSize(new Dimension(29, 27));
 			jb.addActionListener(this);
 
+			// File transfer options
 			String[] options = { "Copy", "Move" };
 			JComboBox<String> jc = new JComboBox<String>(options);
 			setfinalSize(jc, new Dimension(80, 28));
 
 			JPanel row = new JPanel();
 			row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
+			// Status
 			row.add(createText("Undefined", 100, 30, false));
+			// Input dir
 			row.add(createText("", 200, 30, true));
+			// File transfer option
 			row.add(jc);
+			// Output Nr field
 			row.add(createText("" + index, 100, 30, true));
+			// browse dir button
 			row.add(jb);
+			// to make it fit
 			row.add(Box.createRigidArea(new Dimension(10, 30)));
 			return row;
 		}
 
+		/**
+		 * Fast method for creating JTextField classes.
+		 */
 		private JTextField createText(String text, int width, int height,
 				boolean editable) {
 			JTextField jtf = new JTextField(text);
@@ -222,30 +304,43 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			return jtf;
 		}
 
+		/**
+		 * This method is called by the buttons of SorterTab.
+		 */
 		public void actionPerformed(ActionEvent e) {
 			switch (e.getActionCommand()) {
-			case "Cancel": sa.stopSort();break;
+			case "Cancel": // Stopping the sort safely
+				sa.stopSort();
+				break;
 			case "Start Sort":
+				// never starting two threads
 				if (currentSort == null) {
+					// New Thread for the Sort
+					Thread t = new Thread(this);
+
+					// Taking always a new baos to clear the output area
 					baos = new ByteArrayOutputStream();
 					PrintStream ps = new PrintStream(baos);
 					sa.setPrintStream(ps);
-					Thread t = new Thread(this);
+
+					// Starting the sort
 					t.start();
 					currentSort = t;
 					startsort.setText("Cancel");
 				}
 				break;
 			default:
+				// Using the default for the browse buttons, instead of making
+				// 10 case lines
 				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 					int pos = Integer
 							.parseInt(e.getActionCommand().split(":")[0]);
 					if (pos < 6) {
-						((JTextField) rows_left[pos - 1].getComponents()[1])
+						((JTextField) tablerows_left[pos - 1].getComponents()[1])
 								.setText(chooser.getSelectedFile().toString());
 					} else {
 						pos -= 6;
-						((JTextField) rows_right[pos - 1].getComponents()[1])
+						((JTextField) tablerows_right[pos - 1].getComponents()[1])
 								.setText(chooser.getSelectedFile().toString());
 					}
 				}
@@ -253,45 +348,54 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 		}
 
+		/**
+		 * This method is called by a Thread, to start the sorting.
+		 */
 		private void sort() {
-			for (int i = 0; i < rows_left.length; i++) {
-				Component[] left_stuff = rows_left[i].getComponents();
+			// Setting every status to Unchecked
+			for (int i = 0; i < tablerows_left.length; i++) {
+				Component[] left_stuff = tablerows_left[i].getComponents();
 				JTextField status = (JTextField) left_stuff[0];
 				status.setText("Unchecked");
 			}
 
-			for (int i = 0; i < rows_left.length; i++) {
-				Component[] left_stuff = rows_left[i].getComponents();
+			// for every input row
+			for (int i = 0; i < tablerows_left.length; i++) {
+				// getting the components and casting them
+				Component[] left_stuff = tablerows_left[i].getComponents();
 				JTextField status = (JTextField) left_stuff[0];
 				JTextField inputfield = (JTextField) left_stuff[1];
 				JTextField tooutput = (JTextField) left_stuff[3];
 				@SuppressWarnings("unchecked")
 				JComboBox<String> move = (JComboBox<String>) left_stuff[2];
+
+				// catching empty input
 				if (inputfield.getText().equals("")) {
 					status.setText("Empty Input");
 					continue;
 				}
 
+				// catching empty output nr
 				if (tooutput.getText().equals("")) {
 					status.setText("Index Missing");
 				}
 
+				// now getting the output information
 				JTextField target;
-				// JTextField protocol_digits;
 				JTextField image_digits;
 				try {
-					Component[] right_stuff = rows_right[Integer
+					// Integer.parseInt may throws an exception
+					Component[] right_stuff = tablerows_right[Integer
 							.parseInt(tooutput.getText()) - 1].getComponents();
 					target = (JTextField) right_stuff[1];
-					// protocol_digits = (JTextField) right_stuff[2];
 					image_digits = (JTextField) right_stuff[2];
 				} catch (IndexOutOfBoundsException | NumberFormatException e) {
 					status.setText("Index Err");
 					continue;
 				}
 
-				status.setText("In Progress");
-
+				// setting the img digits and the boolean keepImageName in
+				// SortAlgorithm
 				try {
 					int imgdigits = Integer.parseInt(image_digits.getText());
 					if (imgdigits != 0) {
@@ -304,34 +408,43 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					status.setText("Err Img Digits");
 					continue;
 				}
+
+				// setting the file transfer option
 				if (((String) move.getSelectedItem()).equals("Move")) {
 					sa.setFilesOptionMove();
 				} else {
 					sa.setFilesOptionCopy();
 				}
+
+				// now the sortalgorithm can start
 				status.setText("In Progress...");
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-				}
 				if (sa.searchAndSortIn(inputfield.getText(), target.getText())) {
 					status.setText("Finished");
 				} else {
-					if (sa.gotStopped()){
-						status.setText("Canceld");
+					if (sa.gotStopped()) {
+						status.setText("Canceled");
 						break;
 					}
 					status.setText("Input Dir Err");
 				}
 			}
+
+			// things that have to be done, so the next sort can be called
 			currentSort = null;
 			startsort.setText("Start Sort");
 		}
 
+		/**
+		 * This method is usefull for the GUI class to decide what kind of Tab
+		 * is in the focus.
+		 */
 		public String getClassName() {
 			return "SorterTab";
 		}
 
+		/**
+		 * Method, called by Thead.start();
+		 */
 		public void run() {
 			sort();
 		}
@@ -341,52 +454,129 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	class VolumeTab extends JPanel implements ActionListener, MyTab {
 
 		/**
-		 * 
+		 * Default serialVersionUID
 		 */
 		private static final long serialVersionUID = 1L;
 
+		/**
+		 * This JPanel contains a JTextField search with the text "Search:" and
+		 * a textfield to search for Attributes.
+		 */
 		private JPanel att = new JPanel();
 
+		/**
+		 * The JPanel dir is a row, which contains two JButtons (browse_path and
+		 * apply_path).
+		 */
 		private JPanel dir = new JPanel();
 
+		/**
+		 * The JPanel img is a row, which contains a JTextfield with the Text
+		 * "Slice:", the current slice and the maximum chooseable slice.
+		 */
 		private JPanel img = new JPanel();
 
+		/**
+		 * Panel, which contains the hole left side of this tab frame.
+		 */
 		private JPanel panel = new JPanel();
 
+		/**
+		 * Highest Panel is this Tab.
+		 */
 		private JPanel toppanel = new JPanel();
 
+		/**
+		 * The imagepanel is the container, which contains the ImageIcon ic.
+		 */
 		private JLabel imagepanel;
 
+		/**
+		 * The ImageIcon ic wrapping the image.
+		 */
 		private ImageIcon ic;
 
+		/**
+		 * This int is used to communicate between an ActionListener and this
+		 * GUI. With the help of these things, the choosen slice (index) can be
+		 * changed with the arrow keys.
+		 */
 		private int change = 0;
 
+		/**
+		 * The filter is used to search for Attributes in the header of an
+		 * image.
+		 */
 		private JTextField filter = new JTextField("");
 
+		/**
+		 * The index field shows the current selected Volume slice.
+		 */
 		private JTextField index = new JTextField("0");
 
+		/**
+		 * This field shows the number of slices in the volume (minus one).
+		 */
 		private JTextField max = new JTextField("/0");
 
+		/**
+		 * This TextField is used to create a Volume.
+		 */
 		private JTextField path = new JTextField(
 				"/opt/dridder_local/TestDicoms/");
 
+		/**
+		 * This TextField is usefull, so the user can take a look which Volume
+		 * he is using at the moment, for the case, that the upper Textfield got
+		 * changed.
+		 */
 		private JTextField current_path = new JTextField("Volume: <<not set>>");
 
+		/**
+		 * Header and co. output stuff, which is wrapped in the scroll object.
+		 */
 		private JTextArea output = new JTextArea("status");
 
+		/**
+		 * JFileChooser is used to search a Volume (dir).
+		 */
 		private JFileChooser chooser = new JFileChooser();
 
+		/**
+		 * Volume, which is to get the header informations and the image.
+		 */
 		private Volume vol;
 
+		/**
+		 * Image which is on the right side of the Tab.
+		 */
 		private BufferedImage image = new BufferedImage(443, 443,
 				BufferedImage.TYPE_BYTE_GRAY);
 
+		/**
+		 * Value, which decides, whether the hole header of a dicom is shown or
+		 * if only a searched part in shown.
+		 */
 		private boolean displayAll = true;
 
+		/**
+		 * JButton to try, to create a Volume to a given path.
+		 */
 		private JButton apply_path;
+
+		/**
+		 * JButton to call the JFileChooser.
+		 */
 		private JButton browse_path;
+
+		/**
+		 * JButton to show the hole header of a Volume.
+		 */
 		private JButton show_attributes;
 
+		/**
+		 * Standard Constructur.
+		 */
 		public VolumeTab() {
 			ic = new ImageIcon(image);
 			imagepanel = new JLabel(ic);
@@ -415,17 +605,18 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			setfinalSize(show_attributes, new Dimension(500, 100));
 			setfinalSize(filter, new Dimension(500, 100));
 
-			output.setEditable(false);
-			setfinalSize(output, new Dimension(100, 1050));
-
 			current_path.setEditable(false);
 			setfinalSize(current_path, new Dimension(220, 100));
 
+			// creating the output field
+			output.setEditable(false);
+			setfinalSize(output, new Dimension(100, 1050));
 			JScrollPane scroll = new JScrollPane(output);
 			scroll.setPreferredSize(new Dimension(100, 100));
 			scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 			scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
+			// creating the directory chooser
 			chooser.setCurrentDirectory(new java.io.File("$HOME"));
 			chooser.setDialogTitle("Search Path of Volume");
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -776,6 +967,9 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		}
 	}
 
+	/**
+	 * Method to perform a life update in the SorterTab.
+	 */
 	private void updateSort() {
 		SorterTab actual = null;
 		boolean lastupdate = true;
@@ -808,7 +1002,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 						try {
 							Thread.sleep(100);
 						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					} else {
@@ -824,13 +1017,15 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 		}
 	}
 
+	/**
+	 * Method, which is always running, to handle the lifeupdate of the tabs.
+	 */
 	private void lifeupdate() {
 		while (this.isVisible()) {
 			if (tabber.getTabCount() == 0) {
@@ -869,12 +1064,19 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		b3.addActionListener(this);
 	}
 
+	/**
+	 * Method to add a list of Components to a JPanel.
+	 */
 	private void addComponents(JPanel here, Component[] toadd) {
 		for (int i = 0; i < toadd.length; i++) {
 			here.add(toadd[i]);
 		}
 	}
 
+	/**
+	 * This Method is called by the JMenuBar and the Buttons inside of the
+	 * VolumeTab.
+	 */
 	public void actionPerformed(ActionEvent e) {
 		VolumeTab actual = null;
 		if (tabber.getTabCount() != 0
@@ -912,6 +1114,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		}
 	}
 
+	/**
+	 * Method, which is called by new Threads, to make life updates in the tabs.
+	 * Each ImageExtractor Window has his own Thread this way.
+	 */
 	public void run() {
 		windows++;
 		lifeupdate();
