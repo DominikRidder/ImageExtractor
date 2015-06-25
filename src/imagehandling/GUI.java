@@ -47,17 +47,16 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	}
 
 	class SorterTab extends JPanel implements ActionListener, MyTab, Runnable {
-		Thread currentSort = null;
-		SortAlgorithm sa;
-		JTextArea output;
-		JPanel[] rows_left;
-		JPanel[] rows_right;
-		ByteArrayOutputStream baos;
-		JScrollPane scroll;
+		private Thread currentSort = null;
+		private SortAlgorithm sa;
+		private JTextArea output;
+		private JPanel[] rows_left;
+		private JPanel[] rows_right;
+		private ByteArrayOutputStream baos;
+		private JScrollPane scroll;
 		private JFileChooser chooser = new JFileChooser();
-		/**
-		 * 
-		 */
+		private JButton startsort;
+
 		private static final long serialVersionUID = 1L;
 
 		public SorterTab() {
@@ -114,8 +113,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			upperright_header.setEditable(false);
 			upperright_header.setBorder(null);
 
-			JButton sort = new JButton("Start Sort");
-			sort.addActionListener(this);
+			startsort = new JButton("Start Sort");
+			startsort.addActionListener(this);
 
 			JPanel header_shifter_right = new JPanel();
 			header_shifter_right.setLayout(new BoxLayout(header_shifter_right,
@@ -146,7 +145,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				rows_right[i] = createOutputRow(i + 1);
 				upperright.add(rows_right[i]);
 			}
-			upperright.add(sort);
+			upperright.add(startsort);
 			// -- upperright end
 
 			output = new JTextArea();
@@ -188,7 +187,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
 			row.add(createText("" + index, 50, 30, false));
 			row.add(createText("", 200, 30, true));
-			// row.add(createText("3", 100, 30, true));
 			row.add(createText("4", 100, 30, true));
 			row.add(jb);
 			return row;
@@ -226,6 +224,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 		public void actionPerformed(ActionEvent e) {
 			switch (e.getActionCommand()) {
+			case "Cancel": sa.stopSort();break;
 			case "Start Sort":
 				if (currentSort == null) {
 					baos = new ByteArrayOutputStream();
@@ -234,8 +233,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					Thread t = new Thread(this);
 					t.start();
 					currentSort = t;
-				} else {
-					currentSort.interrupt();
+					startsort.setText("Cancel");
 				}
 				break;
 			default:
@@ -319,10 +317,15 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				if (sa.searchAndSortIn(inputfield.getText(), target.getText())) {
 					status.setText("Finished");
 				} else {
+					if (sa.gotStopped()){
+						status.setText("Canceld");
+						break;
+					}
 					status.setText("Input Dir Err");
 				}
 			}
 			currentSort = null;
+			startsort.setText("Start Sort");
 		}
 
 		public String getClassName() {

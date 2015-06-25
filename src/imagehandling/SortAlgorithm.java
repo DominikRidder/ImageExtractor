@@ -16,6 +16,7 @@ import javax.swing.plaf.synth.SynthSpinnerUI;
 
 public class SortAlgorithm {
 
+	private boolean interruped = false;
 	/**
 	 * The value keepImgName decides, wether the images are renamed to their
 	 * Image Number or if they keep their name.
@@ -259,6 +260,14 @@ public class SortAlgorithm {
 		}
 	}
 
+	public boolean gotStopped(){
+		return interruped;
+	}
+	
+	public void stopSort(){
+		interruped = true;
+	}
+	
 	/**
 	 * This method searching in the path "searchin" for DICOMs and subfolders,
 	 * which contains DICOMs. These DICOMs are sorted in the value "sortInDir".
@@ -271,6 +280,7 @@ public class SortAlgorithm {
 	 *            The Folder, where the Algorithm move and sort the DICOMs.
 	 */
 	public boolean searchAndSortIn(String searchin, String sortInDir) {
+		interruped = false;
 		deltaTimeHelp = System.currentTimeMillis();
 		double start = deltaTimeHelp;
 		File file = new File(searchin);
@@ -312,7 +322,10 @@ public class SortAlgorithm {
 		} else {
 			SASInNoSubfolderWrapper(searchin, sortInDir);
 		}
-
+		if (interruped){
+			return false;
+		}
+		
 		start = System.currentTimeMillis() - start;
 		String operation = "";
 		if (move) {
@@ -436,6 +449,9 @@ public class SortAlgorithm {
 		}
 
 		for (File l : list) {
+			if (interruped){
+				return;
+			}
 			String path = l.getAbsolutePath();
 			if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
 				if (subfolders) {
