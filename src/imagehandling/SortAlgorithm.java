@@ -17,10 +17,16 @@ import javax.swing.plaf.synth.SynthSpinnerUI;
 public class SortAlgorithm {
 
 	/**
+	 * The value keepImgName decides, wether the images are renamed to their
+	 * Image Number or if they keep their name.
+	 */
+	private boolean keepImgName = false;
+
+	/**
 	 * With this value, you can change the output stream.
 	 */
 	private PrintStream out = System.out;
-	
+
 	/**
 	 * This boolean decide, whether the dicoms are moved or if they copied.
 	 */
@@ -145,6 +151,18 @@ public class SortAlgorithm {
 		this.protocol_digits = protocol_digits;
 	}
 
+	/**
+	 * This method is used, to decide, wether the Names of the files gonna be
+	 * changened to their Image Number or if their keep their names.
+	 */
+	public void setKeepImageName(boolean keepit) {
+		keepImgName = keepit;
+	}
+
+	/**
+	 * The setPrinStream method can be used, to catch the output or the place,
+	 * where it is printed.
+	 */
 	public void setPrintStream(PrintStream out) {
 		this.out = out;
 	}
@@ -302,8 +320,8 @@ public class SortAlgorithm {
 		} else {
 			operation = "copied";
 		}
-		out.println("I found and sorted " + found + " Dicoms in "
-				+ start / 1000 + " seconds! I " + operation + " " + copyd
+		out.println("I found and sorted " + found + " Dicoms in " + start
+				/ 1000 + " seconds! I " + operation + " " + copyd
 				+ " of them to the Output directory.");
 		return true;
 	}
@@ -493,7 +511,12 @@ public class SortAlgorithm {
 			path.append("/" + toProtocolDigits(i + ""));
 			existOrCreate(path);
 		}
-		path.append("/" + toImgDigits(imageNumber) + ".dcm");
+
+		if (keepImgName) {
+			path.append("/" + new File(input).getName());
+		} else {
+			path.append("/" + toImgDigits(imageNumber) + ".dcm");
+		}
 
 		// Copy data
 		File test = new File(path.toString());
@@ -626,55 +649,7 @@ public class SortAlgorithm {
 		StringBuilder path = new StringBuilder();
 		path.append(dir + "/" + patientID);
 		existOrCreate(path);
-		// int i;
-		// loop: for (i = 1; i < 1000; i++) {
-		// if (!protocolnames.containsKey(path.toString() + "/" + protocolName
-		// + instanceUID + birthDate)) {
-		// if (missing.get(patientID) == null
-		// || missing.get(patientID).isEmpty()) {
-		// try {
-		// index.put(patientID, index.get(patientID) + 1);
-		// } catch (NullPointerException e) {
-		// index.put(patientID, 1);
-		// }
-		// protocolnames.put(path.toString() + "/" + protocolName +instanceUID +
-		// birthDate,
-		// toProtocolDigits(index.get(patientID) + ""));
-		// } else {
-		// protocolnames
-		// .put(path.toString() + "/" + protocolName + i,
-		// toProtocolDigits(missing.get(patientID)
-		// .get(0) + ""));
-		// missing.get(patientID).remove(0);
-		// }
-		//
-		// }
-		//
-		// File test2 = new File(path.toString()
-		// + "/"
-		// + protocolnames.get(path.toString() + "/" + protocolName
-		// + instanceUID + birthDate) + "_" + protocolName);
-		// if (!test2.exists()) {
-		// break;
-		// }
-		// //Comparing dicom info
-		// for (int j = 1; j < 1000; j++) {
-		// File test3 = new File(test2.getAbsolutePath() + "/"
-		// + toImgDigits("" + j) + ".dcm");
-		// if (test3.exists()) {
-		// KeyMap twoElement[] = { KeyMap.KEY_SERIES_INSTANCE_UID,
-		// KeyMap.KEY_PATIENTS_BIRTH_DATE };
-		// String[] comparing = Image.getAttributesDicom(
-		// test3.getAbsolutePath(), twoElement);
-		// if (instanceUID.equals(comparing[0])
-		// && birthDate.equals(comparing[1])) {
-		// break loop;
-		// } else {
-		// continue loop;
-		// }
-		// }
-		// }
-		// }
+
 		if (!protocolnames.containsKey(patientID + protocolName + instanceUID
 				+ birthDate)) {
 			String numb;
@@ -699,7 +674,11 @@ public class SortAlgorithm {
 				+ protocolnames.get(patientID + protocolName + instanceUID
 						+ birthDate) + "_" + protocolName);
 		existOrCreate(path);
-		path.append("/" + toImgDigits(imageNumber) + ".dcm");
+		if (keepImgName) {
+			path.append("/" + new File(input).getName());
+		} else {
+			path.append("/" + toImgDigits(imageNumber) + ".dcm");
+		}
 
 		// Copy data
 		File test = new File(path.toString());

@@ -109,8 +109,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// -- upperleft end
 
 			// upperright rectangle
-			JTextField upperright_header = new JTextField(
-					"Target Folder and Options:");
+			JTextField upperright_header = new JTextField("Target Folder:");
 			setfinalSize(upperright_header, new Dimension(175, 30));
 			upperright_header.setEditable(false);
 			upperright_header.setBorder(null);
@@ -201,13 +200,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			jb.setMaximumSize(new Dimension(29, 27));
 			jb.setPreferredSize(new Dimension(29, 27));
 			jb.addActionListener(this);
-			
-//			JCheckBox jc = new JCheckBox();
-//			setfinalSize(jc, new Dimension(40, 30));
-			String[] options = {"Move","Copy"};
+
+			String[] options = { "Copy", "Move" };
 			JComboBox<String> jc = new JComboBox<String>(options);
-			setfinalSize(jc, new Dimension(80, 30));
-			
+			setfinalSize(jc, new Dimension(80, 28));
+
 			JPanel row = new JPanel();
 			row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
 			row.add(createText("Undefined", 100, 30, false));
@@ -270,7 +267,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				JTextField status = (JTextField) left_stuff[0];
 				JTextField inputfield = (JTextField) left_stuff[1];
 				JTextField tooutput = (JTextField) left_stuff[3];
-				JComboBox move = (JComboBox) left_stuff[2];
+				@SuppressWarnings("unchecked")
+				JComboBox<String> move = (JComboBox<String>) left_stuff[2];
 				if (inputfield.getText().equals("")) {
 					status.setText("Empty Input");
 					continue;
@@ -281,7 +279,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				}
 
 				JTextField target;
-				JTextField protocol_digits;
+				// JTextField protocol_digits;
 				JTextField image_digits;
 				try {
 					Component[] right_stuff = rows_right[Integer
@@ -296,21 +294,19 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 				status.setText("In Progress");
 
-				// try {
-				// sa.setProtocolDigits(Integer.parseInt(protocol_digits
-				// .getText()));
-				// } catch (NumberFormatException e) {
-				// status.setText("Err Prot. Digits");
-				// continue;
-				// }
-
 				try {
-					sa.setImgDigits(Integer.parseInt(image_digits.getText()));
+					int imgdigits = Integer.parseInt(image_digits.getText());
+					if (imgdigits != 0) {
+						sa.setImgDigits(imgdigits);
+						sa.setKeepImageName(false);
+					} else {
+						sa.setKeepImageName(true);
+					}
 				} catch (NumberFormatException e) {
 					status.setText("Err Img Digits");
 					continue;
 				}
-				if (((String)move.getSelectedItem()).equals("Move")) {
+				if (((String) move.getSelectedItem()).equals("Move")) {
 					sa.setFilesOptionMove();
 				} else {
 					sa.setFilesOptionCopy();
