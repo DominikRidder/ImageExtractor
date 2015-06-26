@@ -10,12 +10,21 @@ import java.util.Vector;
 
 public class Volume {
 
+	/**
+	 * Path to the folder, that contains the Images of the Volume.
+	 */
 	private String path;
 
+	/**
+	 * This ArrayList contains all Images, which are in the Volume.
+	 */
 	private ArrayList<Image> slices;
 
+	/**
+	 * The TextOptions are used, to decide where the wildcardmatch gonna be done and what the getAttributes method should return.
+	 */
 	private TextOptions textopt;
-	
+
 	/**
 	 * This default construktur should not be used. If you use this method, it
 	 * gonna print some information into the console and call System.exit(1).
@@ -25,7 +34,7 @@ public class Volume {
 				.println("You have to use the Volume(String path) construktor to work with Volume.\nThe path should be the path of the repository, where the images are stored in.");
 		System.exit(1);
 	}
-	
+
 	/**
 	 * This constructor searching in the given path for files. In this folder
 	 * there should only be one type of images. If the names of the images dont
@@ -90,6 +99,7 @@ public class Volume {
 		// sort images
 		Collections.sort(slices);
 	}
+
 	/**
 	 * This construktur is used by the gui class. The diffence is, that the
 	 * normal construktur would call System.exit(1) if the Volume path is not
@@ -120,32 +130,35 @@ public class Volume {
 			}
 		}
 
-		if (size() == 0){
+		if (size() == 0) {
 			throw new RuntimeException(
 					"The given Volume path seems to be not correct. Please check the path.");
 		}
-		
+
 		// sort images
 		Collections.sort(slices);
 	}
 
-	public void resetTextOptions(){
+	/**
+	 * Setting the TextOptions to the Default setting.
+	 */
+	public void resetTextOptions() {
 		textopt = new TextOptions();
-		
+
 		textopt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
 		textopt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
 		textopt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_VALUE);
-		
+
 		textopt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NAME_WITH_COLON);
 		textopt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
 	}
-	
-	public void setTextOptions(){
-		
+
+	public void setTextOptions() {
+
 	}
-	
+
 	/**
-	 * Returns the specific Image, starting with int i = 0
+	 * Returns the specific Image, starting with int i = 0.
 	 *
 	 * @param i
 	 * @return
@@ -252,6 +265,15 @@ public class Volume {
 		return str;
 	}
 
+	/**
+	 * This method is used to get Attributes of a Volume. If the Values to a
+	 * given key are not the same in all slices, a message is printed into the
+	 * console. In this case, this method would return the value of the first
+	 * slice in the volume.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public String getAttribute(String key) {
 		if (key == null) {
 			System.out
@@ -288,7 +310,7 @@ public class Volume {
 	}
 
 	/**
-	 * 
+	 * Returning a Attribute value, to a given key and a Vector named slices, which contains the indizies of the slices, which should be used.
 	 * @param key
 	 * @param slices
 	 * @return
@@ -303,6 +325,12 @@ public class Volume {
 		return att;
 	}
 
+	/**
+	 * Returning a Attribute value, to a given enum and a Vector named slices, which contains the indizies of the slices, which should be used.
+	 * @param key
+	 * @param slices
+	 * @return
+	 */
 	public String[] getAttribute(KeyMap en, Vector<Integer> slices) {
 		String[] att = new String[slices.size()];
 		int index = 0;
@@ -396,25 +424,25 @@ public class Volume {
 	public String[][] getAttributeList(String key, Vector<Integer> slices) {
 		String[][] str = new String[size()][];
 		String[] tosplitt = getAttribute(key, slices);
-		for (int i=0; i<tosplitt.length; i++){
+		for (int i = 0; i < tosplitt.length; i++) {
 			str[i] = tosplitt[i].split("\n");
 		}
 		return str;
 	}
 
-	public String[] getAttributeList(String key, int slice){
+	public String[] getAttributeList(String key, int slice) {
 		return getAttribute(key, slice).split("\n");
 	}
-	
-	public String[][] getAttributeListForEachSlice(String key){
+
+	public String[][] getAttributeListForEachSlice(String key) {
 		String[][] str = new String[size()][];
 		String[] tosplitt = getAttributeForEachSlice(key);
-		for (int i=0; i<tosplitt.length; i++){
+		for (int i = 0; i < tosplitt.length; i++) {
 			str[i] = tosplitt[i].split("\n");
 		}
 		return str;
 	}
-	
+
 	/**
 	 * 
 	 * @return
@@ -458,7 +486,7 @@ public class Volume {
 	}
 
 	/**
-	 * Creates png files of the images, in the folder, where is image is stored
+	 * Creates png files of the images, in the folder, where the image is stored
 	 * in.
 	 */
 	public void extractData() {

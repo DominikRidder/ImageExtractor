@@ -8,10 +8,24 @@ import java.util.Collections;
 import ij.plugin.DICOM;
 import ij.util.WildcardMatch;
 
+/**
+ * The Image class is at the moment only used for Dicoms. You can use it to get
+ * informations about the dicom, to test if you have a Dicom and to excract the
+ * Image of a Dicom or the header of the Dicom.
+ * 
+ * @author dridder_local
+ *
+ */
 public class Image implements Comparable<Image> {
 
+	/**
+	 * Type of the Image. Normally the ending of the file.
+	 */
 	private String type;
 
+	/**
+	 * Path of the Image File.
+	 */
 	private String path;
 
 	/**
@@ -44,11 +58,24 @@ public class Image implements Comparable<Image> {
 		this.path = path;
 	}
 
-	public Image(String type, String path) {
+	/**
+	 * With this Constructur, you can tell the Image class, which type of Image,
+	 * belong to this file.
+	 * 
+	 * @param path
+	 * @param type
+	 */
+	public Image(String path, String type) {
 		this.type = type;
 		this.path = path;
 	}
 
+	/**
+	 * Returning all Implemented KeyWords in a String, where one line is one
+	 * Attribute Name.
+	 * 
+	 * @return
+	 */
 	public static String getKeyWords() {
 		ArrayList<String> words = new ArrayList<String>();
 		String str = "";
@@ -68,7 +95,14 @@ public class Image implements Comparable<Image> {
 		return str;
 	}
 
-	public static String getKeyWords(String st) {
+	/**
+	 * This static method searching for Attribute Names, which match to a given
+	 * regular expression.
+	 * 
+	 * @param regularExpression
+	 * @return
+	 */
+	public static String getKeyWords(String regularExpression) {
 		ArrayList<String> words = new ArrayList<String>();
 		String str = "";
 		for (KeyMap en : KeyMap.values()) {
@@ -80,7 +114,6 @@ public class Image implements Comparable<Image> {
 		}
 		Collections.sort(words);
 
-		
 		int i = 0;
 		WildcardMatch wm = new WildcardMatch();
 		wm.setCaseSensitive(false);
@@ -88,7 +121,7 @@ public class Image implements Comparable<Image> {
 			String word = words.get(i);
 			word = word.substring(0, word.length() - 1);
 			try {
-				if (!wm.match(word, st)) {
+				if (!wm.match(word, regularExpression)) {
 					words.remove(i);
 					i--;
 				}
@@ -108,14 +141,33 @@ public class Image implements Comparable<Image> {
 		return str;
 	}
 
+	/**
+	 * Returns the Image typ. Known Implementation in this class: IMA and dcm.
+	 * 
+	 * @return
+	 */
 	public String getType() {
 		return type;
 	}
 
+	/**
+	 * Returns the path of the Image as a String.
+	 * 
+	 * @return
+	 */
 	public String getPath() {
 		return path;
 	}
-	
+
+	/**
+	 * Returning one or more Attriubtes, to a given String. If this String
+	 * contains "*" or "?" a wildcard match is used to find all matching
+	 * Attributes. In this case you have in each row of the String one value.
+	 * Else you only have 1 row and 1 value.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public String getAttribute(String key) {
 		if (key.contains("*") || key.contains("?")) {
 			return getAttribute(Image.getKeyWords(key));
@@ -152,10 +204,10 @@ public class Image implements Comparable<Image> {
 		return attribute;
 	}
 
-	public String[] getAttributeList(String key){
+	public String[] getAttributeList(String key) {
 		return getAttribute(key).split("\n");
 	}
-	
+
 	/**
 	 * Returns the Header of the Image, given by the path.
 	 */
@@ -172,6 +224,11 @@ public class Image implements Comparable<Image> {
 		return he.getHeader(path);
 	}
 
+	/**
+	 * Return the Image, that is in the data of this file, as a BufferedImage.
+	 * 
+	 * @return
+	 */
 	public BufferedImage getData() {
 		DataExtractor he = null;
 		switch (type) {
@@ -185,6 +242,11 @@ public class Image implements Comparable<Image> {
 		return he.getData(path);
 	}
 
+	/**
+	 * This method trys to find out, if the Initialized path is a Image.
+	 * 
+	 * @return
+	 */
 	public boolean isImage() {
 		switch (type) {
 		case "dcm":
@@ -209,28 +271,31 @@ public class Image implements Comparable<Image> {
 	public void extractHeader() {
 		extractHeader(getFatherFolder());
 	}
-	
+
 	/**
 	 * Creates ***.header txt document in the outputdir with the header
 	 * information of the Image.
+	 * 
 	 * @param outputdir
 	 */
-	public void extractHeader(String outputdir){
+	public void extractHeader(String outputdir) {
 		extractHeader(false, outputdir);
 	}
 
 	/**
-	 * Creates png files of the image, in the folder, where is image is stored in.
+	 * Creates png files of the image, in the folder, where is image is stored
+	 * in.
 	 */
 	public void extractData() {
 		extractData(getFatherFolder());
 	}
-	
+
 	/**
 	 * Creates png files of the image, in the outputdir folder.
+	 * 
 	 * @param outputdir
 	 */
-	public void extractData(String outputdir){
+	public void extractData(String outputdir) {
 		DataExtractor de = null;
 		switch (type) {
 		case "dcm":
@@ -243,7 +308,15 @@ public class Image implements Comparable<Image> {
 		de.extractData(path, outputdir);
 	}
 
-	protected void extractHeader(boolean bool, String outputdir) {
+	/**
+	 * Extracting the Header to a given outputdir path name. The boolean value
+	 * decides if this method throws an Exception, if it failed. This is needed,
+	 * for
+	 * 
+	 * @param throwException
+	 * @param outputdir
+	 */
+	protected void extractHeader(boolean throwException, String outputdir) {
 		HeaderExtractor he = null;
 		switch (type) {
 		case "dcm":
@@ -256,38 +329,32 @@ public class Image implements Comparable<Image> {
 		try {
 			he.extractHeader(path, outputdir);
 		} catch (Exception e) {
-			if (bool) {
+			if (throwException) {
 				throw new RuntimeException(e.getMessage());
 			} else {
-				System.out.println(e.getMessage());
+				System.out.println("Extracting the header failed.");
 			}
 		}
 	}
 
-	public String getFatherFolder(){
+	/**
+	 * Return a String, which contains the Absolute path name of the folder,
+	 * which is above this image.
+	 * 
+	 * @return
+	 */
+	public String getFatherFolder() {
 		File f = new File(path);
-		return f.getAbsolutePath().substring(0, f.getAbsolutePath().length()-f.getName().length());
+		return f.getAbsolutePath().substring(0,
+				f.getAbsolutePath().length() - f.getName().length());
 	}
-	// private String getAttributeDicom2(KeyMap en) {
-	// String key = en.getValue(type);
-	// String header = getHeader();
-	// String attribute = "";
-	// try {
-	// // cutting the start of the header until the given key appear.
-	// // Than splitting the rows and taking the the first row. Finally
-	// // getting the attribute by splitting with ": " and taking the
-	// // second argument
-	// attribute = header.substring(header.indexOf(key),
-	// header.length() - 1).split("\n")[0].split(": ")[1];
-	// } catch (ArrayIndexOutOfBoundsException
-	// | StringIndexOutOfBoundsException e) {
-	// //System.out.println("The attribute to the given key " + key
-	// // + " wasnt found.");
-	// attribute = "<<no attribute found>>";
-	// }
-	// return attribute;
-	// }
 
+	/**
+	 * Returns Dicom attributes, to a given enum of the KeyMap.
+	 * 
+	 * @param en
+	 * @return
+	 */
 	private String getAttributeDicom(KeyMap en) {
 		String key = en.getValue(type);
 		return new DicomHeaderExtractor().getInfo(this.path, key);
@@ -318,12 +385,19 @@ public class Image implements Comparable<Image> {
 		return str;
 	}
 
-
-	@SuppressWarnings("unused")
-	private String[] getAttributesDicom(KeyMap en[]) {
+	public String[] getAttributesDicom(KeyMap en[]) {
 		return Image.getAttributesDicom(path, en);
 	}
 
+	/**
+	 * Static method to get some Attributes of a Dicom. This can be usefull, if
+	 * you call this method often and you dont want to loose to much time on
+	 * initializing Images.
+	 * 
+	 * @param input
+	 * @param en
+	 * @return
+	 */
 	public static String[] getAttributesDicom(String input, KeyMap en[]) {
 		String key[] = new String[en.length];
 		for (int i = 0; i < key.length; i++) {
@@ -332,7 +406,9 @@ public class Image implements Comparable<Image> {
 		return new DicomHeaderExtractor().getInfo(input, key);
 	}
 
-	// Comparing by ImageNumber
+	/**
+	 * This method comparing two Images, by their Image Number.
+	 */
 	public int compareTo(Image o) {
 		int thisnumb = Integer.parseInt(this.getAttribute("image number")
 				.replace(" ", "").replace("\n", "").split(":")[1]);

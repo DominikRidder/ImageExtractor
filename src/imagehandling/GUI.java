@@ -51,42 +51,46 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * The current Thread, which is using the sort method/algorithm.
 		 */
 		private Thread currentSort = null;
-		
+
 		/**
 		 * The SortAlgorithm, which is used to perform the sort.
 		 */
 		private SortAlgorithm sa;
-		
+
 		/**
 		 * JTextArea output contains the output made by the SortAlgorithm.
 		 */
 		private JTextArea output;
-		
+
 		/**
-		 * Array of JPanels, where each JPanel representing a row in the left table.
+		 * Array of JPanels, where each JPanel representing a row in the left
+		 * table.
 		 */
 		private JPanel[] tablerows_left;
-		
+
 		/**
-		 * Array of JPanels, where each JPanel representing a row in the right table.
+		 * Array of JPanels, where each JPanel representing a row in the right
+		 * table.
 		 */
 		private JPanel[] tablerows_right;
-		
+
 		/**
-		 * The ByteArrayOutputStream, which catches the output made by the SortAlgorithm.
+		 * The ByteArrayOutputStream, which catches the output made by the
+		 * SortAlgorithm.
 		 */
 		private ByteArrayOutputStream baos;
-		
+
 		/**
-		 * JScrollPane, which adding the possibility for scrolling to the TextArea "output".
+		 * JScrollPane, which adding the possibility for scrolling to the
+		 * TextArea "output".
 		 */
 		private JScrollPane scroll;
-		
+
 		/**
 		 * The JFileChooser is used to browse for a Volume dir.
 		 */
 		private JFileChooser chooser = new JFileChooser();
-		
+
 		/**
 		 * JButton to call the sort() method and to cancel it again.
 		 */
@@ -578,14 +582,18 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * Standard Constructur.
 		 */
 		public VolumeTab() {
+			// The ImageIcon is kinda a wrapper for the image
 			ic = new ImageIcon(image);
+			// imagepanel wrapps the ImageIcon
 			imagepanel = new JLabel(ic);
 
+			// initialize the Buttons
 			apply_path = new JButton("create Volume");
 			browse_path = new JButton("browse");
 			show_attributes = new JButton("Display all Attributes");
 			addActionListerners(apply_path, browse_path, show_attributes);
 
+			// Next some not editable TextFields
 			max.setEditable(false);
 			setfinalSize(max, new Dimension(75, 100));
 			max.setBorder(null);
@@ -622,6 +630,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 			chooser.setAcceptAllFileFilterUsed(false);
 
+			// Putting everything on the left side together
 			panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 			setfinalSize(panel, new Dimension(650, 1100));
 			Component[] panelstuff = {
@@ -629,17 +638,20 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					att, scroll };
 			addComponents(panel, panelstuff);
 
+			// dir contains two buttons
 			dir.setLayout(new GridLayout(1, 2, 20, 1));
 			setfinalSize(dir, new Dimension(500, 1000));
 			Component[] dirstuff = { browse_path, apply_path };
 			addComponents(dir, dirstuff);
 
+			// Search option Panel
 			att.setLayout(new BoxLayout(att, BoxLayout.LINE_AXIS));
 			setfinalSize(att, new Dimension(550, 400));
 			Component[] attstuff = { show_attributes,
 					Box.createRigidArea(new Dimension(10, 0)), search, filter };
 			addComponents(att, attstuff);
 
+			// "Slice:", actual slice and Max slice
 			img.setLayout(new BoxLayout(img, BoxLayout.LINE_AXIS));
 			setfinalSize(img, new Dimension(500, 500));
 			Component[] imgstuff = { current_path,
@@ -647,16 +659,18 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					max };
 			addComponents(img, imgstuff);
 
+			// Putting everything together now
 			toppanel.setLayout(new BoxLayout(toppanel, BoxLayout.LINE_AXIS));
 			setfinalSize(toppanel, new Dimension(1100, 450));
 			toppanel.add(panel);
 			toppanel.add(imagepanel);
 
+			// Some this stuff
 			this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
 			setfinalSize(this, new Dimension(1100, 450));
 			this.add(toppanel);
 
-			// Arrow input reaction:
+			// Arrow input reaction: (dont work on all systems)
 			int condition = JComponent.WHEN_IN_FOCUSED_WINDOW;
 			InputMap inputMap = this.getInputMap(condition);
 			ActionMap actionMap = this.getActionMap();
@@ -688,16 +702,26 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			this.setVisible(true);
 		}
 
-		public void displayAttributes() {
+		/**
+		 * Method for displaying all Attriubtes or display some choosen
+		 * Attributes.
+		 */
+		private void displayAttributes() {
 			try {
+				// Do we have a Volume? If not we try to create one..
 				if (vol == null) {
 					createVolume();
 				}
+				// Did it work?
 				if (vol != null) {
+					// Is the user searching something or do we show them all?
 					if (displayAll) {
+						// getting the header of the actual slice
 						output.setText(vol.getSlice(
 								Integer.parseInt(index.getText())).getHeader());
 					} else {
+						// Simple: line for line - This line contains this
+						// string?
 						StringBuilder outputstring = new StringBuilder();
 						for (String str : vol
 								.getSlice(Integer.parseInt(index.getText()))
@@ -707,6 +731,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 								outputstring.append(str + "\n");
 							}
 						}
+						// And here comes the output
 						output.setText(outputstring.toString());
 					}
 				}
@@ -715,12 +740,19 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 		}
 
+		/**
+		 * Method to try, to create a Volume to the given path.
+		 */
 		private void createVolume() {
 			try {
+				// speciall Constructur to catch the Exception
 				vol = new Volume(path.getText(), this);
+				// It worked
 				output.setText("Volume created");
+				// Saving the Path for the user
 				current_path.setText("Volume: " + path.getText());
 
+				// Displaying one image
 				image.getGraphics()
 						.drawImage(
 								vol.getSlice(Integer.parseInt(index.getText()))
@@ -729,24 +761,31 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 												image.getHeight(),
 												BufferedImage.SCALE_SMOOTH), 0,
 								0, null);
+				// Setting the max slice
 				max.setText("/" + (vol.size() - 1));
+				// And showing it
 				repaint();
 			} catch (RuntimeException ert) {
+				// thrown by new Volume if it didit worked.
 				output.setText("Creating Volume didnt work. Please check the path.");
 			}
 		}
 
+		/**
+		 * This method is called by the 3 buttons of VolumeTab.
+		 */
 		public void actionPerformed(ActionEvent e) {
 			switch (e.getActionCommand()) {
-			case "create Volume":
+			case "create Volume": // try to initialize the volume
 				createVolume();
 				break;
-			case "browse":
+			case "browse": // searching for a volume
 				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 					path.setText(chooser.getSelectedFile().toString());
 				}
 				break;
-			case "Display all Attributes":
+			case "Display all Attributes": // forcing to display rly all
+											// attributes
 				displayAll = true;
 				displayAttributes();
 				break;
@@ -755,6 +794,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 		}
 
+		/**
+		 * This method is used by the GUI to find easily out, which Tab the user
+		 * is using right now.
+		 */
 		public String getClassName() {
 			return "VolumeTab";
 		}
@@ -764,16 +807,37 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		new GUI(true);
 	}
 
+	/**
+	 * Default serialVersionUID
+	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * The tabber managing the Tabs.
+	 */
 	private JTabbedPane tabber;
 
+	/**
+	 * If there is no Window anymore, the forceEnd boolean can call
+	 * System.exit(1) to rly force an End to all remaining Threads. If this GUI
+	 * is just a part of another programm, than you should not force an End,
+	 * because you would even kill the other Programm.
+	 */
 	private boolean forceEnd;
 
+	/**
+	 * Number of active windows.
+	 */
 	private static int windows = 0;
 
+	/**
+	 * Number of tabs that was created at all.
+	 */
 	private int tabint = 0;
 
+	/**
+	 * One and only Constructur.
+	 */
 	public GUI(boolean forceProgrammEndIfThereIsNoWindow) {
 		forceEnd = forceProgrammEndIfThereIsNoWindow;
 		JMenuBar menuBar;
@@ -817,11 +881,18 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		new Thread(this).start();
 	}
 
+	/**
+	 * Method for creating a new Tab.
+	 */
 	private void newTab(JComponent comp) {
+		// Max 9 Tabs
 		if (tabber.getTabCount() >= 9) {
 			return;
 		}
+		// Making the Counter Higher
 		tabint++;
+		
+		// Title of the Tab: tabint + type of Tab
 		String title = (tabint) + "";
 		if (((MyTab) comp).getClassName() == "VolumeTab") {
 			title += ": Volume";
@@ -831,21 +902,25 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		tabber.addTab(title, comp);
 
 		int index = tabber.indexOfTab(title);
+		// The Panel that represents the Tab
 		JPanel pnlTab = new JPanel();
 		pnlTab.setLayout(new BoxLayout(pnlTab, BoxLayout.LINE_AXIS));
 		pnlTab.setOpaque(false);
+		// Title of the Tab
 		JLabel lblTitle = new JLabel(title);
+		// Close Button
 		JButton btnClose = new JButton("x");
 		btnClose.setMaximumSize(new Dimension(30, 15));
 		btnClose.setMargin(new Insets(0, 0, 0, 0));
 
+		// kinda changing the Layout of the Tabs
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 1;
 
+		
 		pnlTab.add(lblTitle, gbc);
-
 		pnlTab.add(Box.createRigidArea(new Dimension(10, 10)));
 
 		gbc.gridx++;
@@ -858,8 +933,14 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		tabber.setSelectedIndex(tabber.getTabCount() - 1);
 	}
 
+	/**
+	 * Method for the Close Buttons in the Tab.
+	 */
 	class MyCloseActionHandler implements ActionListener {
 
+		/**
+		 * Important for the Tab, to find itself.
+		 */
 		private String tabName;
 
 		public MyCloseActionHandler(String tabName) {
@@ -871,13 +952,15 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		}
 
 		public void actionPerformed(ActionEvent evt) {
-
+			// check if the is a Tab to close
 			int index = tabber.indexOfTab(getTabName());
 			if (index >= 0) {
+				// focus another Tab, if there are enought
 				if (tabber.getTabCount() > 1) {
 					tabber.setSelectedIndex(index - 1);
 				}
 
+				// removing the Tab
 				tabber.removeTabAt(index);
 
 			}
@@ -886,11 +969,17 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 	}
 
+	/**
+	 * Method, which should force a choosen Size for a Component.
+	 */
 	private void setfinalSize(Component p, Dimension d) {
 		p.setMinimumSize(d);
 		p.setMaximumSize(d);
 	}
 
+	/**
+	 * Life update method for VolumeTabs.
+	 */
 	private void updateVolume() {
 		VolumeTab actual = null;
 		String lasttime_number = "0";
