@@ -235,7 +235,7 @@ public class Image implements Comparable<Image> {
 			return null;
 		}
 		
-		return he.getInfo(path, en.getValue(type), to);
+		return he.getInfo(path, en.getValue(type)+"*", to);
 	}
 	
 	public String[] getAttributeList(String key) {
