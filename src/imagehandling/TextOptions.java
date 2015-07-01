@@ -19,6 +19,15 @@ public class TextOptions {
 	
 	private ArrayList<Integer> searchoptions;
 	private ArrayList<Integer> returnoptions;
+	private String splitter = " ";
+	
+	public void setSplittString(String splitter){
+		this.splitter = splitter;
+	}
+	
+	public String getSplittString(){
+		return splitter;
+	}
 	
 	public ArrayList<Integer> getSearchOptions(){
 		return searchoptions;
@@ -37,6 +46,20 @@ public class TextOptions {
 	}
 	
 	public void setReturnOptions(int[] textoptionsvalues){
+		returnoptions = new ArrayList<Integer>();
+		for (int i : textoptionsvalues){
+			returnoptions.add(i);
+		}
+	}
+	
+	public void setSearchOptions(ArrayList<Integer> textoptionsvalues){
+		searchoptions = new ArrayList<Integer>();
+		for (int i : textoptionsvalues){
+			searchoptions.add(i);
+		}
+	}
+	
+	public void setReturnOptions(ArrayList<Integer> textoptionsvalues){
 		returnoptions = new ArrayList<Integer>();
 		for (int i : textoptionsvalues){
 			returnoptions.add(i);

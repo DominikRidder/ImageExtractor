@@ -2,9 +2,24 @@ package imagehandling;
 
 public class Main {
 	public static void main(String agrs[]) {
-		String filepath = "/opt/dridder_local/TestDicoms/Testfolder";
+		String filepath = "/opt/dridder_local/TestDicoms/Testfolder/B0092/1_wm_gre_rx=PA";
 		Volume vol = new Volume(filepath);
-		vol.extractData();
+		
+		TextOptions topt = new TextOptions();
+		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
+		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
+		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_VALUE);
+		
+		// the order of the ReturnOptions matters
+		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NUMBER);
+		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NAME_WITH_COLON);
+		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
+		
+		topt.setSplittString(" ");
+		
+		vol.setTextOptions(topt);
+		
+		System.out.println(vol.getAttribute("*echo*"));
 		
 		// // try to get a Attribute
 		// String str = vol

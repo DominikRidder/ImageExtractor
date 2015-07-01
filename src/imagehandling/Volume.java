@@ -23,7 +23,7 @@ public class Volume {
 	/**
 	 * The TextOptions are used, to decide where the wildcardmatch gonna be done and what the getAttributes method should return.
 	 */
-	private TextOptions textopt;
+	private TextOptions topt;
 
 	/**
 	 * This default construktur should not be used. If you use this method, it
@@ -143,20 +143,24 @@ public class Volume {
 	 * Setting the TextOptions to the Default setting.
 	 */
 	public void resetTextOptions() {
-		textopt = new TextOptions();
+		topt = new TextOptions();
 
-		textopt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
-		textopt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
-		textopt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_VALUE);
+		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
+		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
+		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_VALUE);
 
-		textopt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NAME_WITH_COLON);
-		textopt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
+		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NAME_WITH_COLON);
+		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
 	}
 
-	public void setTextOptions() {
-
+	public void setTextOptions(TextOptions topt) {
+		this.topt = topt;
 	}
 
+	public TextOptions getTextOptions(){
+		return topt;
+	}
+	
 	/**
 	 * Returns the specific Image, starting with int i = 0.
 	 *
@@ -243,7 +247,7 @@ public class Volume {
 				// catching files, that are not part of the images
 			}
 		}
-
+		
 		// if str == " " the attribute isnt set in the header
 		if (str.equals(" ")) {
 			return str;
@@ -320,7 +324,7 @@ public class Volume {
 		String[] att = new String[slices.size()];
 		int index = 0;
 		for (int slice : slices.toArray(a)) {
-			att[index++] = this.slices.get(slice).getAttribute(key);
+			att[index++] = getAttribute(key, slice);
 		}
 		return att;
 	}
@@ -336,7 +340,7 @@ public class Volume {
 		int index = 0;
 		Integer[] a = new Integer[0];
 		for (int slice : slices.toArray(a)) {
-			att[index++] = this.slices.get(slice).getAttribute(en);
+			att[index++] = getAttribute(en, slice);
 		}
 		return att;
 	}
@@ -355,7 +359,7 @@ public class Volume {
 					.println("The given element is 'null'. Cant search without a real KeyMap enum.");
 			return "<<no key given>>";
 		}
-		return slices.get(slice).getAttribute(en);
+		return slices.get(slice).getAttribute(en, topt);
 	}
 
 	public String getAttribute(String key, int slice) {
@@ -364,7 +368,7 @@ public class Volume {
 					.println("The given element is 'null'. Cant search without a String.");
 			return "<<no key given>>";
 		}
-		return slices.get(slice).getAttribute(key);
+		return slices.get(slice).getAttribute(key, topt);
 	}
 
 	/**

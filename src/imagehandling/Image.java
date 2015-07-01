@@ -169,43 +169,81 @@ public class Image implements Comparable<Image> {
 	 * @return
 	 */
 	public String getAttribute(String key) {
-		if (key.contains("*") || key.contains("?")) {
-			return getAttribute(Image.getKeyWords(key));
+		TextOptions topt = new TextOptions();
+		
+		if (key.contains("*") | key.contains("?")){
+			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
+			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
+			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_VALUE);
+		}else{
+			key = "*"+key+"*";
+			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
 		}
-		String attribute = "";
+		
+		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NUMBER);
+		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NAME_WITH_COLON);
+		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
+		
+		return getAttribute(key, topt);
+	}
+	
+	public String getAttribute(String key, TextOptions topt) {
+		HeaderExtractor he = null;
 		switch (type) {
 		case "dcm":
 		case "IMA":
-			attribute = getAttributeDicom(key);
+			he = new DicomHeaderExtractor();
 			break;
 		default:
 			System.out
 					.println("getting Attributes didnt work. Image Format is not supported.");
 			break;
 		}
-		return attribute;
+		return he.getInfo(path, key, topt);
 	}
 
 	/**
 	 * Returns the attribute of the Image to the given key.
 	 */
 	public String getAttribute(KeyMap en) {
-		String attribute = "";
+		TextOptions topt = new TextOptions();
+		
+		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
+		
+		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
+		
+		return getAttribute(en,topt);
+	}
+
+	public String getAttribute(KeyMap en,TextOptions topt) {
+		TextOptions to = new TextOptions();
+		to.setReturnOptions(topt.getReturnOptions());
+		to.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
+		
+		HeaderExtractor he = null;
 		switch (type) {
 		case "dcm":
 		case "IMA":
-			attribute = getAttributeDicom(en);
+			he = new DicomHeaderExtractor();
 			break;
 		default:
 			System.out
 					.println("getting Attributes didnt work. Image Format is not supported.");
 			break;
 		}
-		return attribute;
+		if (he == null){
+			return null;
+		}
+		
+		return he.getInfo(path, en.getValue(type), to);
 	}
-
+	
 	public String[] getAttributeList(String key) {
 		return getAttribute(key).split("\n");
+	}
+	
+	public String[] getAttributeList(String key, TextOptions topt) {
+		return getAttribute(key, topt).split("\n");
 	}
 
 	/**
@@ -359,7 +397,7 @@ public class Image implements Comparable<Image> {
 		String key = en.getValue(type);
 		return new DicomHeaderExtractor().getInfo(this.path, key);
 	}
-
+	
 	private String getAttributeDicom(String keyword) {
 		String str = "";
 		KeyMap enu = null;
