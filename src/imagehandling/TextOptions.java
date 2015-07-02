@@ -1,6 +1,6 @@
 package imagehandling;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * The TextOptions are used to set the Search and Return options for the
@@ -10,61 +10,46 @@ import java.util.ArrayList;
  *
  */
 public class TextOptions {
-	public static final int SEARCH_IN_ATTRIBUTE_NUMBER = 1;
-	public static final int SEARCH_IN_ATTRIBUTE_NAME = 2;
-	public static final int SEARCH_IN_ATTRIBUTE_VALUE = 3;
+	// Its important, that the Length of these Attribute is == 1, if make a String like TextOptions.ATTRIBUTE_EXAMPLE+"".
+	public static final int ATTRIBUTE_NUMBER = 7;
+	public static final int ATTRIBUTE_NAME = 8;
+	public static final int ATTRIBUTE_VALUE = 9;
+	/**
+	 * This String defines the return String of the getAttribute method.
+	 */
+	private String returnexp = TextOptions.ATTRIBUTE_NAME+": "+TextOptions.ATTRIBUTE_VALUE;
+	private HashSet<Integer> searchoptions;
 
-	public static final int RETURN_ATTRIBUTE_NUMBER = -1;
-	public static final int RETURN_ATTRIBUTE_NAME_WITHOUT_COLON = -2;
-	public static final int RETURN_ATTRIBUTE_NAME_WITH_COLON = -3;
-	public static final int RETURN_ATTRIBUTE_VALUE = -4;
-
-	private ArrayList<Integer> searchoptions;
-	private ArrayList<Integer> returnoptions;
-	private String splitter = " ";
-
-	public void setSplittString(String splitter) {
-		this.splitter = splitter;
+	/**
+	 * The ReturnExpression defines, what the getAttribute method should return. For example:<p>
+	 * <p>
+	 * TextOptions topt = new TextOptions();<p>
+	 * topt.setReturnExpression(TextOptions.ATTRIBUTE_NUMBER + " "+ TextOptions.ATTRIBUTE_NAME + ": "+ TextOptions.ATTRIBUTE_VALUE);<p>
+	 * System.out.println(vol.getAttribute("echo"));<p>
+	 * <p>
+	 * Output:<p>
+	 * 0018,0081 Echo Time: 3.3<p>
+	 * 0018,0086 Echo Numbers(s): 1<p>
+	 * 0018,0091 Echo Train Length: 1<p>
+	 * @param returnexp
+	 */
+	public void setReturnExpression(String returnexp) {
+		this.returnexp = returnexp;
 	}
 
-	public String getSplittString() {
-		return splitter;
+	public String getReturnString() {
+		return returnexp;
 	}
 
-	public ArrayList<Integer> getSearchOptions() {
+	public HashSet<Integer> getSearchOptions() {
 		return searchoptions;
 
 	}
 
-	public ArrayList<Integer> getReturnOptions() {
-		return returnoptions;
-	}
-
 	public void setSearchOptions(int[] textoptionsvalues) {
-		searchoptions = new ArrayList<Integer>();
+		searchoptions = new HashSet<Integer>();
 		for (int i : textoptionsvalues) {
 			searchoptions.add(i);
-		}
-	}
-
-	public void setReturnOptions(int[] textoptionsvalues) {
-		returnoptions = new ArrayList<Integer>();
-		for (int i : textoptionsvalues) {
-			returnoptions.add(i);
-		}
-	}
-
-	public void setSearchOptions(ArrayList<Integer> textoptionsvalues) {
-		searchoptions = new ArrayList<Integer>();
-		for (int i : textoptionsvalues) {
-			searchoptions.add(i);
-		}
-	}
-
-	public void setReturnOptions(ArrayList<Integer> textoptionsvalues) {
-		returnoptions = new ArrayList<Integer>();
-		for (int i : textoptionsvalues) {
-			returnoptions.add(i);
 		}
 	}
 
@@ -72,12 +57,12 @@ public class TextOptions {
 		searchoptions.add(textoptionvalue);
 	}
 
-	public void addReturnOption(int textoptionvalue) {
-		returnoptions.add(textoptionvalue);
+	public void removeSearchOption(int textoptionvalue){
+		searchoptions.remove(textoptionvalue);
 	}
 
+
 	public TextOptions() {
-		searchoptions = new ArrayList<Integer>();
-		returnoptions = new ArrayList<Integer>();
+		searchoptions = new HashSet<Integer>();
 	}
 }

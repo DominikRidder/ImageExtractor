@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import ij.plugin.DICOM;
 import ij.util.WildcardMatch;
@@ -100,64 +101,92 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		StringBuilder str = new StringBuilder();
 		WildcardMatch wm = new WildcardMatch();
 		wm.setCaseSensitive(false);
-		String splitter = topt.getSplittString();
-		ArrayList<Integer> searchopt = topt.getSearchOptions();
-		ArrayList<Integer> returnopt = topt.getReturnOptions();
-
+		StringBuilder returnexp = new StringBuilder(topt.getReturnString());
+		HashSet<Integer> searchopt = topt.getSearchOptions();
+		String linetest = "*"+regularExpression+"*";
+		
 		boolean searchInNumber = searchopt
-				.contains(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
-		boolean searchInName = searchopt
-				.contains(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
-		boolean searchInValue = searchopt
-				.contains(TextOptions.SEARCH_IN_ATTRIBUTE_VALUE);
+				.contains(TextOptions.ATTRIBUTE_NUMBER);
+		boolean searchInName = searchopt.contains(TextOptions.ATTRIBUTE_NAME);
+		boolean searchInValue = searchopt.contains(TextOptions.ATTRIBUTE_VALUE);
 
+		ArrayList<Integer> replaceListPos = new ArrayList<Integer>();
+		ArrayList<Integer> replaceListType = new ArrayList<Integer>();
+
+		for (int i = 0; i < returnexp.length(); i++) {
+			String c = ""+returnexp.charAt(i);
+			switch (c) {
+			case TextOptions.ATTRIBUTE_NUMBER+"":
+				replaceListPos.add(i);
+				replaceListType.add(TextOptions.ATTRIBUTE_NUMBER);
+				break;
+			case TextOptions.ATTRIBUTE_NAME+"":
+				replaceListPos.add(i);
+				replaceListType.add(TextOptions.ATTRIBUTE_NAME);
+				break;
+			case TextOptions.ATTRIBUTE_VALUE+"":
+				replaceListPos.add(i);
+				replaceListType.add(TextOptions.ATTRIBUTE_VALUE);
+				break;		
+			default:
+				break;
+			}
+		}
+
+		String[] firstsplitt;
+		String[] secondsplitt;
+		String number;
+		String name;
+		String value;
+		StringBuilder searchin;
+		
 		for (String line : getHeader(path).split("\n")) {
 			try {
-				String[] firstsplitt = line.split(":");
-				String[] secondsplitt = firstsplitt[0].split("  ", 2);
-				String number = secondsplitt[0];
-				String name = secondsplitt[1];
-				String value = firstsplitt[1].substring(1,
-						firstsplitt[1].length());
-				
-			StringBuilder searchin = new StringBuilder();
-			
-			if (searchInNumber) {
-				searchin.append(number + " ");
-			}
-			if (searchInName) {
-				searchin.append(" " + name + ": ");
-			}
-			if (searchInValue) {
-				searchin.append(" " + value);
-			}
-
-			if (wm.match(searchin.toString(), regularExpression)) {
-				for (int i = 0; i < returnopt.size(); i++) {
-					switch (returnopt.get(i)) {
-					case TextOptions.RETURN_ATTRIBUTE_NAME_WITH_COLON:
-						str.append(name + ":");
-						break;
-					case TextOptions.RETURN_ATTRIBUTE_NAME_WITHOUT_COLON:
-						str.append(name);
-						break;
-					case TextOptions.RETURN_ATTRIBUTE_NUMBER:
-						str.append(number);
-						break;
-					case TextOptions.RETURN_ATTRIBUTE_VALUE:
-						str.append(value);
-						break;
-					default:
-						break;
-					}
-					if (i != returnopt.size() - 1) {
-						str.append(splitter);
-					}
+				if (!wm.match(line, linetest)){
+					continue;
 				}
-				str.append("\n");
-			}
+				firstsplitt = line.split(":");
+				secondsplitt = firstsplitt[0].split("  ", 2);
+				number = secondsplitt[0];
+				name = secondsplitt[1];
+				value = firstsplitt[1].replace(" ", "");
+
+				searchin = new StringBuilder();
+		
+				if (searchInNumber) {
+					searchin.append(number + " ");
+				}
+				if (searchInName) {
+					searchin.append(" " + name + ": ");
+				}
+				if (searchInValue) {
+					searchin.append(" " + value+ " ");
+				}
+
+				if (wm.match(searchin.toString(), regularExpression)) {
+					returnexp = new StringBuilder(topt.getReturnString());
+					int offset = 0;
+					int pos = 0;
+					String replace = "";
+					for (int i=0; i < replaceListPos.size(); i++) {
+						switch(replaceListType.get(i)){
+						case TextOptions.ATTRIBUTE_NUMBER:
+							replace = number;break;
+						case TextOptions.ATTRIBUTE_NAME:
+							replace = name;break;
+						case TextOptions.ATTRIBUTE_VALUE:
+							replace = value;break;
+						default:break;
+						}
+						pos = replaceListPos.get(i)+offset;
+						returnexp.replace(pos, pos+1, replace);
+						offset+=replace.length()-1;
+					}
+					str.append(returnexp);
+					str.append("\n");
+				}
 			} catch (ArrayIndexOutOfBoundsException e) {
-				
+
 			}
 		}
 		if (str.length() > 0) {

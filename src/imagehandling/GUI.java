@@ -243,6 +243,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			jb.setText((6 + index) + ":browse");
 			jb.setMaximumSize(new Dimension(29, 27));
 			jb.setPreferredSize(new Dimension(29, 27));
+			jb.setMargin(null);
 			jb.addActionListener(this);
 
 			JPanel row = new JPanel();
@@ -270,6 +271,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			jb.setText(index + ":browse");
 			jb.setMaximumSize(new Dimension(29, 27));
 			jb.setPreferredSize(new Dimension(29, 27));
+			jb.setMargin(null);
 			jb.addActionListener(this);
 
 			// File transfer options
@@ -775,7 +777,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				repaint();
 			} catch (RuntimeException ert) {
 				// thrown by new Volume if it didit worked.
-				output.setText("Creating Volume didnt work. Please check the path.");
+				output.setText("Creating Volume didnt work. Please check the path. (Maybe the Selected Folder is empty)");
 			}
 		}
 
@@ -1016,14 +1018,21 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 			if (!actual.index.getText().equals("")) {
 				try {
+					Integer.parseInt(actual.index.getText());
+				}catch(NumberFormatException e){
+					actual.index.setText(lasttime_number+"");
+				}
+				
+				try {
+					// if this number is to high, i set it back
 					if (Integer.parseInt(actual.index.getText()) >= actual.vol
 							.size()
 							&& Integer.parseInt(actual.index.getText()) != 0) {
-						if (!(Integer.parseInt(actual.index.getText()) / 1000 > 0)) {
-							actual.index.setText("" + (actual.vol.size() - 1));
-						}
+							actual.index.setText("" + (actual.vol.size() - 1));	
 					}
+					// reacting to the changing index
 					if (!lasttime_number.equals(actual.index.getText())) {
+						if (!(Integer.parseInt(actual.index.getText()) >= actual.vol.size())){
 						lasttime_number = actual.index.getText();
 						actual.displayAttributes();
 						actual.image.getGraphics().drawImage(
@@ -1038,12 +1047,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 												BufferedImage.SCALE_AREA_AVERAGING), 0,
 								0, null);
 						actual.repaint();
+						}
 					}
 				} catch (NumberFormatException | NullPointerException e) {
-					if (actual.index.getText().equals(lasttime_number)) {
-						lasttime_number = "0";
-					}
-					actual.index.setText(lasttime_number);
+
 				}
 			}
 			if (!actual.filter.getText().equals("")) {
@@ -1055,9 +1062,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				}
 			}
 			if (actual.change != 0) {
+				int next = Integer.parseInt(actual.index.getText()) + actual.change;
+				if (next < actual.vol.size()){
 				actual.index
-						.setText(""
-								+ (Integer.parseInt(actual.index.getText()) + actual.change));
+						.setText(""+next);
+				}
 				actual.change = 0;
 			}
 		}

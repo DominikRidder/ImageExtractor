@@ -67,7 +67,7 @@ public class Volume {
 		}
 		
 		// sort images
-		Collections.sort(slices);
+									Collections.sort(slices);
 	}
 
 	/**
@@ -149,12 +149,11 @@ public class Volume {
 	public void resetTextOptions() {
 		topt = new TextOptions();
 
-		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
-		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
-		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_VALUE);
+		topt.addSearchOption(TextOptions.ATTRIBUTE_NUMBER);
+		topt.addSearchOption(TextOptions.ATTRIBUTE_NAME);
+		topt.addSearchOption(TextOptions.ATTRIBUTE_VALUE);
 
-		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NAME_WITH_COLON);
-		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
+		topt.setReturnExpression(TextOptions.ATTRIBUTE_NAME+": "+TextOptions.ATTRIBUTE_VALUE);
 	}
 
 	public void setTextOptions(TextOptions topt) {
@@ -276,8 +275,7 @@ public class Volume {
 	/**
 	 * This method is used to get Attributes of a Volume. If the Values to a
 	 * given key are not the same in all slices, a message is printed into the
-	 * console. In this case, this method would return the value of the first
-	 * slice in the volume.
+	 * console. This method always returns the attribute of the last image.
 	 * 
 	 * @param key
 	 * @return
@@ -289,8 +287,8 @@ public class Volume {
 			return "<<no key given>>";
 		}
 
-		// getting the first Attribute, for some comparisons
-		String str = getAttribute(key, 0);
+		// getting the last Attribute, for some comparisons
+		String str = getAttribute(key, this.size()-1);
 		if (str.equals("<<key not found>>")) {
 			return str;
 		}
@@ -301,8 +299,8 @@ public class Volume {
 			return str;
 		}
 
-		// starting with i=1, because we already have str = 'slice(0)'...
-		for (int i = 1; i < slices.size(); i++) {
+		// ending by i = slices.size-1, because we use this attribute for the comparission
+		for (int i = 0; i < slices.size()-1; i++) {
 			try {
 				if (!str.equals(getAttribute(key, i))) {
 					System.out

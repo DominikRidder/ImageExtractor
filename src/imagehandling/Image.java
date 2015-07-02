@@ -172,17 +172,15 @@ public class Image implements Comparable<Image> {
 		TextOptions topt = new TextOptions();
 
 		if (key.contains("*") | key.contains("?")) {
-			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
-			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
-			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_VALUE);
+			topt.addSearchOption(TextOptions.ATTRIBUTE_NUMBER);
+			topt.addSearchOption(TextOptions.ATTRIBUTE_NAME);
+			topt.addSearchOption(TextOptions.ATTRIBUTE_VALUE);
 		} else {
 			key = "*" + key + "*";
-			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
+			topt.addSearchOption(TextOptions.ATTRIBUTE_NAME);
 		}
 
-		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NUMBER);
-		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NAME_WITH_COLON);
-		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
+		topt.setReturnExpression(TextOptions.ATTRIBUTE_NUMBER+"  "+TextOptions.ATTRIBUTE_NAME+": "+TextOptions.ATTRIBUTE_VALUE);
 
 		return getAttribute(key, topt);
 	}
@@ -218,9 +216,9 @@ public class Image implements Comparable<Image> {
 	public String getAttribute(KeyMap en) {
 		TextOptions topt = new TextOptions();
 
-		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
+		topt.addSearchOption(TextOptions.ATTRIBUTE_NUMBER);
 
-		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
+		topt.setReturnExpression(TextOptions.ATTRIBUTE_VALUE+"");
 
 		return getAttribute(en, topt);
 	}
@@ -236,8 +234,8 @@ public class Image implements Comparable<Image> {
 	 */
 	public String getAttribute(KeyMap en, TextOptions topt) {
 		TextOptions to = new TextOptions();
-		to.setReturnOptions(topt.getReturnOptions());
-		to.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
+		to.setReturnExpression(topt.getReturnString());
+		to.addSearchOption(TextOptions.ATTRIBUTE_NUMBER);
 
 		HeaderExtractor he = null;
 		switch (type) {
@@ -440,26 +438,24 @@ public class Image implements Comparable<Image> {
 	 * you call this method often and you dont want to loose to much time on
 	 * initializing Images.
 	 * 
-	 * @param input
+	 * @param path
 	 * @param en
 	 * @return
 	 */
-	public static String[] getAttributesDicom(String input, KeyMap en[]) {
+	public static String[] getAttributesDicom(String path, KeyMap en[]) {
 		String key[] = new String[en.length];
 		for (int i = 0; i < key.length; i++) {
 			key[i] = en[i].getValue("dcm");
 		}
-		return new DicomHeaderExtractor().getInfo(input, key);
+		return new DicomHeaderExtractor().getInfo(path, key);
 	}
 
 	/**
 	 * This method comparing two Images, by their Image Number.
 	 */
 	public int compareTo(Image o) {
-		int thisnumb = Integer.parseInt(this.getAttribute("image number")
-				.replace(" ", "").split(":")[1]);
-		int objnumb = Integer.parseInt(o.getAttribute("image number")
-				.replace(" ", "").replace("\n", "").split(":")[1]);
+		int thisnumb = Integer.parseInt(this.getAttribute(KeyMap.KEY_IMAGE_NUMBER));
+		int objnumb = Integer.parseInt(o.getAttribute(KeyMap.KEY_IMAGE_NUMBER)	);
 		if (thisnumb > objnumb) {
 			return 1;
 		} else if (thisnumb < objnumb) {
