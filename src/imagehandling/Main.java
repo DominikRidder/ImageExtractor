@@ -1,5 +1,11 @@
 package imagehandling;
 
+/**
+ * This main class is an example for some methods of this Java-project.
+ * 
+ * @author dridder_local
+ *
+ */
 public class Main {
 	public static void main(String agrs[]) {
 		String filepath = "/opt/dridder_local/TestDicoms/AllDicoms/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/1_vg_gre_t1w__w3dfl";

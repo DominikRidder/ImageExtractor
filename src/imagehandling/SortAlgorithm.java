@@ -10,6 +10,11 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+/**
+ * This class is used to sort Dicoms. 
+ * @author dridder_local
+ *
+ */
 public class SortAlgorithm {
 
 	/**

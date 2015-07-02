@@ -10,6 +10,11 @@ import java.util.HashSet;
 import ij.plugin.DICOM;
 import ij.util.WildcardMatch;
 
+/**
+ * Implemtation of the interface HeaderExtractor for the image type "dcm" ("IMA").
+ * @author dridder_local
+ *
+ */
 public class DicomHeaderExtractor implements HeaderExtractor {
 
 	/**
@@ -101,7 +106,7 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		StringBuilder str = new StringBuilder();
 		WildcardMatch wm = new WildcardMatch();
 		wm.setCaseSensitive(false);
-		StringBuilder returnexp = new StringBuilder(topt.getReturnString());
+		StringBuilder returnexp = new StringBuilder(topt.getReturnExpression());
 		HashSet<Integer> searchopt = topt.getSearchOptions();
 		String linetest = "*"+regularExpression+"*";
 		
@@ -164,7 +169,7 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 				}
 
 				if (wm.match(searchin.toString(), regularExpression)) {
-					returnexp = new StringBuilder(topt.getReturnString());
+					returnexp = new StringBuilder(topt.getReturnExpression());
 					int offset = 0;
 					int pos = 0;
 					String replace = "";

@@ -234,7 +234,7 @@ public class Image implements Comparable<Image> {
 	 */
 	public String getAttribute(KeyMap en, TextOptions topt) {
 		TextOptions to = new TextOptions();
-		to.setReturnExpression(topt.getReturnString());
+		to.setReturnExpression(topt.getReturnExpression());
 		to.addSearchOption(TextOptions.ATTRIBUTE_NUMBER);
 
 		HeaderExtractor he = null;

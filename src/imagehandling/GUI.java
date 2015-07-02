@@ -38,12 +38,35 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
+/**
+ * This GUI is used, to look the Header and Images of Dicoms and to Search and Sort Dicoms.
+ * @author dridder_local
+ *
+ */
 public class GUI extends JFrame implements ActionListener, Runnable {
 
+	/**
+	 * Main method, to start the GUI.
+	 * @param agrs
+	 */
+	public static void main(String[] agrs) {
+		new GUI(true);
+	}
+	
+	/**
+	 * This is used by the inner classes of GUI (VolumeTab and SorterTab).
+	 * @author dridder_local
+	 *
+	 */
 	interface MyTab {
 		public String getClassName();
 	}
 
+	/**
+	 * Inner Class of GUI. Used to represent a Tab, which is usefull to sort Dicoms.
+	 * @author dridder_local
+	 *
+	 */
 	class SorterTab extends JPanel implements ActionListener, MyTab, Runnable {
 		/**
 		 * The current Thread, which is using the sort method/algorithm.
@@ -477,6 +500,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 	}
 
+	/**
+	 * This inner class representing a Tab in the GUI window, where you can look up the header and images of a Volume.
+	 * @author dridder_local
+	 *
+	 */
 	class VolumeTab extends JPanel implements ActionListener, MyTab {
 
 		/**
@@ -823,10 +851,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		public String getClassName() {
 			return "VolumeTab";
 		}
-	}
-
-	public static void main(String[] agrs) {
-		new GUI(true);
 	}
 
 	/**

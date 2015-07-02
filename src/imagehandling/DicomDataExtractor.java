@@ -8,14 +8,25 @@ import javax.imageio.ImageIO;
 
 import ij.plugin.DICOM;
 
+/**
+ * Implementation of the interface DataExtractor, which is used for dicoms.
+ * @author dridder_local
+ *
+ */
 public class DicomDataExtractor implements DataExtractor {
 
+	/**
+	 * Returns the image of a Dicom.
+	 */
 	public BufferedImage getData(String path) {
 		DICOM dcm = new DICOM();
 		dcm.open(path);
 		return dcm.getBufferedImage();
 	}
 
+	/**
+	 * This methods creates png Files in the outputdir folder, of the image to the given dicom path.
+	 */
 	public void extractData(String path, String outputdir) {
 		BufferedImage bi = getData(path);
 		File img = new File(path);

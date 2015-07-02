@@ -8,6 +8,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Vector;
 
+/**
+ * The Volume class is a class, to work with a single volume. A Volume contains multiple images. 
+ * @author dridder_local
+ *
+ */
 public class Volume {
 
 	/**
@@ -65,9 +70,9 @@ public class Volume {
 			} catch (RuntimeException e) {
 			}
 		}
-		
+
 		// sort images
-									Collections.sort(slices);
+		Collections.sort(slices);
 	}
 
 	/**
@@ -153,7 +158,8 @@ public class Volume {
 		topt.addSearchOption(TextOptions.ATTRIBUTE_NAME);
 		topt.addSearchOption(TextOptions.ATTRIBUTE_VALUE);
 
-		topt.setReturnExpression(TextOptions.ATTRIBUTE_NAME+": "+TextOptions.ATTRIBUTE_VALUE);
+		topt.setReturnExpression(TextOptions.ATTRIBUTE_NAME + ": "
+				+ TextOptions.ATTRIBUTE_VALUE);
 	}
 
 	public void setTextOptions(TextOptions topt) {
@@ -288,7 +294,7 @@ public class Volume {
 		}
 
 		// getting the last Attribute, for some comparisons
-		String str = getAttribute(key, this.size()-1);
+		String str = getAttribute(key, this.size() - 1);
 		if (str.equals("<<key not found>>")) {
 			return str;
 		}
@@ -299,8 +305,9 @@ public class Volume {
 			return str;
 		}
 
-		// ending by i = slices.size-1, because we use this attribute for the comparission
-		for (int i = 0; i < slices.size()-1; i++) {
+		// ending by i = slices.size-1, because we use this attribute for the
+		// comparission
+		for (int i = 0; i < slices.size() - 1; i++) {
 			try {
 				if (!str.equals(getAttribute(key, i))) {
 					System.out
@@ -398,6 +405,14 @@ public class Volume {
 		return attributes;
 	}
 
+	/**
+	 * Returns an array of Strings, where each String belong to one Slice. One
+	 * String may contain more rows, if the given key matches to more than one
+	 * searchparameter.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public String[] getAttributeForEachSlice(String key) {
 		if (key == null) {
 			System.out
