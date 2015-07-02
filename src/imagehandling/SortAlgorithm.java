@@ -9,16 +9,19 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Stack;
 
 /**
- * This class is used to sort Dicoms. 
+ * This class is used to sort Dicoms.
+ * 
  * @author dridder_local
  *
  */
 public class SortAlgorithm {
 
 	/**
-	 * Value, which can be called, to know, if there is a problem with the permissions.
+	 * Value, which can be called, to know, if there is a problem with the
+	 * permissions.
 	 */
 	private boolean permissionProblem = false;
 	/**
@@ -282,12 +285,13 @@ public class SortAlgorithm {
 	public boolean gotStopped() {
 		return stopsort;
 	}
-	
+
 	/**
 	 * Returns the information, if there was a problem with the permission.
+	 * 
 	 * @return
 	 */
-	public boolean getPermissionProblem(){
+	public boolean getPermissionProblem() {
 		return permissionProblem;
 	}
 
@@ -325,6 +329,7 @@ public class SortAlgorithm {
 		found = 0;
 		// number of dicoms, that the programm copyd or moved
 		transfered = 0;
+
 		if (!file.exists() | !file.isDirectory()) {
 			out.println("The Given Path seems to be incorrect.");
 			return false;
@@ -389,11 +394,16 @@ public class SortAlgorithm {
 	 * one subfolder in a protocol Folder, than the folder gets "unpacked".
 	 */
 	private void SASInSubfoldersWrapper(String searchin, String sortInDir) {
+		// Index to find the next praefix, that is needed for a protocol
+		index = new HashMap<>();
+		// missing praefix, that i need
+		missing = new HashMap<String, ArrayList<Integer>>();
 		// The patientFolder is the highest folder after the target sortInDir
 		// folder
 		for (File patientIdFolder : new File(sortInDir).listFiles()) {
 			// Hopefully i didnt catched a File
 			if (patientIdFolder.isDirectory()) {
+				String patientID = patientIdFolder.getName();
 				// The next instance in the Sort structur is a patientIdFolder
 				for (File protocolNameFolder : patientIdFolder.listFiles()) {
 					// helpfile is the first subfolder of a protocolFolder
@@ -427,6 +437,93 @@ public class SortAlgorithm {
 					if (empty) {
 						helpfile.delete();
 					}
+					for (File protocolSubfolder : protocolNameFolder
+							.listFiles()) {
+						/**************************************************************************************/
+
+						String protocolSubName = protocolSubfolder.getName();
+
+						// I dont need folders, when they are to short
+						if (protocolSubName.length() < protocol_digits + 1) {
+							continue;
+						}
+						try {
+							// getting the paefix index
+							String test = protocolSubName;
+							// maybe we have the false folder
+							if (test.length() == 0) {
+								continue;
+							}
+							// is test a number?
+							try {
+								int nextParse = Integer.parseInt(test);
+								// maybe a praefix is "marked" as missing, but
+								// we
+								// found it now
+								if (missing.get(patientID).contains(nextParse)) {
+									missing.get(patientID).remove(
+											new Integer(nextParse));
+								}
+								// filling the missing praefix, if we guess
+								// there
+								// are gaps
+								if (nextParse > index.get(patientID)) {
+									if (nextParse - index.get(patientID) > 1) {
+										for (int i = index.get(patientID) + 1; i < nextParse; i++) {
+											missing.get(patientID).add(i);
+										}
+									}
+									// making the highest index higher
+									index.put(patientID, nextParse);
+								}
+							} catch (NullPointerException e) {
+								// The index was missing i guess. Maybe not
+								// needed
+								// anymore.
+								index.put(patientID, 1);
+							} catch (NumberFormatException e) {
+								// I couldnt cut out a number of the praefix
+								continue;
+							} catch (IndexOutOfBoundsException e) {
+								// if the index not contains a "_"
+								continue;
+							}
+							// getting two informations, which are needed to
+							// compare
+							// the dicoms
+							KeyMap info[] = { KeyMap.KEY_SERIES_INSTANCE_UID,
+									KeyMap.KEY_PATIENTS_BIRTH_DATE };
+							String[] att = null;
+							for (File dicom : protocolSubfolder.listFiles()) {
+								if (dicom.getAbsolutePath().endsWith(".dcm")) {
+									// static method, for getting the
+									// attributes,
+									// because if we always Initialize a new
+									// Image
+									// class, than we would loose a lot of time.
+									att = Image.getAttributesDicom(
+											dicom.getAbsolutePath(), info);
+									break;
+								}
+							}
+
+							// Key for the protocolnames HashMap
+							String key = patientID + protocolSubName + att[0]
+									+ att[1];
+							// If there is no key, i gonna create it
+							if (!protocolnames.containsKey(key)) {
+								protocolnames.put(key, test);
+								continue;
+							}
+
+						} catch (Exception e) {
+							e.printStackTrace();
+							stopSort();
+						}
+
+						/***************************************************************************************/
+					}
+
 				}
 			}
 		}
@@ -444,14 +541,9 @@ public class SortAlgorithm {
 						for (File protocolSubfolder : protocolNameFolder
 								.listFiles()) {
 							if (protocolSubfolder.isDirectory()) {
-								// Test if the protocolsubfolder have the right
-								// length
-								if (protocolSubfolder.getName().length() != protocol_digits) {
-									continue;
-								}
-								// and if its got the right name
-								if (!protocolSubfolder.getName().startsWith(
-										toProtocolDigits(1 + ""))) {
+								// test if there is a second folder
+								if (protocolSubfolder.getName().startsWith(
+										toProtocolDigits(2 + ""))) {
 									onlyone = false;
 									break;
 								}
@@ -464,9 +556,8 @@ public class SortAlgorithm {
 								.listFiles()) {
 							if (protocolSubfolder.isDirectory()) {
 								// searching the lonley subfolder
-								if (!protocolSubfolder.getName().startsWith(
-										toProtocolDigits(1 + ""))
-										|| protocolSubfolder.getName().length() != protocol_digits) {
+								if (!protocolSubfolder.getName().equals(
+										toProtocolDigits(1 + ""))) {
 									continue;
 								}
 								// delete it, when im finished
@@ -502,7 +593,7 @@ public class SortAlgorithm {
 	}
 
 	/**
-	 * This method is the rekursiv search for the dicoms. If this methods finds
+	 * This method is the iterativ search for the dicoms. If this methods finds
 	 * dicoms, than this methods calls the
 	 * SASInSubfoldersSort/SASInNoSubfoldersSort method with the dicom path and
 	 * the output folder, where the sorted structur is build in.
@@ -511,42 +602,47 @@ public class SortAlgorithm {
 	 * @param sortInDir
 	 */
 	private void SASSearch(String searchin, String sortInDir) {
+		Stack<File> nextFolders = new Stack<File>();
 		File file = new File(searchin);
-		// subfolders
-		File[] list = file.listFiles();
+		nextFolders.push(file);
+		File[] list;
 
-		// Check if the folder exists
-		if (list == null) {
-			return;
-		}
-
-		for (File l : list) {
-			// Stopping the sort if the user called stopSort()
-			if (stopsort) {
-				return;
+		while (!nextFolders.isEmpty()) {
+			file = nextFolders.pop();
+			list = file.listFiles();
+			if (list == null) {
+				continue;
 			}
-			String path = l.getAbsolutePath();
-			// We found a dicom?
-			if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
-				// Using the sort structur the user have choosen
-				if (subfolders) {
-					SASInSubfoldersSort(path, sortInDir);
+			for (File potentialDicom : list) {
+				// Stopping the sort if the user called stopSort()
+				if (stopsort) {
+					return;
+				}
+				String path = potentialDicom.getAbsolutePath();
+				// We found a dicom?
+				if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
+					// Using the sort structur the user have choosen
+					if (subfolders) {
+						SASInSubfoldersSort(path, sortInDir);
+					} else {
+						SASInNoSubfoldersSort(path, sortInDir);
+					}
+					// Everytime we have another 50 Dicoms, we communicate with
+					// the
+					// user.
+					if (++found % 50 == 0) {
+						out.println("I found and sorted so far " + found
+								+ " Dicoms. (DeltaTime: " + deltaTime()
+								+ " millis.)");
+					}
 				} else {
-					SASInNoSubfoldersSort(path, sortInDir);
+					// If we didnt found a Dicom, than we put the folder on a
+					// stack
+					nextFolders.push(potentialDicom);
 				}
-				// Everytime we have another 50 Dicoms, we communicate with the
-				// user.
-				if (++found % 50 == 0) {
-					out.println("I found and sorted so far " + found
-							+ " Dicoms. (DeltaTime: " + deltaTime()
-							+ " millis.)");
-				}
-			} else {
-				// If we didnt found a Dicom, than we searching rekursiv for
-				// more dicoms and folders
-				SASSearch(path, sortInDir);
 			}
 		}
+		// subfolders
 	}
 
 	/**
@@ -667,16 +763,22 @@ public class SortAlgorithm {
 
 		if (list != null) {
 			for (File patientfolder : list) {
+				// her im only searching directorys
+				if (!patientfolder.isDirectory()) {
+					continue;
+				}
+
+				String patientID = patientfolder.getName();
+
 				// Initializing the arraylist in the HashMap missing, if there
 				// is no ArrayList
-				if (missing.get(patientfolder.getName()) == null) {
-					missing.put(patientfolder.getName(),
-							new ArrayList<Integer>());
+				if (missing.get(patientID) == null) {
+					missing.put(patientID, new ArrayList<Integer>());
 				}
 				// Initializing the Integer in the HashMap index, if there is no
 				// entry
-				if (index.get(patientfolder.getName()) == null) {
-					index.put(patientfolder.getName(), 0);
+				if (index.get(patientID) == null) {
+					index.put(patientID, 0);
 				}
 
 				File[] newlist = patientfolder.listFiles();
@@ -684,46 +786,50 @@ public class SortAlgorithm {
 					continue;
 				}
 				for (File protocolfolder : newlist) {
-					// A test to test if this folder belong to the sorting
-					// structur. Its not 100% safe..
-					if (protocolfolder.getName().length() < protocol_digits + 1
-							|| protocolfolder.getName().charAt(protocol_digits) != '_') {
+					String protocolName = protocolfolder.getName();
+
+					// I dont need folders, when they are to short
+					if (protocolName.length() < protocol_digits + 1) {
 						continue;
 					}
 					try {
 						// getting the paefix index
-						String test = protocolfolder.getName().substring(0,
-								protocol_digits);
+						String test = protocolName.substring(0,
+								protocolName.indexOf("_"));
+						// maybe we have the false folder
+						if (test.length() == 0) {
+							continue;
+						}
 						// is test a number?
 						try {
 							int nextParse = Integer.parseInt(test);
 							// maybe a praefix is "marked" as missing, but we
 							// found it now
-							if (missing.get(patientfolder.getName()).contains(
-									nextParse)) {
-								missing.get(patientfolder.getName()).remove(
+							if (missing.get(patientID).contains(nextParse)) {
+								missing.get(patientID).remove(
 										new Integer(nextParse));
 							}
 							// filling the missing praefix, if we guess there
 							// are gaps
-							if (nextParse > index.get(patientfolder.getName())) {
-								if (nextParse
-										- index.get(patientfolder.getName()) > 1) {
+							if (nextParse > index.get(patientID)) {
+								if (nextParse - index.get(patientID) > 1) {
 									for (int i = index.get(patientfolder
 											.getName()) + 1; i < nextParse; i++) {
-										missing.get(patientfolder.getName())
-												.add(i);
+										missing.get(patientID).add(i);
 									}
 								}
 								// making the highest index higher
-								index.put(patientfolder.getName(), nextParse);
+								index.put(patientID, nextParse);
 							}
 						} catch (NullPointerException e) {
 							// The index was missing i guess. Maybe not needed
 							// anymore.
-							index.put(patientfolder.getName(), 1);
+							index.put(patientID, 1);
 						} catch (NumberFormatException e) {
 							// I couldnt cut out a number of the praefix
+							continue;
+						} catch (IndexOutOfBoundsException e) {
+							// if the index not contains a "_"
 							continue;
 						}
 						// getting two informations, which are needed to compare
@@ -743,15 +849,15 @@ public class SortAlgorithm {
 						}
 
 						// Key for the protocolnames HashMap
-						String key = patientfolder.getName()
-								+ protocolfolder.getName().substring(
-										protocol_digits + 1,
-										protocolfolder.getName().length())
-								+ att[0] + att[1];
+						String key = patientID
+								+ protocolName.substring(
+										protocolName.indexOf("_") + 1,
+										protocolName.length()) + att[0]
+								+ att[1];
 						// If there is no key, i gonna create it
 						if (!protocolnames.containsKey(key)) {
 							protocolnames.put(key, test);
-							break;
+							continue;
 						}
 
 					} catch (Exception e) {
