@@ -1,5 +1,6 @@
 package imagehandling;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -359,6 +360,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			for (int i = 0; i < tablerows_left.length; i++) {
 				Component[] left_stuff = tablerows_left[i].getComponents();
 				JTextField status = (JTextField) left_stuff[0];
+				status.setBackground(null);
 				status.setText("Unchecked");
 			}
 
@@ -367,6 +369,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				// getting the components and casting them
 				Component[] left_stuff = tablerows_left[i].getComponents();
 				JTextField status = (JTextField) left_stuff[0];
+				status.setBackground(Color.yellow);
 				JTextField inputfield = (JTextField) left_stuff[1];
 				JTextField tooutput = (JTextField) left_stuff[3];
 				@SuppressWarnings("unchecked")
@@ -374,12 +377,14 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 				// catching empty input
 				if (inputfield.getText().equals("")) {
+					status.setBackground(Color.LIGHT_GRAY);
 					status.setText("Empty Input");
 					continue;
 				}
 
 				// catching empty output nr
 				if (tooutput.getText().equals("")) {
+					status.setBackground(Color.LIGHT_GRAY);
 					status.setText("Index Missing");
 				}
 
@@ -393,12 +398,14 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					target = (JTextField) right_stuff[1];
 					image_digits = (JTextField) right_stuff[2];
 				} catch (IndexOutOfBoundsException | NumberFormatException e) {
+					status.setBackground(Color.LIGHT_GRAY);
 					status.setText("Index Err");
 					continue;
 				}
 
 				// No Outputdir is set
 				if (target.getText().equals("")) {
+					status.setBackground(Color.LIGHT_GRAY);
 					status.setText("No Outp. Dir");
 					continue;
 				}
@@ -414,6 +421,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 						sa.setKeepImageName(true);
 					}
 				} catch (NumberFormatException e) {
+					status.setBackground(Color.LIGHT_GRAY);
 					status.setText("Err Img Digits");
 					continue;
 				}
@@ -429,16 +437,20 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				status.setText("In Progress...");
 				if (sa.searchAndSortIn(inputfield.getText(), target.getText())) {
 					status.setText("Finished");
+					status.setBackground(Color.GREEN);
 				} else {
 					if (sa.gotStopped()) {
 						if (sa.getPermissionProblem()) {
+							status.setBackground(Color.LIGHT_GRAY);
 							status.setText("Permission Err");
 							continue;
 						} else {
+							status.setBackground(Color.LIGHT_GRAY);
 							status.setText("Canceled");
 							break;
 						}
 					}
+					status.setBackground(Color.LIGHT_GRAY);
 					status.setText("Input Dir Err");
 				}
 			}
