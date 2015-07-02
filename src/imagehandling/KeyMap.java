@@ -8,16 +8,21 @@ public enum KeyMap {
 
 	public String getValue(String type) {
 		String str = "";
-		switch(type){
-                case "dcm":
-		case "IMA":str = imaValue(); break;
-		default: System.out.println("The Image type "+type+" ist not supported by the KeyMap.");break;
+		switch (type) {
+		case "dcm":
+		case "IMA":
+			str = imaValue();
+			break;
+		default:
+			System.out.println("The Image type " + type
+					+ " ist not supported by the KeyMap.");
+			break;
 		}
 		return str;
 	}
-	
+
 	// Dicom method for keys.
-	public String imaValue(){
+	public String imaValue() {
 		String str = "";
 		switch (this) {
 		case KEY_MEDIA_STORAGE_SOP_CLASS_UID:
@@ -344,10 +349,11 @@ public enum KeyMap {
 		case KEY_PIXEL_DATA:
 			str = "7FE0,0010";
 			break;
-		default:System.out.println("l/dcm key was found with this enum");
+		default:
+			System.out.println("l/dcm key was found with this enum");
 			break;
 		}
 		return str;
-		
+
 	}
 }

@@ -8,14 +8,14 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Stack;
-
-import javax.swing.plaf.synth.SynthSpinnerUI;
 
 public class SortAlgorithm {
 
+	/**
+	 * Value, which can be called, to know, if there is a problem with the permissions.
+	 */
+	private boolean permissionProblem = false;
 	/**
 	 * Value, that can be set to true by the stopSort() method.
 	 */
@@ -277,6 +277,14 @@ public class SortAlgorithm {
 	public boolean gotStopped() {
 		return stopsort;
 	}
+	
+	/**
+	 * Returns the information, if there was a problem with the permission.
+	 * @return
+	 */
+	public boolean getPermissionProblem(){
+		return permissionProblem;
+	}
 
 	/**
 	 * Method, to stop the Sort of another Thread.
@@ -297,6 +305,8 @@ public class SortAlgorithm {
 	 *            The Folder, where the Algorithm move and sort the DICOMs.
 	 */
 	public boolean searchAndSortIn(String searchin, String sortInDir) {
+		// true if an IOException appears somewhere
+		permissionProblem = false;
 		// false until the user calls stopSort()
 		stopsort = false;
 		// time between two system.out.println
@@ -336,7 +346,9 @@ public class SortAlgorithm {
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				out.println("Creating a file in the outputdir failed.");
+				permissionProblem = true;
+				stopSort();
 			}
 		}
 
@@ -400,7 +412,9 @@ public class SortAlgorithm {
 										StandardCopyOption.REPLACE_EXISTING);
 								empty = false;
 							} catch (IOException e) {
-								e.printStackTrace();
+								out.println("IOProblem appeared.");
+								permissionProblem = true;
+								stopSort();
 							}
 						}
 					}
@@ -467,7 +481,9 @@ public class SortAlgorithm {
 															.toPath(),
 													StandardCopyOption.REPLACE_EXISTING);
 										} catch (IOException e) {
-											e.printStackTrace();
+											out.print("IOProblem appeared.");
+											permissionProblem = true;
+											stopSort();
 										}
 									}
 								}
@@ -618,7 +634,9 @@ public class SortAlgorithm {
 				}
 				transfered++;
 			} catch (IOException e) {
-				e.printStackTrace();
+				out.println("Filetransfer didnt worked.");
+				permissionProblem = true;
+				stopSort();
 			}
 		}
 
@@ -733,6 +751,7 @@ public class SortAlgorithm {
 
 					} catch (Exception e) {
 						e.printStackTrace();
+						stopSort();
 					}
 				}
 			}
@@ -825,7 +844,9 @@ public class SortAlgorithm {
 				}
 				transfered++;
 			} catch (IOException e) {
-				e.printStackTrace();
+				out.println("Filetransfer didnt worked");
+				permissionProblem = true;
+				stopSort();
 			}
 		}
 

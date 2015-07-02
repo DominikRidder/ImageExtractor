@@ -19,12 +19,14 @@ public class DicomDataExtractor implements DataExtractor {
 	public void extractData(String path, String outputdir) {
 		BufferedImage bi = getData(path);
 		File img = new File(path);
-		File output = new File(outputdir+"/"+img.getName().substring(0, img.getName().length()-3)+"png");
+		File output = new File(outputdir + "/"
+				+ img.getName().substring(0, img.getName().length() - 3)
+				+ "png");
 		try {
 			ImageIO.write(bi, "png", output);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 }

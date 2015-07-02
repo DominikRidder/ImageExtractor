@@ -11,8 +11,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 
 import javax.swing.AbstractAction;
@@ -22,7 +20,6 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -398,6 +395,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					continue;
 				}
 
+				// No Outputdir is set
+				if (target.getText().equals("")) {
+					status.setText("No Outp. Dir");
+					continue;
+				}
+
 				// setting the img digits and the boolean keepImageName in
 				// SortAlgorithm
 				try {
@@ -426,8 +429,13 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					status.setText("Finished");
 				} else {
 					if (sa.gotStopped()) {
-						status.setText("Canceled");
-						break;
+						if (sa.getPermissionProblem()) {
+							status.setText("Permission Err");
+							continue;
+						} else {
+							status.setText("Canceled");
+							break;
+						}
 					}
 					status.setText("Input Dir Err");
 				}
@@ -891,7 +899,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		}
 		// Making the Counter Higher
 		tabint++;
-		
+
 		// Title of the Tab: tabint + type of Tab
 		String title = (tabint) + "";
 		if (((MyTab) comp).getClassName() == "VolumeTab") {
@@ -919,7 +927,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		gbc.gridy = 0;
 		gbc.weightx = 1;
 
-		
 		pnlTab.add(lblTitle, gbc);
 		pnlTab.add(Box.createRigidArea(new Dimension(10, 10)));
 
@@ -1028,7 +1035,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 										.getScaledInstance(
 												actual.image.getWidth(),
 												actual.image.getHeight(),
-												BufferedImage.SCALE_FAST), 0,
+												BufferedImage.SCALE_AREA_AVERAGING), 0,
 								0, null);
 						actual.repaint();
 					}

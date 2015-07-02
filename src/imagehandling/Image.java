@@ -170,24 +170,34 @@ public class Image implements Comparable<Image> {
 	 */
 	public String getAttribute(String key) {
 		TextOptions topt = new TextOptions();
-		
-		if (key.contains("*") | key.contains("?")){
+
+		if (key.contains("*") | key.contains("?")) {
 			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
 			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
 			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_VALUE);
-		}else{
-			key = "*"+key+"*";
+		} else {
+			key = "*" + key + "*";
 			topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NAME);
 		}
-		
+
 		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NUMBER);
 		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_NAME_WITH_COLON);
 		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
-		
+
 		return getAttribute(key, topt);
 	}
-	
+
+	/**
+	 * Returning the information ,to the given key, and the given textoptions.
+	 * 
+	 * @param key
+	 * @param topt
+	 * @return
+	 */
 	public String getAttribute(String key, TextOptions topt) {
+		if (!key.contains("*") && !key.contains("?")) {
+			key = "*" + key + "*";
+		}
 		HeaderExtractor he = null;
 		switch (type) {
 		case "dcm":
@@ -207,19 +217,28 @@ public class Image implements Comparable<Image> {
 	 */
 	public String getAttribute(KeyMap en) {
 		TextOptions topt = new TextOptions();
-		
+
 		topt.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
-		
+
 		topt.addReturnOption(TextOptions.RETURN_ATTRIBUTE_VALUE);
-		
-		return getAttribute(en,topt);
+
+		return getAttribute(en, topt);
 	}
 
-	public String getAttribute(KeyMap en,TextOptions topt) {
+	/**
+	 * Returns the a information from the header of the Image to the given enum
+	 * and the given Textoption. The searchoptions of the Textoptions are
+	 * ignored in this case.
+	 * 
+	 * @param en
+	 * @param topt
+	 * @return
+	 */
+	public String getAttribute(KeyMap en, TextOptions topt) {
 		TextOptions to = new TextOptions();
 		to.setReturnOptions(topt.getReturnOptions());
 		to.addSearchOption(TextOptions.SEARCH_IN_ATTRIBUTE_NUMBER);
-		
+
 		HeaderExtractor he = null;
 		switch (type) {
 		case "dcm":
@@ -231,17 +250,31 @@ public class Image implements Comparable<Image> {
 					.println("getting Attributes didnt work. Image Format is not supported.");
 			break;
 		}
-		if (he == null){
+		if (he == null) {
 			return null;
 		}
-		
-		return he.getInfo(path, en.getValue(type)+"*", to);
+
+		return he.getInfo(path, en.getValue(type) + "*", to);
 	}
-	
+
+	/**
+	 * Returns all key matching sepperated in an array.
+	 * 
+	 * @param key
+	 * @param topt
+	 * @return
+	 */
 	public String[] getAttributeList(String key) {
 		return getAttribute(key).split("\n");
 	}
-	
+
+	/**
+	 * Returns all key matching sepperated in an array.
+	 * 
+	 * @param key
+	 * @param topt
+	 * @return
+	 */
 	public String[] getAttributeList(String key, TextOptions topt) {
 		return getAttribute(key, topt).split("\n");
 	}
@@ -393,34 +426,9 @@ public class Image implements Comparable<Image> {
 	 * @param en
 	 * @return
 	 */
-	private String getAttributeDicom(KeyMap en) {
+	public String getAttributeDicom(KeyMap en) {
 		String key = en.getValue(type);
 		return new DicomHeaderExtractor().getInfo(this.path, key);
-	}
-	
-	private String getAttributeDicom(String keyword) {
-		String str = "";
-		KeyMap enu = null;
-		String output = "";
-		for (String keywordo : keyword.split("\n")) {
-			output = keywordo;
-			keywordo = keywordo.replace(" ", "").toLowerCase();
-			for (KeyMap en : KeyMap.values()) {
-				if (keywordo.equals(en.name().replace("KEY", "")
-						.replace("_", "").toLowerCase())) {
-					enu = en;
-					break;
-				}
-			}
-			if (enu == null) {
-				System.out
-						.println("The given key is not implemented. Use Image.getKeyWords() or Volume.getKeyWords() \nto get a String with all implemented keys. The keyword is not case-sensitive.");
-				str += "<<key not found>>";
-			} else {
-				str += output + ": " + getAttributeDicom(enu) + "\n";
-			}
-		}
-		return str;
 	}
 
 	public String[] getAttributesDicom(KeyMap en[]) {
@@ -449,7 +457,7 @@ public class Image implements Comparable<Image> {
 	 */
 	public int compareTo(Image o) {
 		int thisnumb = Integer.parseInt(this.getAttribute("image number")
-				.replace(" ", "").replace("\n", "").split(":")[1]);
+				.replace(" ", "").split(":")[1]);
 		int objnumb = Integer.parseInt(o.getAttribute("image number")
 				.replace(" ", "").replace("\n", "").split(":")[1]);
 		if (thisnumb > objnumb) {

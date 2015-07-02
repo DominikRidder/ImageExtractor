@@ -21,7 +21,8 @@ public class Volume {
 	private ArrayList<Image> slices;
 
 	/**
-	 * The TextOptions are used, to decide where the wildcardmatch gonna be done and what the getAttributes method should return.
+	 * The TextOptions are used, to decide where the wildcardmatch gonna be done
+	 * and what the getAttributes method should return.
 	 */
 	private TextOptions topt;
 
@@ -64,6 +65,9 @@ public class Volume {
 			} catch (RuntimeException e) {
 			}
 		}
+		
+		// sort images
+		Collections.sort(slices);
 	}
 
 	/**
@@ -157,10 +161,10 @@ public class Volume {
 		this.topt = topt;
 	}
 
-	public TextOptions getTextOptions(){
+	public TextOptions getTextOptions() {
 		return topt;
 	}
-	
+
 	/**
 	 * Returns the specific Image, starting with int i = 0.
 	 *
@@ -247,7 +251,7 @@ public class Volume {
 				// catching files, that are not part of the images
 			}
 		}
-		
+
 		// if str == " " the attribute isnt set in the header
 		if (str.equals(" ")) {
 			return str;
@@ -314,7 +318,9 @@ public class Volume {
 	}
 
 	/**
-	 * Returning a Attribute value, to a given key and a Vector named slices, which contains the indizies of the slices, which should be used.
+	 * Returning a Attribute value, to a given key and a Vector named slices,
+	 * which contains the indizies of the slices, which should be used.
+	 * 
 	 * @param key
 	 * @param slices
 	 * @return
@@ -330,7 +336,9 @@ public class Volume {
 	}
 
 	/**
-	 * Returning a Attribute value, to a given enum and a Vector named slices, which contains the indizies of the slices, which should be used.
+	 * Returning a Attribute value, to a given enum and a Vector named slices,
+	 * which contains the indizies of the slices, which should be used.
+	 * 
 	 * @param key
 	 * @param slices
 	 * @return
@@ -425,6 +433,13 @@ public class Volume {
 		return getAttribute(key).split("\n");
 	}
 
+	/**
+	 * Returning a two dimensional array, with the informations inside.
+	 * 
+	 * @param key
+	 * @param slices
+	 * @return
+	 */
 	public String[][] getAttributeList(String key, Vector<Integer> slices) {
 		String[][] str = new String[size()][];
 		String[] tosplitt = getAttribute(key, slices);
@@ -434,10 +449,23 @@ public class Volume {
 		return str;
 	}
 
+	/**
+	 * Returning a one dimensional array, with the informations inside.
+	 * 
+	 * @param key
+	 * @param slice
+	 * @return
+	 */
 	public String[] getAttributeList(String key, int slice) {
 		return getAttribute(key, slice).split("\n");
 	}
 
+	/**
+	 * Returning a two dimensional array, with the informations inside.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	public String[][] getAttributeListForEachSlice(String key) {
 		String[][] str = new String[size()][];
 		String[] tosplitt = getAttributeForEachSlice(key);
@@ -448,6 +476,7 @@ public class Volume {
 	}
 
 	/**
+	 * Returning the Data of an Image.
 	 * 
 	 * @return
 	 */
