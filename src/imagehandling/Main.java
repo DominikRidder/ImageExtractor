@@ -23,16 +23,17 @@ public class Main {
 
 		System.out.println(vol.getAttribute("echo", 0));
 
-		// SortAlgorithm sa = new SortAlgorithm();
-		// sa.useSubfolders(false);
-		// sa.setImgDigits(4);
-		// sa.setProtocolDigits(3);
-		// sa.setFilesOptionCopy();
+//		 SortAlgorithm sa = new SortAlgorithm();
+//		 sa.useSubfolders(false);
+//		 sa.setImgDigits(4);
+//		 sa.setProtocolDigits(3);
+//		 sa.setFilesOptionCopy();
+//		 sa.setKeepImageName(false);
 		// sa.searchAndSortIn("/opt/dridder_local/TestDicoms/TestSort6",
 		// "/opt/dridder_local/TestDicoms/TestSort6");
 
-		// sa.useSubfolders(true);
-		// sa.searchAndSortIn("/opt/dridder_local/TestDicoms",
-		// "/opt/dridder_local/TestDicoms/TestSort2");
+//		 sa.useSubfolders(true);
+//		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms/InSubfolders",
+//		 "/opt/dridder_local/TestDicoms/InSubfolders2");
 	}
 }

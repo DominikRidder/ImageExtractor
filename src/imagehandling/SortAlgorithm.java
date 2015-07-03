@@ -439,10 +439,9 @@ public class SortAlgorithm {
 					}
 					for (File protocolSubfolder : protocolNameFolder
 							.listFiles()) {
-						/**************************************************************************************/
 
 						String protocolSubName = protocolSubfolder.getName();
-
+						String protocolName = protocolNameFolder.getName();
 						// I dont need folders, when they are to short
 						if (protocolSubName.length() < protocol_digits + 1) {
 							continue;
@@ -450,42 +449,55 @@ public class SortAlgorithm {
 						try {
 							// getting the paefix index
 							String test = protocolSubName;
-							// maybe we have the false folder
-							if (test.length() == 0) {
-								continue;
-							}
-							// is test a number?
+
 							try {
+								// is test a number?
 								int nextParse = Integer.parseInt(test);
+								// Initializing the Integer in the HashMap
+								// index, if there is no
+								// entry
+								if (index.get(patientID + protocolName) == null) {
+									index.put(patientID + protocolName, 0);
+								}
+								if (missing.get(patientID + protocolName) == null) {
+									missing.put(patientID + protocolName,
+											new ArrayList<Integer>());
+								}
+
 								// maybe a praefix is "marked" as missing, but
-								// we
-								// found it now
-								if (missing.get(patientID).contains(nextParse)) {
-									missing.get(patientID).remove(
-											new Integer(nextParse));
+								// we found it now
+								if (missing.get(patientID + protocolName)
+										.contains(nextParse)) {
+									missing.get(patientID + protocolName)
+											.remove(new Integer(nextParse));
 								}
 								// filling the missing praefix, if we guess
-								// there
-								// are gaps
-								if (nextParse > index.get(patientID)) {
-									if (nextParse - index.get(patientID) > 1) {
-										for (int i = index.get(patientID) + 1; i < nextParse; i++) {
-											missing.get(patientID).add(i);
+								// there are gaps
+								if (nextParse > index.get(patientID
+										+ protocolName)) {
+									if (nextParse
+											- index.get(patientID
+													+ protocolName) > 1) {
+										for (int i = index.get(patientID
+												+ protocolName) + 1; i < nextParse; i++) {
+											missing.get(
+													patientID + protocolName)
+													.add(i);
 										}
 									}
 									// making the highest index higher
-									index.put(patientID, nextParse);
+									index.put(patientID + protocolName,
+											nextParse);
 								}
 							} catch (NullPointerException e) {
 								// The index was missing i guess. Maybe not
 								// needed
 								// anymore.
-								index.put(patientID, 1);
+								index.put(patientID + protocolName, 1);
 							} catch (NumberFormatException e) {
 								// I couldnt cut out a number of the praefix
 								continue;
 							} catch (IndexOutOfBoundsException e) {
-								// if the index not contains a "_"
 								continue;
 							}
 							// getting two informations, which are needed to
@@ -508,7 +520,7 @@ public class SortAlgorithm {
 							}
 
 							// Key for the protocolnames HashMap
-							String key = patientID + protocolSubName + att[0]
+							String key = patientID + protocolName + att[0]
 									+ att[1];
 							// If there is no key, i gonna create it
 							if (!protocolnames.containsKey(key)) {
@@ -521,7 +533,6 @@ public class SortAlgorithm {
 							stopSort();
 						}
 
-						/***************************************************************************************/
 					}
 
 				}
@@ -666,53 +677,70 @@ public class SortAlgorithm {
 		String birthDate = att[4];
 
 		// Check existing
-		boolean protocol = true;
 		StringBuilder path = new StringBuilder();
 		path.append(dir + "/" + patientID);
 		existOrCreate(path);
-		int i;
-		loop: for (i = 1; i < 1000; i++) {
-			// finding protocols Subfolders
-			protocol = true;
-			File protocolsubfolder = new File(path.toString() + "/"
-					+ protocolName + "/" + toProtocolDigits(i + ""));
-			if (!protocolsubfolder.exists()) {
-				break;
-			}
-			// >>This way could be replaced with a better test (with the HashMap
-			// protocolName for example)<<
-			for (int j = 1; j < 1000; j++) {
-				// Try to find a Dicom for the comparission. Kinda "guessing" a
-				// dicom name.
-				File dicom = new File(protocolsubfolder.getAbsolutePath() + "/"
-						+ toImgDigits("" + j) + ".dcm");
-				if (dicom.exists()) {
-					// getting two core informations
-					KeyMap twoElement[] = { KeyMap.KEY_SERIES_INSTANCE_UID,
-							KeyMap.KEY_PATIENTS_BIRTH_DATE };
-					String[] comparing = Image.getAttributesDicom(
-							dicom.getAbsolutePath(), twoElement);
-					// Check if the core informations are the same
-					if (instanceUID.equals(comparing[0])
-							&& birthDate.equals(comparing[1])) {
-						// Okay thats the right folder. This dicom contains to
-						// this one.
-						break loop;
-					}
-					// well than i search for another one..
-					continue loop;
-				}
-			}
-		}
-
 		// I may have to create the protocol folder
 		path.append("/" + protocolName);
 		existOrCreate(path);
-		// I may have to create the protocol subfolder
-		if (protocol) {
-			path.append("/" + toProtocolDigits(i + ""));
-			existOrCreate(path);
+
+		/**
+		 * // int i; loop: for (i = 1; i < 1000; i++) { // finding protocols
+		 * Subfolders protocol = true; File protocolsubfolder = new
+		 * File(path.toString() + "/" + protocolName + "/" + toProtocolDigits(i
+		 * + "")); if (!protocolsubfolder.exists()) { break; } // >>This way
+		 * could be replaced with a better test (with the HashMap //
+		 * protocolName for example)<< for (int j = 1; j < 1000; j++) { // Try
+		 * to find a Dicom for the comparission. Kinda "guessing" a // dicom
+		 * name. File dicom = new File(protocolsubfolder.getAbsolutePath() + "/"
+		 * + toImgDigits("" + j) + ".dcm"); if (dicom.exists()) { // getting two
+		 * core informations KeyMap twoElement[] = {
+		 * KeyMap.KEY_SERIES_INSTANCE_UID, KeyMap.KEY_PATIENTS_BIRTH_DATE };
+		 * String[] comparing = Image.getAttributesDicom(
+		 * dicom.getAbsolutePath(), twoElement); // Check if the core
+		 * informations are the same if (instanceUID.equals(comparing[0]) &&
+		 * birthDate.equals(comparing[1])) { // Okay thats the right folder.
+		 * This dicom contains to // this one. break loop; } // well than i
+		 * search for another one.. continue loop; } } }
+		 **/
+
+		/*********************************************************/
+		// Block for protocolname/praefix
+		if (!protocolnames.containsKey(patientID + protocolName + instanceUID
+				+ birthDate)) {
+			// The praefix of a protocol folder
+			String numb;
+			if (missing.get(patientID) != null
+					&& missing.get(patientID).size() != 0) {
+				// filling the missing praefix
+				numb = toProtocolDigits(missing.get(patientID).get(0) + "");
+				missing.get(patientID).remove(0);
+			} else {
+				// initializing a the index value to this patientID if its
+				// missing
+				if (index.get(patientID + protocolName) == null) {
+					index.put(patientID + protocolName, 1);
+				}
+				// If the index is equal to zero, than i put it to 1
+				if (index.get(patientID + protocolName) == 0) {
+					index.put(patientID + protocolName, 1);
+				}
+				// getting the praefix number
+				numb = toProtocolDigits(index.get(patientID + protocolName)
+						+ "");
+				index.put(patientID + protocolName,
+						index.get(patientID + protocolName) + 1);
+			}
+			// new protocol subfolder
+			protocolnames.put(patientID + protocolName + instanceUID
+					+ birthDate, numb);
 		}
+		// check next protocol and creating it, if its not existant
+		path.append("/"
+				+ protocolnames.get(patientID + protocolName + instanceUID
+						+ birthDate));
+		existOrCreate(path);
+		/************************************************/
 
 		// Whether I change the dicom name to imageNumber.dcm or I just keep the
 		// Name.
@@ -793,15 +821,18 @@ public class SortAlgorithm {
 						continue;
 					}
 					try {
-						// getting the paefix index
-						String test = protocolName.substring(0,
-								protocolName.indexOf("_"));
-						// maybe we have the false folder
-						if (test.length() == 0) {
-							continue;
-						}
-						// is test a number?
+						String test = null;
 						try {
+							// getting the paefix index
+							test = protocolName.substring(0,
+									protocolName.indexOf("_"));
+
+							// maybe we have the false folder
+							if (test.length() == 0) {
+								continue;
+							}
+
+							// is test a number?
 							int nextParse = Integer.parseInt(test);
 							// maybe a praefix is "marked" as missing, but we
 							// found it now
