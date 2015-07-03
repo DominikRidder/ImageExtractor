@@ -37,9 +37,24 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Document;
+import javax.swing.text.Element;
+import javax.swing.text.PlainDocument;
+import javax.swing.text.Position;
+import javax.swing.text.Segment;
+import javax.swing.text.html.HTMLDocument;
+
+import com.sun.org.apache.bcel.internal.generic.NEW;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.util.AttributeSetMethodGenerator;
 
 /**
- * This GUI is used, to look the Header and Images of Dicoms and to Search and Sort Dicoms.
+ * This GUI is used, to look the Header and Images of Dicoms and to Search and
+ * Sort Dicoms.
+ * 
  * @author dridder_local
  *
  */
@@ -47,23 +62,29 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 	/**
 	 * Main method, to start the GUI.
+	 * 
 	 * @param agrs
 	 */
 	public static void main(String[] agrs) {
 		new GUI(true);
 	}
-	
+
 	/**
 	 * This is used by the inner classes of GUI (VolumeTab and SorterTab).
+	 * 
 	 * @author dridder_local
 	 *
 	 */
 	interface MyTab {
 		public String getClassName();
+
+		public void lifeUpdate();
 	}
 
 	/**
-	 * Inner Class of GUI. Used to represent a Tab, which is usefull to sort Dicoms.
+	 * Inner Class of GUI. Used to represent a Tab, which is usefull to sort
+	 * Dicoms.
+	 * 
 	 * @author dridder_local
 	 *
 	 */
@@ -498,10 +519,45 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			sort();
 		}
 
+		public void lifeUpdate() {
+			boolean lastupdate = true;
+
+			while (this.isVisible()) {
+				try {
+					if (this.currentSort != null || lastupdate) {
+						if (this.currentSort == null) {
+							lastupdate = false;
+							try {
+								Thread.sleep(100);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						} else {
+							lastupdate = true;
+						}
+						this.output.setText(this.baos.toString());
+						int i = this.scroll.getVerticalScrollBar()
+								.getMaximum();
+						this.scroll.getVerticalScrollBar().setValue(i);
+					}
+				} catch (NullPointerException e) {
+
+				} finally {
+					try {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}
+
 	}
 
 	/**
-	 * This inner class representing a Tab in the GUI window, where you can look up the header and images of a Volume.
+	 * This inner class representing a Tab in the GUI window, where you can look
+	 * up the header and images of a Volume.
+	 * 
 	 * @author dridder_local
 	 *
 	 */
@@ -767,8 +823,9 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					// Is the user searching something or do we show them all?
 					if (displayAll) {
 						// getting the header of the actual slice
-						output.setText(vol.getSlice(
-								Integer.parseInt(index.getText())).getHeader());
+						String header =vol.getSlice(
+								Integer.parseInt(index.getText())).getHeader();
+						output.setText(header);
 					} else {
 						// Simple: line for line - This line contains this
 						// string?
@@ -850,6 +907,77 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 */
 		public String getClassName() {
 			return "VolumeTab";
+		}
+
+		@Override
+		public void lifeUpdate() {
+			String lasttime_index = "0";
+			String lasttime_filter = "";
+			int actual_index = 0;
+			int volumeSize = 0;
+			
+			while (this.isVisible()) {
+				if (!this.index.getText().equals("")) {
+					if (this.change != 0) {
+						int next = actual_index
+								+ this.change;
+						if (next < volumeSize) {
+							this.index.setText("" + next);
+						}
+						this.change = 0;
+					}
+					try {
+						actual_index = Integer.parseInt(this.index.getText());
+					} catch (NumberFormatException e) {
+						this.index.setText(lasttime_index + "");
+						continue;
+					}
+					
+					
+					try {
+						volumeSize = vol.size();
+						// if this number is to high, i set it back
+						if (actual_index >= volumeSize
+								&& actual_index != 0) {
+							this.index.setText("" + (volumeSize - 1));
+						}
+						// reacting to the changing index
+						if (!lasttime_index.equals(this.index.getText())) {
+							if (!(actual_index >= volumeSize)) {
+								
+								lasttime_index = this.index.getText();
+								this.displayAttributes();
+					
+								this.image
+										.getGraphics()
+										.drawImage(
+												this.vol
+														.getSlice(actual_index)
+														.getData()
+														.getScaledInstance(
+																this.image
+																		.getWidth(),
+																this.image
+																		.getHeight(),
+																BufferedImage.SCALE_AREA_AVERAGING),
+												0, 0, null);
+								this.repaint();
+
+							}
+						}
+					} catch (NumberFormatException | NullPointerException e) {
+
+					}
+				}
+				if (!this.filter.getText().equals("")) {
+					if (!lasttime_filter.equals(this.filter.getText())) {
+						lasttime_filter = this.filter.getText();
+						lasttime_index = this.index.getText();
+						this.displayAll = false;
+						this.displayAttributes();
+					}
+				}
+			}
 		}
 	}
 
@@ -1023,148 +1151,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	}
 
 	/**
-	 * Life update method for VolumeTabs.
-	 */
-	private void updateVolume() {
-		VolumeTab actual = null;
-		String lasttime_number = "0";
-		String lasttime_filter = "";
-		if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-				.getClassName().equals("VolumeTab")) {
-			actual = (VolumeTab) tabber.getComponentAt(tabber
-					.getSelectedIndex());
-			lasttime_number = actual.index.getText();
-			lasttime_filter = actual.filter.getText();
-		}
-
-		while (this.isVisible()) {
-			if (tabber.getTabCount() == 0) {
-				break;
-			}
-			try {
-				if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-						.getClassName().equals("VolumeTab")) {
-					actual = (VolumeTab) tabber.getComponentAt(tabber
-							.getSelectedIndex());
-				} else {
-					break;
-				}
-			} catch (IndexOutOfBoundsException e) {
-				continue;
-			}
-			if (!actual.index.getText().equals("")) {
-				try {
-					Integer.parseInt(actual.index.getText());
-				}catch(NumberFormatException e){
-					actual.index.setText(lasttime_number+"");
-				}
-				
-				try {
-					// if this number is to high, i set it back
-					if (Integer.parseInt(actual.index.getText()) >= actual.vol
-							.size()
-							&& Integer.parseInt(actual.index.getText()) != 0) {
-							actual.index.setText("" + (actual.vol.size() - 1));	
-					}
-					// reacting to the changing index
-					if (!lasttime_number.equals(actual.index.getText())) {
-						if (!(Integer.parseInt(actual.index.getText()) >= actual.vol.size())){
-						lasttime_number = actual.index.getText();
-						actual.displayAttributes();
-						actual.image.getGraphics().drawImage(
-								actual.vol
-										.getSlice(
-												Integer.parseInt(actual.index
-														.getText()))
-										.getData()
-										.getScaledInstance(
-												actual.image.getWidth(),
-												actual.image.getHeight(),
-												BufferedImage.SCALE_AREA_AVERAGING), 0,
-								0, null);
-						actual.repaint();
-						}
-					}
-				} catch (NumberFormatException | NullPointerException e) {
-
-				}
-			}
-			if (!actual.filter.getText().equals("")) {
-				if (!lasttime_filter.equals(actual.filter.getText())) {
-					lasttime_filter = actual.filter.getText();
-					lasttime_number = actual.index.getText();
-					actual.displayAll = false;
-					actual.displayAttributes();
-				}
-			}
-			if (actual.change != 0) {
-				int next = Integer.parseInt(actual.index.getText()) + actual.change;
-				if (next < actual.vol.size()){
-				actual.index
-						.setText(""+next);
-				}
-				actual.change = 0;
-			}
-		}
-	}
-
-	/**
-	 * Method to perform a life update in the SorterTab.
-	 */
-	private void updateSort() {
-		SorterTab actual = null;
-		boolean lastupdate = true;
-		if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-				.getClassName().equals("SorterTab")) {
-			actual = (SorterTab) tabber.getComponentAt(tabber
-					.getSelectedIndex());
-		}
-
-		while (this.isVisible()) {
-			if (tabber.getTabCount() == 0) {
-				break;
-			}
-			try {
-				if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-						.getClassName().equals("SorterTab")) {
-					actual = (SorterTab) tabber.getComponentAt(tabber
-							.getSelectedIndex());
-				} else {
-					break;
-				}
-			} catch (IndexOutOfBoundsException e) {
-				continue;
-			}
-
-			try {
-				if (actual.currentSort != null || lastupdate) {
-					if (actual.currentSort == null) {
-						lastupdate = false;
-						try {
-							Thread.sleep(100);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					} else {
-						lastupdate = true;
-					}
-					actual.output.setText(actual.baos.toString());
-					int i = actual.scroll.getVerticalScrollBar().getMaximum();
-					actual.scroll.getVerticalScrollBar().setValue(i);
-				}
-			} catch (NullPointerException e) {
-
-			} finally {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-
-	/**
 	 * Method, which is always running, to handle the lifeupdate of the tabs.
 	 */
 	private void lifeupdate() {
@@ -1177,25 +1163,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				}
 				continue;
 			}
-			try {
-				if (((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-						.getClassName().equals("VolumeTab")) {
-					updateVolume();
-				} else if (((MyTab) tabber.getComponentAt(tabber
-						.getSelectedIndex())).getClassName()
-						.equals("SorterTab")) {
-					updateSort();
-				} else {
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e2) {
-						e2.printStackTrace();
-					}
-					continue;
-				}
-			} catch (IndexOutOfBoundsException e) {
-				continue;
-			}
+
+			((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
+					.lifeUpdate();
+
 		}
 	}
 

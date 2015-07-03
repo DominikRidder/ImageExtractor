@@ -684,27 +684,6 @@ public class SortAlgorithm {
 		path.append("/" + protocolName);
 		existOrCreate(path);
 
-		/**
-		 * // int i; loop: for (i = 1; i < 1000; i++) { // finding protocols
-		 * Subfolders protocol = true; File protocolsubfolder = new
-		 * File(path.toString() + "/" + protocolName + "/" + toProtocolDigits(i
-		 * + "")); if (!protocolsubfolder.exists()) { break; } // >>This way
-		 * could be replaced with a better test (with the HashMap //
-		 * protocolName for example)<< for (int j = 1; j < 1000; j++) { // Try
-		 * to find a Dicom for the comparission. Kinda "guessing" a // dicom
-		 * name. File dicom = new File(protocolsubfolder.getAbsolutePath() + "/"
-		 * + toImgDigits("" + j) + ".dcm"); if (dicom.exists()) { // getting two
-		 * core informations KeyMap twoElement[] = {
-		 * KeyMap.KEY_SERIES_INSTANCE_UID, KeyMap.KEY_PATIENTS_BIRTH_DATE };
-		 * String[] comparing = Image.getAttributesDicom(
-		 * dicom.getAbsolutePath(), twoElement); // Check if the core
-		 * informations are the same if (instanceUID.equals(comparing[0]) &&
-		 * birthDate.equals(comparing[1])) { // Okay thats the right folder.
-		 * This dicom contains to // this one. break loop; } // well than i
-		 * search for another one.. continue loop; } } }
-		 **/
-
-		/*********************************************************/
 		// Block for protocolname/praefix
 		if (!protocolnames.containsKey(patientID + protocolName + instanceUID
 				+ birthDate)) {
@@ -740,7 +719,6 @@ public class SortAlgorithm {
 				+ protocolnames.get(patientID + protocolName + instanceUID
 						+ birthDate));
 		existOrCreate(path);
-		/************************************************/
 
 		// Whether I change the dicom name to imageNumber.dcm or I just keep the
 		// Name.
