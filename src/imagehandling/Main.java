@@ -8,7 +8,7 @@ package imagehandling;
  */
 public class Main {
 	public static void main(String agrs[]) {
-		String filepath = "/opt/dridder_local/TestDicoms/AllDicoms/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/1_vg_gre_t1w__w3dfl";
+		String filepath = "/opt/dridder_local/TestDicoms/AllDicoms/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/1_vg_gre_m0w__w3dfl";
 		Volume vol = new Volume(filepath);
 
 		TextOptions topt = new TextOptions();
@@ -21,7 +21,7 @@ public class Main {
 
 		vol.setTextOptions(topt);
 
-		System.out.println(vol.getAttribute("echo", 0));
+		System.out.println(vol.getAttribute("echo",0));
 
 //		 SortAlgorithm sa = new SortAlgorithm();
 //		 sa.useSubfolders(false);

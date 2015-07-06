@@ -614,6 +614,7 @@ public class SortAlgorithm {
 	 */
 	private void SASSearch(String searchin, String sortInDir) {
 		Stack<File> nextFolders = new Stack<File>();
+		String path;
 		File file = new File(searchin);
 		nextFolders.push(file);
 		File[] list;
@@ -622,6 +623,7 @@ public class SortAlgorithm {
 			file = nextFolders.pop();
 			list = file.listFiles();
 			if (list == null) {
+				// Maybe we dont have a Directory than
 				continue;
 			}
 			for (File potentialDicom : list) {
@@ -629,7 +631,7 @@ public class SortAlgorithm {
 				if (stopsort) {
 					return;
 				}
-				String path = potentialDicom.getAbsolutePath();
+				path = potentialDicom.getAbsolutePath();
 				// We found a dicom?
 				if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
 					// Using the sort structur the user have choosen
@@ -649,11 +651,14 @@ public class SortAlgorithm {
 				} else {
 					// If we didnt found a Dicom, than we put the folder on a
 					// stack
-					nextFolders.push(potentialDicom);
+					// Also we check, if the Directory is a softlink, because we
+					// ignore them, so we dont end in a loop
+					if (!Files.isSymbolicLink(potentialDicom.toPath())) {
+						nextFolders.push(potentialDicom);
+					}
 				}
 			}
 		}
-		// subfolders
 	}
 
 	/**

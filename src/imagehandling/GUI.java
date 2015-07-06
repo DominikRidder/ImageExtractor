@@ -37,19 +37,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
-import javax.swing.event.UndoableEditListener;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Document;
-import javax.swing.text.Element;
-import javax.swing.text.PlainDocument;
-import javax.swing.text.Position;
-import javax.swing.text.Segment;
-import javax.swing.text.html.HTMLDocument;
-
-import com.sun.org.apache.bcel.internal.generic.NEW;
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.AttributeSetMethodGenerator;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.plaf.basic.BasicArrowButton;
 
 /**
  * This GUI is used, to look the Header and Images of Dicoms and to Search and
@@ -78,7 +68,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	interface MyTab {
 		public String getClassName();
 
-		public void lifeUpdate();
+		public void lifeUpdate(JFrame parent);
 	}
 
 	/**
@@ -400,6 +390,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * This method is called by a Thread, to start the sorting.
 		 */
 		private void sort() {
+			Color color_inProgress = Color.YELLOW;
+			Color color_failed = Color.LIGHT_GRAY;
+			Color color_sucess = Color.GREEN;
+
 			// Setting every status to Unchecked
 			for (int i = 0; i < tablerows_left.length; i++) {
 				Component[] left_stuff = tablerows_left[i].getComponents();
@@ -413,7 +407,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				// getting the components and casting them
 				Component[] left_stuff = tablerows_left[i].getComponents();
 				JTextField status = (JTextField) left_stuff[0];
-				status.setBackground(Color.yellow);
+				status.setBackground(color_inProgress);
 				JTextField inputfield = (JTextField) left_stuff[1];
 				JTextField tooutput = (JTextField) left_stuff[3];
 				@SuppressWarnings("unchecked")
@@ -421,14 +415,14 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 				// catching empty input
 				if (inputfield.getText().equals("")) {
-					status.setBackground(Color.LIGHT_GRAY);
+					status.setBackground(color_failed);
 					status.setText("Empty Input");
 					continue;
 				}
 
 				// catching empty output nr
 				if (tooutput.getText().equals("")) {
-					status.setBackground(Color.LIGHT_GRAY);
+					status.setBackground(color_failed);
 					status.setText("Index Missing");
 				}
 
@@ -442,14 +436,14 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					target = (JTextField) right_stuff[1];
 					image_digits = (JTextField) right_stuff[2];
 				} catch (IndexOutOfBoundsException | NumberFormatException e) {
-					status.setBackground(Color.LIGHT_GRAY);
+					status.setBackground(color_failed);
 					status.setText("Index Err");
 					continue;
 				}
 
 				// No Outputdir is set
 				if (target.getText().equals("")) {
-					status.setBackground(Color.LIGHT_GRAY);
+					status.setBackground(color_failed);
 					status.setText("No Outp. Dir");
 					continue;
 				}
@@ -465,7 +459,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 						sa.setKeepImageName(true);
 					}
 				} catch (NumberFormatException e) {
-					status.setBackground(Color.LIGHT_GRAY);
+					status.setBackground(color_failed);
 					status.setText("Err Img Digits");
 					continue;
 				}
@@ -481,20 +475,20 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				status.setText("In Progress...");
 				if (sa.searchAndSortIn(inputfield.getText(), target.getText())) {
 					status.setText("Finished");
-					status.setBackground(Color.GREEN);
+					status.setBackground(color_sucess);
 				} else {
 					if (sa.gotStopped()) {
 						if (sa.getPermissionProblem()) {
-							status.setBackground(Color.LIGHT_GRAY);
+							status.setBackground(color_failed);
 							status.setText("Permission Err");
 							continue;
 						} else {
-							status.setBackground(Color.LIGHT_GRAY);
+							status.setBackground(color_failed);
 							status.setText("Canceled");
 							break;
 						}
 					}
-					status.setBackground(Color.LIGHT_GRAY);
+					status.setBackground(color_failed);
 					status.setText("Input Dir Err");
 				}
 			}
@@ -519,10 +513,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			sort();
 		}
 
-		public void lifeUpdate() {
+		public void lifeUpdate(JFrame parent) {
 			boolean lastupdate = true;
 
-			while (this.isVisible()) {
+			while (this.isVisible() && parent.isVisible()) {
 				try {
 					if (this.currentSort != null || lastupdate) {
 						if (this.currentSort == null) {
@@ -536,8 +530,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 							lastupdate = true;
 						}
 						this.output.setText(this.baos.toString());
-						int i = this.scroll.getVerticalScrollBar()
-								.getMaximum();
+						int i = this.scroll.getVerticalScrollBar().getMaximum();
 						this.scroll.getVerticalScrollBar().setValue(i);
 					}
 				} catch (NullPointerException e) {
@@ -561,7 +554,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	 * @author dridder_local
 	 *
 	 */
-	class VolumeTab extends JPanel implements ActionListener, MyTab {
+	class VolumeTab extends JPanel implements ActionListener, MyTab,
+			ChangeListener {
 
 		/**
 		 * Default serialVersionUID
@@ -685,6 +679,16 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		private JButton show_attributes;
 
 		/**
+		 * Arrow, for changing the index.
+		 */
+		private JButton arrow_up;
+
+		/**
+		 * Arrow, for changing the index.
+		 */
+		private JButton arrow_down;
+
+		/**
 		 * Standard Constructur.
 		 */
 		public VolumeTab() {
@@ -697,6 +701,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			apply_path = new JButton("create Volume");
 			browse_path = new JButton("browse");
 			show_attributes = new JButton("Display all Attributes");
+			arrow_up = new BasicArrowButton(BasicArrowButton.NORTH);
+			arrow_up.setText("arrow_up");
+			arrow_up.addChangeListener(this);
+			arrow_down = new BasicArrowButton(BasicArrowButton.SOUTH);
+			arrow_down.setText("arrow_down");
+			arrow_down.addChangeListener(this);
 			addActionListerners(apply_path, browse_path, show_attributes);
 
 			// Next some not editable TextFields
@@ -714,10 +724,17 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			setfinalSize(search, new Dimension(50, 100));
 			search.setBorder(null);
 
+			// creating a arrow panel
+			JPanel arrows = new JPanel();
+			arrows.setLayout(new BoxLayout(arrows, BoxLayout.PAGE_AXIS));
+			arrows.add(arrow_up);
+			arrows.add(arrow_down);
+
 			setfinalSize(path, new Dimension(500, 100));
 			setfinalSize(index, new Dimension(75, 100));
 			setfinalSize(show_attributes, new Dimension(500, 100));
 			setfinalSize(filter, new Dimension(500, 100));
+			setfinalSize(arrows, new Dimension(20, 40));
 
 			current_path.setEditable(false);
 			setfinalSize(current_path, new Dimension(220, 100));
@@ -761,8 +778,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			img.setLayout(new BoxLayout(img, BoxLayout.LINE_AXIS));
 			setfinalSize(img, new Dimension(500, 500));
 			Component[] imgstuff = { current_path,
-					Box.createRigidArea(new Dimension(80, 0)), slice, index,
-					max };
+					Box.createRigidArea(new Dimension(80, 0)), slice, arrows,
+					index, max };
 			addComponents(img, imgstuff);
 
 			// Putting everything together now
@@ -808,6 +825,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			this.setVisible(true);
 		}
 
+		private void addActionListerners(JButton b1, JButton b2, JButton b3) {
+			b1.addActionListener(this);
+			b2.addActionListener(this);
+			b3.addActionListener(this);
+		}
+
 		/**
 		 * Method for displaying all Attriubtes or display some choosen
 		 * Attributes.
@@ -823,8 +846,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					// Is the user searching something or do we show them all?
 					if (displayAll) {
 						// getting the header of the actual slice
-						String header =vol.getSlice(
+						String header = vol.getSlice(
 								Integer.parseInt(index.getText())).getHeader();
+						// The Document, which is used by the output is very
+						// slow
 						output.setText(header);
 					} else {
 						// Simple: line for line - This line contains this
@@ -879,7 +904,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		}
 
 		/**
-		 * This method is called by the 3 buttons of VolumeTab.
+		 * This method is called by the 5 buttons of VolumeTab.
 		 */
 		public void actionPerformed(ActionEvent e) {
 			switch (e.getActionCommand()) {
@@ -910,21 +935,30 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		}
 
 		@Override
-		public void lifeUpdate() {
+		public void lifeUpdate(JFrame parent) {
 			String lasttime_index = "0";
 			String lasttime_filter = "";
 			int actual_index = 0;
 			int volumeSize = 0;
-			
-			while (this.isVisible()) {
+
+			while (this.isVisible() && parent.isVisible()) {
 				if (!this.index.getText().equals("")) {
 					if (this.change != 0) {
-						int next = actual_index
-								+ this.change;
+						if (!((actual_index+this.change) < 0)){
+						int next = actual_index + this.change;
 						if (next < volumeSize) {
 							this.index.setText("" + next);
 						}
-						this.change = 0;
+						try {
+							Thread.sleep(25);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						}
+						if (!(arrow_up.getModel().isPressed() || arrow_down
+								.getModel().isPressed()) | (change < 0 && index.getText().equals("0"))) {
+							this.change = 0;
+						}
 					}
 					try {
 						actual_index = Integer.parseInt(this.index.getText());
@@ -932,27 +966,24 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 						this.index.setText(lasttime_index + "");
 						continue;
 					}
-					
-					
+
 					try {
 						volumeSize = vol.size();
 						// if this number is to high, i set it back
-						if (actual_index >= volumeSize
-								&& actual_index != 0) {
+						if (actual_index >= volumeSize && actual_index != 0) {
 							this.index.setText("" + (volumeSize - 1));
 						}
 						// reacting to the changing index
 						if (!lasttime_index.equals(this.index.getText())) {
 							if (!(actual_index >= volumeSize)) {
-								
+
 								lasttime_index = this.index.getText();
 								this.displayAttributes();
-					
+
 								this.image
 										.getGraphics()
 										.drawImage(
-												this.vol
-														.getSlice(actual_index)
+												this.vol.getSlice(actual_index)
 														.getData()
 														.getScaledInstance(
 																this.image
@@ -977,6 +1008,15 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 						this.displayAttributes();
 					}
 				}
+			}
+		}
+
+		public void stateChanged(ChangeEvent e) {
+			if (arrow_up.getModel().isPressed()) {
+				change = 1;
+			}
+			if (arrow_down.getModel().isPressed()) {
+				change = -1;
 			}
 		}
 	}
@@ -1165,15 +1205,9 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 
 			((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-					.lifeUpdate();
+					.lifeUpdate(this);
 
 		}
-	}
-
-	private void addActionListerners(JButton b1, JButton b2, JButton b3) {
-		b1.addActionListener(this);
-		b2.addActionListener(this);
-		b3.addActionListener(this);
 	}
 
 	/**
@@ -1190,27 +1224,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	 * VolumeTab.
 	 */
 	public void actionPerformed(ActionEvent e) {
-		VolumeTab actual = null;
-		if (tabber.getTabCount() != 0
-				&& ((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-						.getClassName() == "VolumeTab") {
-			actual = (VolumeTab) tabber.getComponentAt(tabber
-					.getSelectedIndex());
-		}
 		switch (e.getActionCommand()) {
-		case "create Volume":
-			actual.createVolume();
-			break;
-		case "browse":
-			if (actual.chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-				actual.path
-						.setText(actual.chooser.getSelectedFile().toString());
-			}
-			break;
-		case "Display all Attributes":
-			actual.displayAll = true;
-			actual.displayAttributes();
-			break;
 		case "new Volume Tab":
 			newTab(new VolumeTab());
 			break;
@@ -1221,7 +1235,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			new GUI(forceEnd);
 			break;
 		default:
-			System.out.println(e.getActionCommand());
 			break;
 		}
 	}
