@@ -21,7 +21,7 @@ public class Main {
 
 		vol.setTextOptions(topt);
 
-		System.out.println(vol.getAttribute("echo",0));
+		System.out.println(vol.getAttribute("echo"));
 
 //		 SortAlgorithm sa = new SortAlgorithm();
 //		 sa.useSubfolders(false);

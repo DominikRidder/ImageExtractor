@@ -454,8 +454,9 @@ public class Image implements Comparable<Image> {
 	 * This method comparing two Images, by their Image Number.
 	 */
 	public int compareTo(Image o) {
-		int thisnumb = Integer.parseInt(this.getAttribute(KeyMap.KEY_IMAGE_NUMBER));
-		int objnumb = Integer.parseInt(o.getAttribute(KeyMap.KEY_IMAGE_NUMBER)	);
+		KeyMap[] en = {KeyMap.KEY_IMAGE_NUMBER};
+		int thisnumb = Integer.parseInt(Image.getAttributesDicom(this.path, en)[0]);
+		int objnumb = Integer.parseInt(Image.getAttributesDicom(o.path, en)[0]);
 		if (thisnumb > objnumb) {
 			return 1;
 		} else if (thisnumb < objnumb) {
