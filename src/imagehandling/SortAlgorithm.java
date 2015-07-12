@@ -416,7 +416,7 @@ public class SortAlgorithm {
 					}
 				}
 				ImagePlus imp = dcm.duplicate();
-				writer.save(imp, key, "4d.nifti");
+				System.out.println(writer.save(imp, key, "4d.nifti"));
 			}
 		}
 		
@@ -781,7 +781,7 @@ public class SortAlgorithm {
 		}
 
 		// Copy/Move the data
-		moveDicom(path.toString(), dir, name);
+		moveDicom(input, path.toString(), name);
 	}
 
 	/**
@@ -891,7 +891,10 @@ public class SortAlgorithm {
 								break;
 							}
 						}
-
+						if (att == null){
+							continue;
+						}
+						
 						// Key for the protocolnames HashMap
 						String key = patientID
 								+ protocolName.substring(
@@ -992,7 +995,7 @@ public class SortAlgorithm {
 		}
 
 		// Copy/Move the data
-		moveDicom(path.toString(), dir, name);
+		moveDicom(input, path.toString(), name);
 	}
 
 	private void moveDicom(String input, String output, String name) {
@@ -1005,6 +1008,7 @@ public class SortAlgorithm {
 						target = new ArrayList<String>();
 					}
 					target.add(input);
+					niftihelp.put(output, target);
 				} else {
 					if (move) {
 						Files.move(new File(input).toPath(), test.toPath(),
