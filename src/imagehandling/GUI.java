@@ -9,6 +9,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
@@ -131,9 +132,21 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		private JButton startOrCancelSort;
 
 		/**
+		 * This String defines the tooltip test for the Image Digits column.
+		 */
+		private String image_digits_tooltip;
+		
+		/**
 		 * Default Constructur.
 		 */
 		public SorterTab() {
+			//Tool tip text's
+			image_digits_tooltip = new String("Set the Image Digits to 0, to not change the DICOM names.");
+			
+			//Adding tool tip's
+			JTextField img_digits = createText("Image Digits", 100, 30, false);
+			img_digits.setToolTipText(image_digits_tooltip);
+			
 			// Setting up the sortalgorithm with some default stuff
 			sortAlgorithm = new SortAlgorithm();
 			sortAlgorithm.setFilesOptionCopy();
@@ -214,7 +227,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					BoxLayout.LINE_AXIS));
 			table_header_right.add(createText("Nr.", 50, 30, false));
 			table_header_right.add(createText("Output Dir", 200, 30, false));
-			table_header_right.add(createText("Image Digits", 100, 30, false));
+			table_header_right.add(img_digits);
 			table_header_right.add(Box.createRigidArea(new Dimension(29, 30)));
 
 			// Panel that contains the upper right rectangle
@@ -293,7 +306,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// File transfer option
 			rowPanel.add(jc);
 			// Output Nr field
-			rowPanel.add(createText("" + index, 100, 30, true));
+			rowPanel.add(createText("" + 1, 100, 30, true));
 			// browse dir button
 			rowPanel.add(browseButton);
 			// to make it fit
@@ -323,7 +336,9 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// output dir field
 			rowPanel.add(createText("", 200, 30, true));
 			// image digits field
-			rowPanel.add(createText("0", 100, 30, true));
+			JTextField imgdigits = createText("0", 100, 30, true);
+			imgdigits.setToolTipText(image_digits_tooltip);
+			rowPanel.add(imgdigits);
 			// browse dir button
 			rowPanel.add(browseButton);
 			return rowPanel;
@@ -557,7 +572,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	 *
 	 */
 	class VolumeTab extends JPanel implements ActionListener, MyTab,
-			ChangeListener, MouseWheelListener{
+			ChangeListener, MouseWheelListener, KeyListener{
 
 		/**
 		 * Default serialVersionUID
@@ -730,10 +745,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		public VolumeTab() {
 			// The path for the Volume
 			path = new JTextField("/opt/dridder_local/TestDicoms/");
+			path.addKeyListener(this);
 			setfinalSize(path, new Dimension(500, 100));
 
 			// The Attribute Filter
 			filter = new JTextField("");
+			filter.addKeyListener(this);
 			setfinalSize(filter, new Dimension(500, 100));
 
 			// image
@@ -743,16 +760,20 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// imagepanel wrapps the ImageIcon
 			imagelabel = new JLabel(imgicon);
 			imagelabel.addMouseWheelListener(this);
+			imagelabel.addKeyListener(this);
 
 			// initialize the Buttons
 			apply_path = new JButton("create Volume");
 			apply_path.addActionListener(this);
+			apply_path.addKeyListener(this);
 
 			browse_path = new JButton("browse");
 			browse_path.addActionListener(this);
+			browse_path.addKeyListener(this);
 
 			show_attributes = new JButton("Display all Attributes");
 			show_attributes.addActionListener(this);
+			show_attributes.addKeyListener(this);
 			setfinalSize(show_attributes, new Dimension(500, 100));
 
 			arrow_up_slice = new BasicArrowButton(BasicArrowButton.NORTH);
@@ -787,11 +808,13 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			index_slice = new JTextField("0");
 			index_slice.setEditable(false);
 			index_slice.addMouseWheelListener(this);
+			index_slice.addKeyListener(this);
 			setfinalSize(index_slice, new Dimension(75, 100));
 
 			index_echo = new JTextField("0");
 			index_echo.setEditable(false);
 			index_echo.addMouseWheelListener(this);
+			index_echo.addKeyListener(this);
 			setfinalSize(index_echo, new Dimension(75, 100));
 
 			JTextField slice = new JTextField("Slice:");
@@ -924,6 +947,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				max_echo.setText("/" + echoNumbers);
 				max_slice.setText("/" + perEcho);
 
+				index_slice.requestFocus();
 				displayAttributes();
 				displayImage();
 			} catch (RuntimeException ert) {
@@ -1211,10 +1235,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			} else if (obj instanceof JLabel) {
 				JLabel img = (JLabel) obj;
 				if (img.equals(imagelabel)) {
-					if (sliceLastChanged) {
-						change_slice += change;
-					} else {
+					if (index_echo.hasFocus()) {
 						change_echo += change;
+					} else {
+						change_slice += change;
 					}
 				}
 			} else if(obj instanceof JPanel){
@@ -1227,6 +1251,29 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				
 			}
 		
+		}
+
+
+		public void keyPressed(KeyEvent e) {
+			int change = 0;
+			switch(e.getKeyCode()){
+			case KeyEvent.VK_UP: change = 1; break;
+			case KeyEvent.VK_DOWN: change = -1;break;
+			default:return;
+			}
+			if (index_echo.hasFocus()){
+				change_echo += change;
+			}else{
+				change_slice+= change;
+			}
+		}
+
+		public void keyReleased(KeyEvent e) {
+			
+		}
+
+		public void keyTyped(KeyEvent e) {
+			
 		}
 
 

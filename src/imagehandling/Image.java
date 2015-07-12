@@ -27,7 +27,7 @@ public class Image implements Comparable<Image> {
 	 * Path of the Image File.
 	 */
 	private String path;
-
+	
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
 	 * of the image dont end with a known ending, the images handeld as a IMA
@@ -46,7 +46,7 @@ public class Image implements Comparable<Image> {
 		case "IMA":
 			break;
 		default:
-			if (!isImage()) {
+			if (!Image.isDicom(path)) {
 				throw new RuntimeException(
 						"The given path cant be handeld as an Image");
 			}
@@ -316,21 +316,10 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @return
 	 */
-	public boolean isImage() {
-		switch (type) {
-		case "dcm":
-		case "IMA":
-			try {
-				// just to find out if it is a Dicom
-				new DICOM().open(path);
-				return true;
-			} catch (IndexOutOfBoundsException e) {
-			}
-			break;
-		default:
-			break;
-		}
-		return false;
+	public static boolean isDicom(String path) {
+		DICOM dcm = new DICOM();
+		dcm.open(path);
+		return dcm.getWidth() != 0;
 	}
 
 	/**

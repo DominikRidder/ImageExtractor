@@ -1,5 +1,10 @@
 package imagehandling;
 
+import ij.ImagePlus;
+import ij.ImageStack;
+import ij.plugin.DICOM;
+import ij.plugin.filter.Nifti_Writer;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -9,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Stack;
 
 /**
@@ -18,6 +24,16 @@ import java.util.Stack;
  *
  */
 public class SortAlgorithm {
+
+	/**
+	 * Defines, if the dicoms transefered as a dicom or as a nifti.
+	 */
+	private boolean createNiftis = false;
+
+	/**
+	 * 
+	 */
+	private HashMap<String, ArrayList<String>> niftihelp;
 
 	/**
 	 * Value, which can be called, to know, if there is a problem with the
@@ -226,6 +242,13 @@ public class SortAlgorithm {
 	}
 
 	/**
+	 * Defines, if the dicoms transefered as a dicom or as a nifti.
+	 */
+	public void setCreateNiftis(boolean createniftis) {
+		this.createNiftis = createniftis;
+	}
+
+	/**
 	 * This method calls toNDigits(protocol_digits, given number String).
 	 * 
 	 * @param image_number
@@ -314,6 +337,8 @@ public class SortAlgorithm {
 	 *            The Folder, where the Algorithm move and sort the DICOMs.
 	 */
 	public boolean searchAndSortIn(String searchin, String sortInDir) {
+		// a list of found dicoms is needed, if nifti should be used
+		niftihelp = new HashMap<>();
 		// true if an IOException appears somewhere
 		permissionProblem = false;
 		// false until the user calls stopSort()
@@ -375,6 +400,26 @@ public class SortAlgorithm {
 			return false;
 		}
 
+		if (createNiftis){
+			Set<String> keys = niftihelp.keySet();
+			Nifti_Writer writer = new Nifti_Writer();
+			for (String key : keys){
+				KeyMap[] info = {KeyMap.KEY_ECHO_NUMBERS_S};
+				ArrayList<String> dicoms = niftihelp.get(key);
+				boolean image4d = false;
+				DICOM dcm = new DICOM();
+				for (String dicom : dicoms){
+					dcm.open(dicom);
+					String[] att = Image.getAttributesDicom(dicom, info);
+					if (Integer.parseInt(att[0]) != 1){
+						image4d = true;
+					}
+				}
+				ImagePlus imp = dcm.duplicate();
+				writer.save(imp, key, "4d.nifti");
+			}
+		}
+		
 		// The last output
 		start = System.currentTimeMillis() - start;
 		String operation = "";
@@ -633,7 +678,8 @@ public class SortAlgorithm {
 				}
 				path = potentialDicom.getAbsolutePath();
 				// We found a dicom?
-				if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
+				// if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
+				if (Image.isDicom(path)) {
 					// Using the sort structur the user have choosen
 					if (subfolders) {
 						SASInSubfoldersSort(path, sortInDir);
@@ -727,31 +773,15 @@ public class SortAlgorithm {
 
 		// Whether I change the dicom name to imageNumber.dcm or I just keep the
 		// Name.
+		String name;
 		if (keepImgName) {
-			path.append("/" + new File(input).getName());
+			name = new File(input).getName();
 		} else {
-			path.append("/" + toImgDigits(imageNumber) + ".dcm");
+			name = toImgDigits(imageNumber) + ".dcm";
 		}
 
 		// Copy/Move the data
-		File test = new File(path.toString());
-		if (!test.exists()) {
-			try {
-				if (move) {
-					Files.move(new File(input).toPath(), test.toPath(),
-							StandardCopyOption.REPLACE_EXISTING);
-				} else {
-					Files.copy(new File(input).toPath(), test.toPath(),
-							StandardCopyOption.REPLACE_EXISTING);
-				}
-				transfered++;
-			} catch (IOException e) {
-				out.println("Filetransfer didnt worked.");
-				permissionProblem = true;
-				stopSort();
-			}
-		}
-
+		moveDicom(path.toString(), dir, name);
 	}
 
 	/**
@@ -950,22 +980,39 @@ public class SortAlgorithm {
 		existOrCreate(path);
 
 		// next the dicom name
+		String name;
 		if (keepImgName) {
-			path.append("/" + new File(input).getName());
+			name = new File(input).getName();
 		} else {
-			path.append("/" + toImgDigits(imageNumber) + ".dcm");
+			if (createNiftis){
+				name = toImgDigits(imageNumber) + ".nifti";
+			}else{
+				name = toImgDigits(imageNumber) + ".dcm";
+			}
 		}
 
 		// Copy/Move the data
-		File test = new File(path.toString());
+		moveDicom(path.toString(), dir, name);
+	}
+
+	private void moveDicom(String input, String output, String name) {
+		File test = new File(output + "/" + name);
 		if (!test.exists()) {
 			try {
-				if (move) {
-					Files.move(new File(input).toPath(), test.toPath(),
-							StandardCopyOption.REPLACE_EXISTING);
+				if (createNiftis) {
+					ArrayList<String> target = niftihelp.get(output);
+					if (target == null){
+						target = new ArrayList<String>();
+					}
+					target.add(input);
 				} else {
-					Files.copy(new File(input).toPath(), test.toPath(),
-							StandardCopyOption.REPLACE_EXISTING);
+					if (move) {
+						Files.move(new File(input).toPath(), test.toPath(),
+								StandardCopyOption.REPLACE_EXISTING);
+					} else {
+						Files.copy(new File(input).toPath(), test.toPath(),
+								StandardCopyOption.REPLACE_EXISTING);
+					}
 				}
 				transfered++;
 			} catch (IOException e) {
@@ -974,7 +1021,6 @@ public class SortAlgorithm {
 				stopSort();
 			}
 		}
-
 	}
 
 	/**
