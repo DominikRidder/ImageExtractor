@@ -30,7 +30,7 @@ public class SortAlgorithm {
 	private boolean createNiftis = false;
 
 	/**
-	 * 
+	 * This hashmap helps, to create niftis.
 	 */
 	private HashMap<String, ArrayList<String>> niftihelp;
 

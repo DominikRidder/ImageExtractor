@@ -20,6 +20,7 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -28,6 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
@@ -135,18 +137,34 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * This String defines the tooltip test for the Image Digits column.
 		 */
 		private String image_digits_tooltip;
+
+		/**
+		 * This integer represents a option, of a JDialogPanel.
+		 */
+		private int option;
+		
+		/**
+		 * This boolean is needed, because we using 2 run methods.
+		 */
+		private boolean sortingstarted;
+		
+		/**
+		 * Current JOptionPane.
+		 */
+		private JFrame currentdialog;
 		
 		/**
 		 * Default Constructur.
 		 */
 		public SorterTab() {
-			//Tool tip text's
-			image_digits_tooltip = new String("Set the Image Digits to 0, to not change the DICOM names.");
-			
-			//Adding tool tip's
+			// Tool tip text's
+			image_digits_tooltip = new String(
+					"Set the Image Digits to 0, to not change the DICOM names.");
+
+			// Adding tool tip's
 			JTextField img_digits = createText("Image Digits", 100, 30, false);
 			img_digits.setToolTipText(image_digits_tooltip);
-			
+
 			// Setting up the sortalgorithm with some default stuff
 			sortAlgorithm = new SortAlgorithm();
 			sortAlgorithm.setFilesOptionCopy();
@@ -184,7 +202,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			table_header_left.add(createText("Input Dir", 200, 30, false));
 			table_header_left.add(createText("Option", 80, 30, false));
 			table_header_left.add(createText("To Output Nr.", 100, 30, false));
-			table_header_left.add(Box.createRigidArea(new Dimension(39, 30)));
+			table_header_left.add(Box.createRigidArea(new Dimension(30, 30)));
+			table_header_left.add(createText("Nifti", 40, 30, false));
 
 			// Panel that contains the upper left rectangle
 			JPanel upperleft = new JPanel();
@@ -292,8 +311,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			browseButton.setMargin(null);
 			browseButton.addActionListener(this);
 
+			JCheckBox tonifti = new JCheckBox();
+			tonifti.setSize(29,27);
+			tonifti.addActionListener(this);
+			
 			// File transfer options
-			String[] options = { "Copy", "Move"};
+			String[] options = { "Copy", "Move" };
 			JComboBox<String> jc = new JComboBox<String>(options);
 			setfinalSize(jc, new Dimension(80, 28));
 
@@ -310,7 +333,9 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// browse dir button
 			rowPanel.add(browseButton);
 			// to make it fit
-			rowPanel.add(Box.createRigidArea(new Dimension(10, 30)));
+			rowPanel.add(Box.createRigidArea(new Dimension(20, 30)));
+			// option for niftis
+			rowPanel.add(tonifti);
 			return rowPanel;
 		}
 
@@ -358,6 +383,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		/**
 		 * This method is called by the buttons of SorterTab.
 		 */
+		@SuppressWarnings("unchecked")
 		public void actionPerformed(ActionEvent e) {
 			switch (e.getActionCommand()) {
 			case "Cancel": // Stopping the sort safely
@@ -383,6 +409,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			default:
 				// Using the default for the browse buttons, instead of making
 				// 10 case lines
+				if (e.getActionCommand().contains("...")){
 				if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 					int pos = Integer
 							.parseInt(e.getActionCommand().split(":")[1]);
@@ -395,6 +422,21 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 						((JTextField) tablerows_right[pos - 1].getComponents()[1])
 								.setText(fileChooser.getSelectedFile()
 										.toString());
+					}
+				}
+				}else if (e.getSource() instanceof JCheckBox){
+					int i=0;
+					for (i=0; i<4; i++){
+						if (e.getSource().equals(tablerows_left[i].getComponent(6))){
+							break;
+						}
+					}
+					JComboBox<String> target = ((JComboBox<String>)tablerows_left[i].getComponents()[2]);
+					if (target.isEnabled()){
+						target.setEnabled(false);
+						target.setSelectedIndex(0);
+					}else{
+						target.setEnabled(true);
 					}
 				}
 				break;
@@ -413,7 +455,20 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * Method, called by Thead.start();
 		 */
 		public void run() {
-			sort();
+			if (currentSortThread != null && !sortingstarted){
+				sortingstarted = true;
+				sort();
+				sortingstarted = false;
+			}else{
+				currentdialog = new JFrame();
+				currentdialog.setLocationRelativeTo(this);
+				currentdialog.setVisible(true);
+				option = JOptionPane.showConfirmDialog(
+								currentdialog,
+								"The Output Dir is empty. Should I sort the Dicoms to the Input folder?\nChoosing yes, setting the Image Digits to 0.\n(After 10 Seconds yes is picked automatically.)",
+								"The Outputdir is empty",
+								JOptionPane.YES_NO_OPTION);
+			}
 		}
 
 		public void lifeUpdate(JFrame parent) {
@@ -485,25 +540,53 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				}
 
 				// now getting the output information
-				JTextField target;
-				JTextField image_digits;
-				try {
-					// Integer.parseInt may throws an exception
-					Component[] right_stuff = tablerows_right[Integer
-							.parseInt(tooutput.getText()) - 1].getComponents();
-					target = (JTextField) right_stuff[1];
-					image_digits = (JTextField) right_stuff[2];
-				} catch (IndexOutOfBoundsException | NumberFormatException e) {
-					status.setBackground(color_failed);
-					status.setText("Index Err");
-					continue;
-				}
+				JTextField target = null;
+				JTextField image_digits = null;
+				if (tooutput.getText().equals("<-")) {
+					target = inputfield;
+					image_digits = new JTextField("0");
+				} else {
+					try {
+						// Integer.parseInt may throws an exception
+						Component[] right_stuff = tablerows_right[Integer
+								.parseInt(tooutput.getText()) - 1]
+								.getComponents();
+						target = (JTextField) right_stuff[1];
+						image_digits = (JTextField) right_stuff[2];
+					} catch (IndexOutOfBoundsException | NumberFormatException e) {
+						status.setBackground(color_failed);
+						status.setText("Index Err");
+						continue;
+					}
 
-				// No Outputdir is set
-				if (target.getText().equals("")) {
-					status.setBackground(color_failed);
-					status.setText("No Outp. Dir");
-					continue;
+					// No Outputdir is set
+					if (target.getText().equals("")) {
+						option = -1;
+						new Thread(this).start();
+						int time=0;		
+						while (time++<10 && option == -1){
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+						currentdialog.dispose();
+						
+						if (option == -1){
+							option = 0;
+						}
+						
+						if (option == 1) {
+							status.setBackground(color_failed);
+							status.setText("No Outp. Dir");
+							continue;
+						} else if (option == 0) {
+							tooutput.setText("<-");
+							target = inputfield;
+							image_digits = new JTextField("0");
+						}
+					}
 				}
 
 				// setting the img digits and the boolean keepImageName in
@@ -527,10 +610,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				if (option.equals("Move")) {
 					sortAlgorithm.setCreateNiftis(false);
 					sortAlgorithm.setFilesOptionMove();
-				} else if (option.equals("Copy")){
+				} else if (option.equals("Copy")) {
 					sortAlgorithm.setCreateNiftis(false);
 					sortAlgorithm.setFilesOptionCopy();
-				}else{
+				} else {
 					sortAlgorithm.setCreateNiftis(true);
 				}
 
@@ -559,8 +642,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 			// To be sure, the user see the hole text.
 			this.outputArea.setText(this.sortListener.toString());
-			int i = this.outputScroller.getVerticalScrollBar()
-					.getMaximum();
+			int i = this.outputScroller.getVerticalScrollBar().getMaximum();
 			this.outputScroller.getVerticalScrollBar().setValue(i);
 			// things that have to be done, so the next sort can be called
 			currentSortThread = null;
@@ -577,7 +659,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	 *
 	 */
 	class VolumeTab extends JPanel implements ActionListener, MyTab,
-			ChangeListener, MouseWheelListener, KeyListener, Runnable{
+			ChangeListener, MouseWheelListener, KeyListener, Runnable {
 
 		/**
 		 * Default serialVersionUID
@@ -638,10 +720,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		private JPanel index_Panel;
 
 		/**
-		 * JPanel, that contains two arrows for the index_slice/index_echo field.
+		 * JPanel, that contains two arrows for the index_slice/index_echo
+		 * field.
 		 */
-		private JPanel arrows_slice,arrows_echo;
-		
+		private JPanel arrows_slice, arrows_echo;
+
 		/**
 		 * Arrow, for changing the index.
 		 */
@@ -736,12 +819,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * The imagepanel is the container, which contains the ImageIcon ic.
 		 */
 		private JLabel imagelabel;
-		
+
 		/**
 		 * True if a Thread creates a volume.
 		 */
 		private boolean creatingVolume;
-		
+
 		/**
 		 * Standard Constructur.
 		 */
@@ -933,7 +1016,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				// speciall Constructur which throws an Exception if new Volume
 				// fails, instead of calling System.exit(1)
 				volume = new Volume(path.getText(), this);
-				
+
 				// Default Index
 				actual_slice = 1;
 				actual_echo = 1;
@@ -1026,7 +1109,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * This method is called by the 5 buttons of VolumeTab.
 		 */
 		public void actionPerformed(ActionEvent e) {
-			if (creatingVolume){
+			if (creatingVolume) {
 				return;
 			}
 			switch (e.getActionCommand()) {
@@ -1079,17 +1162,24 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			actual_slice = 0;
 			actual_echo = 0;
 			int status = 0;
-			
+
 			while (this.isVisible() && parent.isVisible()) {
-				if (creatingVolume){
-					switch(status++){
-					case 0: outputArea.setText("Creating Volume.");break;
-					case 1: outputArea.setText("Creating Volume..");break;
-					case 2: outputArea.setText("Creating Volume...");break;
-					default:break;
+				if (creatingVolume) {
+					switch (status++) {
+					case 0:
+						outputArea.setText("Creating Volume.");
+						break;
+					case 1:
+						outputArea.setText("Creating Volume..");
+						break;
+					case 2:
+						outputArea.setText("Creating Volume...");
+						break;
+					default:
+						break;
 					}
 					outputArea.repaint();
-					status = status%3;
+					status = status % 3;
 					try {
 						Thread.sleep(500);
 					} catch (InterruptedException e) {
@@ -1246,7 +1336,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		public void mouseWheelMoved(MouseWheelEvent e) {
 			Object obj = e.getSource();
 			int change = -1 * e.getWheelRotation();
-			
+
 			if (obj instanceof JTextField) {
 				JTextField index = (JTextField) obj;
 				if (index.equals(index_slice) || index.equals(max_slice)
@@ -1264,39 +1354,43 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 						change_slice += change;
 					}
 				}
-			} else if(obj instanceof JPanel){
+			} else if (obj instanceof JPanel) {
 				JPanel arrow = (JPanel) obj;
-				if (arrow.equals(arrows_slice)){
+				if (arrow.equals(arrows_slice)) {
 					change_slice += change;
-				}else{
+				} else {
 					change_echo += change;
 				}
-				
-			}
-		
-		}
 
+			}
+
+		}
 
 		public void keyPressed(KeyEvent e) {
 			int change = 0;
-			switch(e.getKeyCode()){
-			case KeyEvent.VK_UP: change = 1; break;
-			case KeyEvent.VK_DOWN: change = -1;break;
-			default:return;
+			switch (e.getKeyCode()) {
+			case KeyEvent.VK_UP:
+				change = 1;
+				break;
+			case KeyEvent.VK_DOWN:
+				change = -1;
+				break;
+			default:
+				return;
 			}
-			if (index_echo.hasFocus()){
+			if (index_echo.hasFocus()) {
 				change_echo += change;
-			}else{
+			} else {
 				change_slice += change;
 			}
 		}
 
 		public void keyReleased(KeyEvent e) {
-			
+
 		}
 
 		public void keyTyped(KeyEvent e) {
-			
+
 		}
 
 		/**
@@ -1306,9 +1400,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			createVolume();
 		}
 
-
-
-	
 	}
 
 	/**
