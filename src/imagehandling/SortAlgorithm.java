@@ -399,26 +399,26 @@ public class SortAlgorithm {
 			return false;
 		}
 
-		if (createNiftis) {
-			out.println("Creating Niftis..");
-			Set<String> keys = niftihelp.keySet();
-//			Nifti_Writer writer = new Nifti_Writer();
-			for (String key : keys) {
-				KeyMap[] info = { KeyMap.KEY_ECHO_NUMBERS_S };
-				ArrayList<String> dicoms = niftihelp.get(key);
-				boolean image4d = false;
-				DICOM dcm = new DICOM();
-				for (String dicom : dicoms) {
-					dcm.open(dicom);
-					String[] att = Image.getAttributesDicom(dicom, info);
-					if (Integer.parseInt(att[0]) != 1) {
-						image4d = true;
-					}
-				}
-				ImagePlus imp = dcm.duplicate();
-//				writer.save(imp, key, "data.nifti");
-			}
-		}
+//		if (createNiftis) {
+//			out.println("Creating Niftis..");
+//			Set<String> keys = niftihelp.keySet();
+////			Nifti_Writer writer = new Nifti_Writer();
+//			for (String key : keys) {
+//				KeyMap[] info = { KeyMap.KEY_ECHO_NUMBERS_S };
+//				ArrayList<String> dicoms = niftihelp.get(key);
+//				boolean image4d = false;
+//				DICOM dcm = new DICOM();
+//				for (String dicom : dicoms) {
+//					dcm.open(dicom);
+//					String[] att = Image.getAttributesDicom(dicom, info);
+//					if (Integer.parseInt(att[0]) != 1) {
+//						image4d = true;
+//					}
+//				}
+//				ImagePlus imp = dcm.duplicate();
+////				writer.save(imp, key, "data.nifti");
+//			}
+//		}
 
 		// The last output
 		start = System.currentTimeMillis() - start;

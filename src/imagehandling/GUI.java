@@ -209,12 +209,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			table_header_left.add(createText("Option", 80, 30, false));
 			table_header_left.add(createText("To Output Nr.", 100, 30, false));
 			table_header_left.add(Box.createRigidArea(new Dimension(30, 30)));
-			table_header_left.add(createText("Nifti", 40, 30, false));
+			table_header_left.add(createText("Nifti", 50, 30, false));
 
 			// Panel that contains the upper left rectangle
 			JPanel upperleft = new JPanel();
 			upperleft.setLayout(new BoxLayout(upperleft, BoxLayout.PAGE_AXIS));
-			setfinalSize(upperleft, new Dimension(550, 250));
+			setfinalSize(upperleft, new Dimension(600, 250));
 			upperleft.add(header_shifter_left);
 			upperleft.add(Box.createRigidArea(new Dimension(0, 10)));
 			upperleft.add(table_header_left);
@@ -259,7 +259,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			JPanel upperright = new JPanel();
 			upperright
 					.setLayout(new BoxLayout(upperright, BoxLayout.PAGE_AXIS));
-			setfinalSize(upperright, new Dimension(550, 250));
+			setfinalSize(upperright, new Dimension(500, 250));
 			upperright.add(header_shifter_right);
 			upperright.add(Box.createRigidArea(new Dimension(0, 10)));
 			upperright.add(table_header_right);
@@ -339,7 +339,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// browse dir button
 			rowPanel.add(browseButton);
 			// to make it fit
-			rowPanel.add(Box.createRigidArea(new Dimension(20, 30)));
+			rowPanel.add(Box.createRigidArea(new Dimension(30, 30)));
 			// option for niftis
 			rowPanel.add(tonifti);
 			return rowPanel;
