@@ -293,7 +293,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			browseButton.addActionListener(this);
 
 			// File transfer options
-			String[] options = { "Copy", "Move" };
+			String[] options = { "Copy", "Move", "Nifti" };
 			JComboBox<String> jc = new JComboBox<String>(options);
 			setfinalSize(jc, new Dimension(80, 28));
 
@@ -523,10 +523,15 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				}
 
 				// setting the file transfer option
-				if (((String) move.getSelectedItem()).equals("Move")) {
+				String option = (String) move.getSelectedItem();
+				if (option.equals("Move")) {
+					sortAlgorithm.setCreateNiftis(false);
 					sortAlgorithm.setFilesOptionMove();
-				} else {
+				} else if (option.equals("Copy")){
+					sortAlgorithm.setCreateNiftis(false);
 					sortAlgorithm.setFilesOptionCopy();
+				}else{
+					sortAlgorithm.setCreateNiftis(true);
 				}
 
 				// now the sortalgorithm can start
@@ -572,7 +577,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	 *
 	 */
 	class VolumeTab extends JPanel implements ActionListener, MyTab,
-			ChangeListener, MouseWheelListener, KeyListener{
+			ChangeListener, MouseWheelListener, KeyListener, Runnable{
 
 		/**
 		 * Default serialVersionUID
@@ -668,13 +673,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		private JTextField max_echo;
 
 		/**
-		 * This value is used, for the MouseWheelListener method. Depending on
-		 * this boolean the slice/echo index gonna be changed, when the user
-		 * uses the Mousewheel over the Image in the GUI.
-		 */
-		private boolean sliceLastChanged;
-
-		/**
 		 * This int is used to communicate between an ActionListener and this
 		 * GUI. With the help of these things, the choosen slice (index) can be
 		 * changed with the arrow keys.
@@ -738,6 +736,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * The imagepanel is the container, which contains the ImageIcon ic.
 		 */
 		private JLabel imagelabel;
+		
+		/**
+		 * True if a Thread creates a volume.
+		 */
+		private boolean creatingVolume;
 		
 		/**
 		 * Standard Constructur.
@@ -924,11 +927,13 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * Method to try, to create a Volume to the given path.
 		 */
 		private void createVolume() {
+			creatingVolume = true;
+			apply_path.setEnabled(false);
 			try {
 				// speciall Constructur which throws an Exception if new Volume
 				// fails, instead of calling System.exit(1)
 				volume = new Volume(path.getText(), this);
-
+				
 				// Default Index
 				actual_slice = 1;
 				actual_echo = 1;
@@ -963,6 +968,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				index_echo.setText("0");
 				max_echo.setText("/0");
 			}
+			apply_path.setEnabled(true);
+			creatingVolume = false;
 		}
 
 		/**
@@ -1019,9 +1026,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * This method is called by the 5 buttons of VolumeTab.
 		 */
 		public void actionPerformed(ActionEvent e) {
+			if (creatingVolume){
+				return;
+			}
 			switch (e.getActionCommand()) {
 			case "create Volume": // try to initialize the volume
-				createVolume();
+				new Thread(this).start();
 				break;
 			case "browse": // searching for a volume
 				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
@@ -1068,8 +1078,23 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			String lasttime_filter = "";
 			actual_slice = 0;
 			actual_echo = 0;
-
+			int status = 0;
+			
 			while (this.isVisible() && parent.isVisible()) {
+				if (creatingVolume){
+					switch(status++){
+					case 0: outputArea.setText("Creating Volume.");break;
+					case 1: outputArea.setText("Creating Volume..");break;
+					case 2: outputArea.setText("Creating Volume...");break;
+					default:break;
+					}
+					outputArea.repaint();
+					status = status%3;
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+					}
+				}
 				// No Volume = nothing to do
 				if (volume == null) {
 					try {
@@ -1095,7 +1120,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					}
 					// something wanna change the slice over buttons/arrows?
 					if (this.change_slice != 0) {
-						sliceLastChanged = true;
 						// We wont accept a negativ slice
 						if (!((actual_slice + this.change_slice) <= 0)) {
 							// the next slice
@@ -1106,7 +1130,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 							}
 							// max 40 changes per second
 							try {
-								Thread.sleep(25);
+								Thread.sleep(50);
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
@@ -1137,7 +1161,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					}
 					// something wanna change the echo over buttons/arrows?
 					if (this.change_echo != 0) {
-						sliceLastChanged = false;
 						// We wont accept a negativ echo
 						if (!((actual_echo + this.change_echo) <= 0)) {
 							// the next echo
@@ -1148,7 +1171,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 							}
 							// max 40 changes per second
 							try {
-								Thread.sleep(25);
+								Thread.sleep(50);
 							} catch (InterruptedException e) {
 								e.printStackTrace();
 							}
@@ -1264,7 +1287,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			if (index_echo.hasFocus()){
 				change_echo += change;
 			}else{
-				change_slice+= change;
+				change_slice += change;
 			}
 		}
 
@@ -1274,6 +1297,13 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 		public void keyTyped(KeyEvent e) {
 			
+		}
+
+		/**
+		 * Creating Volumes this way, so the window wont freeze.
+		 */
+		public void run() {
+			createVolume();
 		}
 
 

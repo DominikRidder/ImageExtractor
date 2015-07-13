@@ -1,9 +1,8 @@
 package imagehandling;
 
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.plugin.DICOM;
-import ij.plugin.filter.Nifti_Writer;
+import ij.plugin.Nifti_Writer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -416,7 +415,7 @@ public class SortAlgorithm {
 					}
 				}
 				ImagePlus imp = dcm.duplicate();
-				System.out.println(writer.save(imp, key, "4d.nifti"));
+				System.out.println(writer.save(imp, key, "data.nifti"));
 			}
 		}
 		
