@@ -402,7 +402,7 @@ public class SortAlgorithm {
 		if (createNiftis) {
 			out.println("Creating Niftis..");
 			Set<String> keys = niftihelp.keySet();
-			Nifti_Writer writer = new Nifti_Writer();
+//			Nifti_Writer writer = new Nifti_Writer();
 			for (String key : keys) {
 				KeyMap[] info = { KeyMap.KEY_ECHO_NUMBERS_S };
 				ArrayList<String> dicoms = niftihelp.get(key);
@@ -416,7 +416,7 @@ public class SortAlgorithm {
 					}
 				}
 				ImagePlus imp = dcm.duplicate();
-				writer.save(imp, key, "data.nifti");
+//				writer.save(imp, key, "data.nifti");
 			}
 		}
 

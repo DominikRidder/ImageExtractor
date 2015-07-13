@@ -16,6 +16,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 
 import javax.swing.Box;
@@ -70,7 +71,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	interface MyTab {
 		public String getClassName();
 
-		public String lifeUpdate(JFrame parent, String opt);
+		public void lifeUpdate(JFrame parent);
 	}
 
 	/**
@@ -158,7 +159,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		/**
 		 * Default Constructur.
 		 */
-		public SorterTab() {
+		public SorterTab(JFileChooser filechooser) {
 			// Tool tip text's
 			image_digits_tooltip = new String(
 					"Set the Image Digits to 0, to not change the DICOM names.");
@@ -174,10 +175,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			sortAlgorithm.setProtocolDigits(0);
 
 			// chooser stuff
-			fileChooser.setCurrentDirectory(new java.io.File("$HOME"));
-			fileChooser.setDialogTitle("Search Directory");
-			fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			fileChooser.setAcceptAllFileFilterUsed(false);
+			this.fileChooser = filechooser;
 
 			// upperleft rectangle
 			JTextField upperleft_header = new JTextField(
@@ -476,7 +474,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 		}
 
-		public String lifeUpdate(JFrame parent, String opt) {
+		public void lifeUpdate(JFrame parent) {
 			while (this.isVisible() && parent.isVisible()) {
 				try {
 					if (this.currentSortThread != null) {
@@ -502,13 +500,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					}
 				}
 			}
-			for (int i = 0; i < 5; i++) {
-				if (tablerows_right[i].getComponent(1).isCursorSet()) {
-					return ((JTextField) tablerows_right[i].getComponent(1))
-							.getText();
-				}
-			}
-			return "";
 		}
 
 		/**
@@ -840,7 +831,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		/**
 		 * Standard Constructur.
 		 */
-		public VolumeTab() {
+		public VolumeTab(JFileChooser filechooser) {
 			// The path for the Volume
 			path = new JTextField("");
 			path.addKeyListener(this);
@@ -962,11 +953,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
 			// creating the directory chooser
-			chooser = new JFileChooser();
-			chooser.setCurrentDirectory(new java.io.File("$HOME"));
-			chooser.setDialogTitle("Search Path of Volume");
-			chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			chooser.setAcceptAllFileFilterUsed(false);
+			chooser = filechooser;
 
 			// dir contains two buttons
 			volumePanel = new JPanel();
@@ -1131,8 +1118,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					
 				}break;
 			case "browse": // searching for a volume
-				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
+				if (chooser.getSelectedFile().isDirectory()){
 					path.setText(chooser.getSelectedFile().toString());
+				}else if (chooser.getSelectedFile().isFile()){
+					path.setText(chooser.getSelectedFile().getParent().toString());
+				}
 				}
 				new Thread(this).start();
 				break;
@@ -1145,7 +1136,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				break;
 			}
 		}
-		
+
 		public void stateChanged(ChangeEvent e) {
 			if (arrow_up_slice.getModel().isPressed()) {
 				change_slice = 1;
@@ -1170,11 +1161,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		}
 
 		@Override
-		public String lifeUpdate(JFrame parent, String opt) {
-			if (opt != "") {
-				path.setText(opt);
-				new Thread(this).start();
-			}
+		public void lifeUpdate(JFrame parent) {
 			String lasttime_echo = "0";
 			String lasttime_slice = "0";
 			String lasttime_filter = "";
@@ -1335,7 +1322,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					this.displayImage();
 				}
 			}
-			return "";
 		}
 
 		private int actualSliceIndex() {
@@ -1451,9 +1437,20 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	private int tabint = 0;
 
 	/**
+	 * Filechooser for all Tabs.
+	 */
+	private JFileChooser filechooser;
+	
+	/**
 	 * One and only Constructur.
 	 */
 	public GUI(boolean forceProgrammEndIfThereIsNoWindow) {
+		filechooser = new JFileChooser();
+		filechooser.setCurrentDirectory(new java.io.File("$HOME"));
+		filechooser.setDialogTitle("Search Directory");
+		filechooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		filechooser.setAcceptAllFileFilterUsed(false);
+		
 		forceEnd = forceProgrammEndIfThereIsNoWindow;
 		JMenuBar menuBar;
 		JMenu menu;
@@ -1483,8 +1480,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		// Menu stuff ends here
 
 		tabber = new JTabbedPane();
-		newTab(new VolumeTab());
-		newTab(new SorterTab());
+		newTab(new VolumeTab(filechooser));
+		newTab(new SorterTab(filechooser));
 
 		add(tabber);
 		setLocationRelativeTo(null);
@@ -1515,10 +1512,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	public void actionPerformed(ActionEvent e) {
 		switch (e.getActionCommand()) {
 		case "new Volume Tab":
-			newTab(new VolumeTab());
+			newTab(new VolumeTab(filechooser));
 			break;
 		case "new Sort Tab":
-			newTab(new SorterTab());
+			newTab(new SorterTab(filechooser));
 			break;
 		case "new Window":
 			new GUI(forceEnd);
@@ -1583,7 +1580,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	 * Method, which is always running, to handle the lifeupdate of the tabs.
 	 */
 	private void lifeupdate() {
-		String communicater = "";
 		while (this.isVisible()) {
 			if (tabber.getTabCount() == 0) {
 				try {
@@ -1594,8 +1590,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				continue;
 			}
 
-			communicater = ((MyTab) tabber.getComponentAt(tabber
-					.getSelectedIndex())).lifeUpdate(this, communicater);
+			((MyTab) tabber.getComponentAt(tabber
+					.getSelectedIndex())).lifeUpdate(this);
 		}
 	}
 
