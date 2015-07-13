@@ -1,5 +1,7 @@
 package imagehandling;
 
+import ij.plugin.DICOM;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -68,7 +70,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	interface MyTab {
 		public String getClassName();
 
-		public void lifeUpdate(JFrame parent);
+		public String lifeUpdate(JFrame parent, String opt);
 	}
 
 	/**
@@ -142,17 +144,17 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * This integer represents a option, of a JDialogPanel.
 		 */
 		private int option;
-		
+
 		/**
 		 * This boolean is needed, because we using 2 run methods.
 		 */
 		private boolean sortingstarted;
-		
+
 		/**
 		 * Current JOptionPane.
 		 */
 		private JFrame currentdialog;
-		
+
 		/**
 		 * Default Constructur.
 		 */
@@ -312,9 +314,9 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			browseButton.addActionListener(this);
 
 			JCheckBox tonifti = new JCheckBox();
-			tonifti.setSize(29,27);
+			tonifti.setSize(29, 27);
 			tonifti.addActionListener(this);
-			
+
 			// File transfer options
 			String[] options = { "Copy", "Move" };
 			JComboBox<String> jc = new JComboBox<String>(options);
@@ -409,33 +411,35 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			default:
 				// Using the default for the browse buttons, instead of making
 				// 10 case lines
-				if (e.getActionCommand().contains("...")){
-				if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-					int pos = Integer
-							.parseInt(e.getActionCommand().split(":")[1]);
-					if (pos < 6) {
-						((JTextField) tablerows_left[pos - 1].getComponents()[1])
-								.setText(fileChooser.getSelectedFile()
-										.toString());
-					} else {
-						pos -= 6;
-						((JTextField) tablerows_right[pos - 1].getComponents()[1])
-								.setText(fileChooser.getSelectedFile()
-										.toString());
+				if (e.getActionCommand().contains("...")) {
+					if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+						int pos = Integer.parseInt(e.getActionCommand().split(
+								":")[1]);
+						if (pos < 6) {
+							((JTextField) tablerows_left[pos - 1]
+									.getComponents()[1]).setText(fileChooser
+									.getSelectedFile().toString());
+						} else {
+							pos -= 6;
+							((JTextField) tablerows_right[pos - 1]
+									.getComponents()[1]).setText(fileChooser
+									.getSelectedFile().toString());
+						}
 					}
-				}
-				}else if (e.getSource() instanceof JCheckBox){
-					int i=0;
-					for (i=0; i<4; i++){
-						if (e.getSource().equals(tablerows_left[i].getComponent(6))){
+				} else if (e.getSource() instanceof JCheckBox) {
+					int i = 0;
+					for (i = 0; i < 4; i++) {
+						if (e.getSource().equals(
+								tablerows_left[i].getComponent(6))) {
 							break;
 						}
 					}
-					JComboBox<String> target = ((JComboBox<String>)tablerows_left[i].getComponents()[2]);
-					if (target.isEnabled()){
+					JComboBox<String> target = ((JComboBox<String>) tablerows_left[i]
+							.getComponents()[2]);
+					if (target.isEnabled()) {
 						target.setEnabled(false);
 						target.setSelectedIndex(0);
-					}else{
+					} else {
 						target.setEnabled(true);
 					}
 				}
@@ -455,15 +459,16 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * Method, called by Thead.start();
 		 */
 		public void run() {
-			if (currentSortThread != null && !sortingstarted){
+			if (currentSortThread != null && !sortingstarted) {
 				sortingstarted = true;
 				sort();
 				sortingstarted = false;
-			}else{
+			} else {
 				currentdialog = new JFrame();
 				currentdialog.setLocationRelativeTo(this);
 				currentdialog.setVisible(true);
-				option = JOptionPane.showConfirmDialog(
+				option = JOptionPane
+						.showConfirmDialog(
 								currentdialog,
 								"The Output Dir is empty. Should I sort the Dicoms to the Input folder?\nChoosing yes, setting the Image Digits to 0.\n(After 10 Seconds yes is picked automatically.)",
 								"The Outputdir is empty",
@@ -471,7 +476,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 		}
 
-		public void lifeUpdate(JFrame parent) {
+		public String lifeUpdate(JFrame parent, String opt) {
 			while (this.isVisible() && parent.isVisible()) {
 				try {
 					if (this.currentSortThread != null) {
@@ -497,6 +502,13 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					}
 				}
 			}
+			for (int i = 0; i < 5; i++) {
+				if (tablerows_right[i].getComponent(1).isCursorSet()) {
+					return ((JTextField) tablerows_right[i].getComponent(1))
+							.getText();
+				}
+			}
+			return "";
 		}
 
 		/**
@@ -563,8 +575,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					if (target.getText().equals("")) {
 						option = -1;
 						new Thread(this).start();
-						int time=0;		
-						while (time++<10 && option == -1){
+						int time = 0;
+						while (time++ < 10 && option == -1) {
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e) {
@@ -572,11 +584,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 							}
 						}
 						currentdialog.dispose();
-						
-						if (option == -1){
+
+						if (option == -1) {
 							option = 0;
 						}
-						
+
 						if (option == 1) {
 							status.setBackground(color_failed);
 							status.setText("No Outp. Dir");
@@ -706,7 +718,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		/**
 		 * JButton to try, to create a Volume to a given path.
 		 */
-		private JButton apply_path;
+		private JButton open_imagej;
 
 		/**
 		 * JFileChooser is used to search a Volume (dir).
@@ -830,8 +842,9 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 */
 		public VolumeTab() {
 			// The path for the Volume
-			path = new JTextField("/opt/dridder_local/TestDicoms/");
+			path = new JTextField("");
 			path.addKeyListener(this);
+			path.setEditable(false);
 			setfinalSize(path, new Dimension(500, 100));
 
 			// The Attribute Filter
@@ -849,9 +862,9 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			imagelabel.addKeyListener(this);
 
 			// initialize the Buttons
-			apply_path = new JButton("create Volume");
-			apply_path.addActionListener(this);
-			apply_path.addKeyListener(this);
+			open_imagej = new JButton("open in Imagej");
+			open_imagej.addActionListener(this);
+			open_imagej.addKeyListener(this);
 
 			browse_path = new JButton("browse");
 			browse_path.addActionListener(this);
@@ -959,7 +972,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			volumePanel = new JPanel();
 			volumePanel.setLayout(new GridLayout(1, 2, 20, 1));
 			setfinalSize(volumePanel, new Dimension(500, 1000));
-			Component[] dirstuff = { browse_path, apply_path };
+			Component[] dirstuff = { browse_path, open_imagej };
 			addComponents(volumePanel, dirstuff);
 
 			// "Slice:", actual slice and Max slice
@@ -1011,7 +1024,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 */
 		private void createVolume() {
 			creatingVolume = true;
-			apply_path.setEnabled(false);
 			try {
 				// speciall Constructur which throws an Exception if new Volume
 				// fails, instead of calling System.exit(1)
@@ -1051,7 +1063,6 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				index_echo.setText("0");
 				max_echo.setText("/0");
 			}
-			apply_path.setEnabled(true);
 			creatingVolume = false;
 		}
 
@@ -1113,13 +1124,17 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				return;
 			}
 			switch (e.getActionCommand()) {
-			case "create Volume": // try to initialize the volume
-				new Thread(this).start();
-				break;
+			case "open in Imagej":
+				DICOM dcm = new DICOM();
+				dcm.open(path.getText());
+				if (volume != null) {
+					
+				}break;
 			case "browse": // searching for a volume
 				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
 					path.setText(chooser.getSelectedFile().toString());
 				}
+				new Thread(this).start();
 				break;
 			case "Display all Attributes": // forcing to display really all
 											// attributes
@@ -1130,7 +1145,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				break;
 			}
 		}
-
+		
 		public void stateChanged(ChangeEvent e) {
 			if (arrow_up_slice.getModel().isPressed()) {
 				change_slice = 1;
@@ -1155,7 +1170,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		}
 
 		@Override
-		public void lifeUpdate(JFrame parent) {
+		public String lifeUpdate(JFrame parent, String opt) {
+			if (opt != "") {
+				path.setText(opt);
+				new Thread(this).start();
+			}
 			String lasttime_echo = "0";
 			String lasttime_slice = "0";
 			String lasttime_filter = "";
@@ -1316,6 +1335,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					this.displayImage();
 				}
 			}
+			return "";
 		}
 
 		private int actualSliceIndex() {
@@ -1563,6 +1583,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	 * Method, which is always running, to handle the lifeupdate of the tabs.
 	 */
 	private void lifeupdate() {
+		String communicater = "";
 		while (this.isVisible()) {
 			if (tabber.getTabCount() == 0) {
 				try {
@@ -1573,9 +1594,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				continue;
 			}
 
-			((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-					.lifeUpdate(this);
-
+			communicater = ((MyTab) tabber.getComponentAt(tabber
+					.getSelectedIndex())).lifeUpdate(this, communicater);
 		}
 	}
 
