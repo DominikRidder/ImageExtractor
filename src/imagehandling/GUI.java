@@ -293,7 +293,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			browseButton.addActionListener(this);
 
 			// File transfer options
-			String[] options = { "Copy", "Move", "Nifti" };
+			String[] options = { "Copy", "Move"};
 			JComboBox<String> jc = new JComboBox<String>(options);
 			setfinalSize(jc, new Dimension(80, 28));
 

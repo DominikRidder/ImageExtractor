@@ -399,26 +399,27 @@ public class SortAlgorithm {
 			return false;
 		}
 
-		if (createNiftis){
+		if (createNiftis) {
+			out.println("Creating Niftis..");
 			Set<String> keys = niftihelp.keySet();
 			Nifti_Writer writer = new Nifti_Writer();
-			for (String key : keys){
-				KeyMap[] info = {KeyMap.KEY_ECHO_NUMBERS_S};
+			for (String key : keys) {
+				KeyMap[] info = { KeyMap.KEY_ECHO_NUMBERS_S };
 				ArrayList<String> dicoms = niftihelp.get(key);
 				boolean image4d = false;
 				DICOM dcm = new DICOM();
-				for (String dicom : dicoms){
+				for (String dicom : dicoms) {
 					dcm.open(dicom);
 					String[] att = Image.getAttributesDicom(dicom, info);
-					if (Integer.parseInt(att[0]) != 1){
+					if (Integer.parseInt(att[0]) != 1) {
 						image4d = true;
 					}
 				}
 				ImagePlus imp = dcm.duplicate();
-				System.out.println(writer.save(imp, key, "data.nifti"));
+				writer.save(imp, key, "data.nifti");
 			}
 		}
-		
+
 		// The last output
 		start = System.currentTimeMillis() - start;
 		String operation = "";
@@ -677,8 +678,7 @@ public class SortAlgorithm {
 				}
 				path = potentialDicom.getAbsolutePath();
 				// We found a dicom?
-				// if (path.endsWith(".IMA") || path.endsWith(".dcm")) {
-				if (Image.isDicom(path)) {
+				if (path.endsWith(".IMA") || path.endsWith(".dcm") || Image.isDicom(path)) {
 					// Using the sort structur the user have choosen
 					if (subfolders) {
 						SASInSubfoldersSort(path, sortInDir);
@@ -890,10 +890,10 @@ public class SortAlgorithm {
 								break;
 							}
 						}
-						if (att == null){
+						if (att == null) {
 							continue;
 						}
-						
+
 						// Key for the protocolnames HashMap
 						String key = patientID
 								+ protocolName.substring(
@@ -986,9 +986,9 @@ public class SortAlgorithm {
 		if (keepImgName) {
 			name = new File(input).getName();
 		} else {
-			if (createNiftis){
+			if (createNiftis) {
 				name = toImgDigits(imageNumber) + ".nifti";
-			}else{
+			} else {
 				name = toImgDigits(imageNumber) + ".dcm";
 			}
 		}
@@ -998,17 +998,22 @@ public class SortAlgorithm {
 	}
 
 	private void moveDicom(String input, String output, String name) {
-		File test = new File(output + "/" + name);
-		if (!test.exists()) {
-			try {
-				if (createNiftis) {
-					ArrayList<String> target = niftihelp.get(output);
-					if (target == null){
-						target = new ArrayList<String>();
-					}
-					target.add(input);
-					niftihelp.put(output, target);
-				} else {
+		if (createNiftis) {
+			File test = new File(output+"/data.nifti");
+			if (!test.exists()){
+			ArrayList<String> target = niftihelp.get(output);
+			if (target == null) {
+				target = new ArrayList<String>();
+			}
+			target.add(input);
+			niftihelp.put(output, target);
+			transfered++;
+			}
+		} else {
+			File test = new File(output + "/" + name);
+			if (!test.exists()) {
+				try {
+
 					if (move) {
 						Files.move(new File(input).toPath(), test.toPath(),
 								StandardCopyOption.REPLACE_EXISTING);
@@ -1016,12 +1021,13 @@ public class SortAlgorithm {
 						Files.copy(new File(input).toPath(), test.toPath(),
 								StandardCopyOption.REPLACE_EXISTING);
 					}
+
+					transfered++;
+				} catch (IOException e) {
+					out.println("Filetransfer didnt worked");
+					permissionProblem = true;
+					stopSort();
 				}
-				transfered++;
-			} catch (IOException e) {
-				out.println("Filetransfer didnt worked");
-				permissionProblem = true;
-				stopSort();
 			}
 		}
 	}

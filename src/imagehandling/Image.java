@@ -27,7 +27,7 @@ public class Image implements Comparable<Image> {
 	 * Path of the Image File.
 	 */
 	private String path;
-	
+
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
 	 * of the image dont end with a known ending, the images handeld as a IMA
@@ -180,7 +180,9 @@ public class Image implements Comparable<Image> {
 			topt.addSearchOption(TextOptions.ATTRIBUTE_NAME);
 		}
 
-		topt.setReturnExpression(TextOptions.ATTRIBUTE_NUMBER+"  "+TextOptions.ATTRIBUTE_NAME+": "+TextOptions.ATTRIBUTE_VALUE);
+		topt.setReturnExpression(TextOptions.ATTRIBUTE_NUMBER + "  "
+				+ TextOptions.ATTRIBUTE_NAME + ": "
+				+ TextOptions.ATTRIBUTE_VALUE);
 
 		return getAttribute(key, topt);
 	}
@@ -218,7 +220,7 @@ public class Image implements Comparable<Image> {
 
 		topt.addSearchOption(TextOptions.ATTRIBUTE_NUMBER);
 
-		topt.setReturnExpression(TextOptions.ATTRIBUTE_VALUE+"");
+		topt.setReturnExpression(TextOptions.ATTRIBUTE_VALUE + "");
 
 		return getAttribute(en, topt);
 	}
@@ -317,9 +319,13 @@ public class Image implements Comparable<Image> {
 	 * @return
 	 */
 	public static boolean isDicom(String path) {
-		DICOM dcm = new DICOM();
-		dcm.open(path);
-		return dcm.getWidth() != 0;
+		File test = new File(path);
+		if (test.length()>50000) {
+			DICOM dcm = new DICOM();
+			dcm.open(path);
+			return dcm.getWidth() != 0;
+		}
+		return false;
 	}
 
 	/**
@@ -443,8 +449,9 @@ public class Image implements Comparable<Image> {
 	 * This method comparing two Images, by their Image Number.
 	 */
 	public int compareTo(Image o) {
-		KeyMap[] en = {KeyMap.KEY_IMAGE_NUMBER};
-		int thisnumb = Integer.parseInt(Image.getAttributesDicom(this.path, en)[0]);
+		KeyMap[] en = { KeyMap.KEY_IMAGE_NUMBER };
+		int thisnumb = Integer
+				.parseInt(Image.getAttributesDicom(this.path, en)[0]);
 		int objnumb = Integer.parseInt(Image.getAttributesDicom(o.path, en)[0]);
 		if (thisnumb > objnumb) {
 			return 1;
