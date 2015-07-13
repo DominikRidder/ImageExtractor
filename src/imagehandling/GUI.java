@@ -1,6 +1,12 @@
 package imagehandling;
 
+import ij.IJ;
+import ij.ImageJ;
+import ij.ImagePlus;
+import ij.ImageStack;
 import ij.plugin.DICOM;
+import ij.plugin.DragAndDrop;
+import ij.plugin.FolderOpener;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -829,6 +835,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		private boolean creatingVolume;
 
 		/**
+		 * The Current ImageJ Frame
+		 */
+		private ImageJ imgj;
+		
+		/**
 		 * Standard Constructur.
 		 */
 		public VolumeTab(JFileChooser filechooser) {
@@ -1112,10 +1123,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 			switch (e.getActionCommand()) {
 			case "open in Imagej":
-				DICOM dcm = new DICOM();
-				dcm.open(path.getText());
 				if (volume != null) {
-					
+					if (imgj == null || !imgj.isVisible()){
+						imgj = new ImageJ();
+					}
+					DragAndDrop dad = new DragAndDrop();
+					dad.openFile(new File(path.getText()));
 				}break;
 			case "browse": // searching for a volume
 				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
