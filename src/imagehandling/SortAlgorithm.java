@@ -10,6 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -386,7 +387,7 @@ public class SortAlgorithm {
 			}
 		}
 
-		// Preparing the Sort
+		// Preparing the Sort and Sort
 		if (subfolders) {
 			SASInSubfoldersWrapper(searchin, sortInDir);
 		} else {
@@ -678,7 +679,7 @@ public class SortAlgorithm {
 				}
 				path = potentialDicom.getAbsolutePath();
 				// We found a dicom?
-				if (path.endsWith(".IMA") || path.endsWith(".dcm") || Image.isDicom(path)) {
+				if (Image.isDicom(path)) {
 					// Using the sort structur the user have choosen
 					if (subfolders) {
 						SASInSubfoldersSort(path, sortInDir);

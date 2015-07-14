@@ -2,6 +2,8 @@ package imagehandling;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -319,11 +321,18 @@ public class Image implements Comparable<Image> {
 	 * @return
 	 */
 	public static boolean isDicom(String path) {
-		File test = new File(path);
-		if (test.length()>50000) {
-			DICOM dcm = new DICOM();
-			dcm.open(path);
-			return dcm.getWidth() != 0;
+//		File test = new File(path);
+//		if (test.length()>50000) {
+//			DICOM dcm = new DICOM();
+//			dcm.open(path);
+//			return dcm.getWidth() != 0;
+//		}
+		
+		try {
+			return Files.probeContentType(new File(path).toPath()).equals("application/dicom");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		return false;
 	}
