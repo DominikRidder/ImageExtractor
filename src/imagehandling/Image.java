@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -48,7 +49,7 @@ public class Image implements Comparable<Image> {
 		case "IMA":
 			break;
 		default:
-			if (!Image.isDicom(path)) {
+			if (!Image.isDicom(new File(path).toPath())) {
 				throw new RuntimeException(
 						"The given path cant be handeld as an Image");
 			}
@@ -320,7 +321,7 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @return
 	 */
-	public static boolean isDicom(String path) {
+	public static boolean isDicom(Path path) {
 //		File test = new File(path);
 //		if (test.length()>50000) {
 //			DICOM dcm = new DICOM();
@@ -329,7 +330,11 @@ public class Image implements Comparable<Image> {
 //		}
 		
 		try {
-			return Files.probeContentType(new File(path).toPath()).equals("application/dicom");
+			switch(Files.probeContentType(path)){
+			case "application/dicom": return true;
+			case "application/octet-stream": return true;
+			case "application/x-ima": return true;
+			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

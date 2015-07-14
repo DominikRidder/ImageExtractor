@@ -679,8 +679,9 @@ public class SortAlgorithm {
 				}
 				path = potentialDicom.getAbsolutePath();
 				// We found a dicom?
-				if (Image.isDicom(path)) {
+				if (Image.isDicom(potentialDicom.toPath())) {
 					// Using the sort structur the user have choosen
+					try{
 					if (subfolders) {
 						SASInSubfoldersSort(path, sortInDir);
 					} else {
@@ -693,6 +694,10 @@ public class SortAlgorithm {
 						out.println("I found and sorted so far " + found
 								+ " Dicoms. (DeltaTime: " + deltaTime()
 								+ " millis.)");
+					}
+					}catch(Exception e){
+						// just for the presentation
+						continue;
 					}
 				} else {
 					// If we didnt found a Dicom, than we put the folder on a

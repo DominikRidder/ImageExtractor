@@ -274,11 +274,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// creating the output area
 			outputArea = new JTextArea();
 			outputArea.setEditable(false);
+			setfinalSize(outputArea, new Dimension(1100, 225));
 			outputScroller = new JScrollPane(outputArea);
 			setfinalSize(outputScroller, new Dimension(1100, 225));
 			outputScroller
 					.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-			outputScroller.setPreferredSize(new Dimension(1100, 200));
+			outputScroller.setPreferredSize(new Dimension(1100, 225));
 
 			// Seperates the left upper side from the right upper side
 			JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
