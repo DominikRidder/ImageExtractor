@@ -933,7 +933,7 @@ public class SortAlgorithm {
 		// Getting the necessarie Informations
 		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
 				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID,
-				KeyMap.KEY_PATIENTS_BIRTH_DATE };
+				KeyMap.KEY_PATIENTS_BIRTH_DATE, KeyMap.KEY_SERIES_NUMBER };
 		String[] att = Image.getAttributesDicom(input, info);
 		// This makes the code more readable
 		String patientID = att[0];
@@ -941,44 +941,44 @@ public class SortAlgorithm {
 		String imageNumber = att[2];
 		String instanceUID = att[3];
 		String birthDate = att[4];
+		String seriesNumber = att[5];
 
 		StringBuilder path = new StringBuilder();
 		// Check existing
 		path.append(dir + "/" + patientID);
 		existOrCreate(path);
 
-		// Block for protocolname/praefix
-		if (!protocolnames.containsKey(patientID + protocolName + instanceUID
-				+ birthDate)) {
-			// The praefix of a protocol folder
-			String numb;
-			if (missing.get(patientID) != null
-					&& missing.get(patientID).size() != 0) {
-				// filling the missing praefix
-				numb = toProtocolDigits(missing.get(patientID).get(0) + "");
-				missing.get(patientID).remove(0);
-			} else {
-				// initializing a the index value to this patientID if its
-				// missing
-				if (index.get(patientID) == null) {
-					index.put(patientID, 1);
-				}
-				// If the index is equal to zero, than i put it to 1
-				if (index.get(patientID) == 0) {
-					index.put(patientID, 1);
-				}
-				// getting the praefix number
-				numb = toProtocolDigits(index.get(patientID) + "");
-				index.put(patientID, index.get(patientID) + 1);
-			}
-			// new protocol subfolder
-			protocolnames.put(patientID + protocolName + instanceUID
-					+ birthDate, numb);
-		}
+//		// Block for protocolname/praefix
+//		if (!protocolnames.containsKey(patientID + protocolName + instanceUID
+//				+ birthDate)) {
+//			// The praefix of a protocol folder
+//			String numb;
+//			if (missing.get(patientID) != null
+//					&& missing.get(patientID).size() != 0) {
+//				// filling the missing praefix
+//				numb = toProtocolDigits(missing.get(patientID).get(0) + "");
+//				missing.get(patientID).remove(0);
+//			} else {
+//				// initializing a the index value to this patientID if its
+//				// missing
+//				if (index.get(patientID) == null) {
+//					index.put(patientID, 1);
+//				}
+//				// If the index is equal to zero, than i put it to 1
+//				if (index.get(patientID) == 0) {
+//					index.put(patientID, 1);
+//				}
+//				// getting the praefix number
+//				numb = toProtocolDigits(index.get(patientID) + "");
+//				index.put(patientID, index.get(patientID) + 1);
+//			}
+//			// new protocol subfolder
+//			protocolnames.put(patientID + protocolName + instanceUID
+//					+ birthDate, numb);
+//		}
 		// check next protocol and creating it, if its not existant
 		path.append("/"
-				+ protocolnames.get(patientID + protocolName + instanceUID
-						+ birthDate) + "_" + protocolName);
+				+ toProtocolDigits(seriesNumber+"")+ "_" + protocolName);
 		existOrCreate(path);
 
 		// next the dicom name
