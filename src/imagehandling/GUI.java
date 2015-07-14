@@ -470,7 +470,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			} else {
 				currentdialog = new JFrame();
 				currentdialog.setLocationRelativeTo(this);
-				currentdialog.setVisible(true);
+//				currentdialog.setVisible(true);
 				option = JOptionPane
 						.showConfirmDialog(
 								currentdialog,
@@ -570,10 +570,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 					// No Outputdir is set
 					if (target.getText().equals("")) {
-						option = -1;
+						option = -2;
 						new Thread(this).start();
 						int time = 0;
-						while (time++ < 10 && option == -1) {
+						while (time++ < 10 && option == -2) {
 							try {
 								Thread.sleep(1000);
 							} catch (InterruptedException e) {
@@ -582,10 +582,14 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 						}
 						currentdialog.dispose();
 
-						if (option == -1) {
+						if (option == -2) {
 							option = 0;
 						}
 
+						if (option == -1){
+							option = 1;
+						}
+						
 						if (option == 1) {
 							status.setBackground(color_failed);
 							status.setText("No Outp. Dir");
@@ -619,12 +623,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				if (option.equals("Move")) {
 					sortAlgorithm.setCreateNiftis(false);
 					sortAlgorithm.setFilesOptionMove();
-				} else if (option.equals("Copy")) {
+				} else {
 					sortAlgorithm.setCreateNiftis(false);
 					sortAlgorithm.setFilesOptionCopy();
-				} else {
-					sortAlgorithm.setCreateNiftis(true);
 				}
+
 
 				// now the sortalgorithm can start
 				status.setText("In Progress...");
