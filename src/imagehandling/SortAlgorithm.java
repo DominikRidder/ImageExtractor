@@ -679,7 +679,7 @@ public class SortAlgorithm {
 				}
 				path = potentialDicom.getAbsolutePath();
 				// We found a dicom?
-				if (Image.isDicom(potentialDicom.toPath())) {
+				if (path.endsWith(".dcm") || path.endsWith(".IMA") || Image.isDicom(potentialDicom.toPath())) {
 					// Using the sort structur the user have choosen
 					try{
 					if (subfolders) {

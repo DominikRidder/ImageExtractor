@@ -335,7 +335,7 @@ public class Image implements Comparable<Image> {
 			case "application/octet-stream": return true;
 			case "application/x-ima": return true;
 			}
-		} catch (IOException e) {
+		} catch (IOException | NullPointerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
