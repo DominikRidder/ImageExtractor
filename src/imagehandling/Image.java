@@ -337,7 +337,7 @@ public class Image implements Comparable<Image> {
 			}
 		} catch (IOException | NullPointerException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 		return false;
 	}
