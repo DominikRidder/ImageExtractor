@@ -269,6 +269,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// creating the output area
 			outputArea = new JTextArea();
 			outputArea.setEditable(false);
+			outputArea.setMargin(new Insets(0,0,0,0));
 			setfinalSize(outputArea, new Dimension(1050, 200));
 			outputScroller = new JScrollPane(outputArea);
 			setfinalSize(outputScroller, new Dimension(1100, 225));
@@ -307,10 +308,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// the number at the start is used to know, where the browsed
 			// directory have to be set. The ":" is important for the splitt. At
 			// the end you will just the a "..." in the button.
-			browseButton.setText("...    :" + index + ":browse");
+			browseButton.setText("...");
 			browseButton.setMaximumSize(new Dimension(29, 27));
 			browseButton.setPreferredSize(new Dimension(29, 27));
-			browseButton.setMargin(null);
+			browseButton.setMargin(new Insets(0,0,0,0));
 			browseButton.addActionListener(this);
 
 			JCheckBox tonifti = new JCheckBox();
@@ -350,10 +351,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// the number at the start is used to know, where the browsed
 			// directory have to be set. The ":" is important for the splitt. At
 			// the end you will just the a "..." in the button.
-			browseButton.setText("...    :" + (6 + index) + ":browse");
+			browseButton.setText("...");
 			browseButton.setMaximumSize(new Dimension(29, 27));
 			browseButton.setPreferredSize(new Dimension(29, 27));
-			browseButton.setMargin(null);
+			browseButton.setMargin(new Insets(0,0,0,0));
 			browseButton.addActionListener(this);
 
 			JPanel rowPanel = new JPanel();
@@ -408,25 +409,42 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					startOrCancelSort.setText("Cancel");
 				}
 				break;
-			default:
-				// Using the default for the browse buttons, instead of making
-				// 10 case lines
-				if (e.getActionCommand().contains("...")) {
-					if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-						int pos = Integer.parseInt(e.getActionCommand().split(
-								":")[1]);
-						if (pos < 6) {
-							((JTextField) tablerows_left[pos - 1]
-									.getComponents()[1]).setText(fileChooser
-									.getSelectedFile().toString());
-						} else {
-							pos -= 6;
-							((JTextField) tablerows_right[pos - 1]
-									.getComponents()[1]).setText(fileChooser
-									.getSelectedFile().toString());
+			case "...":
+				if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+					boolean found = false;
+					int i = 0;
+					for (i = 0; i < 5; i++) {
+						if (e.getSource().equals(
+								tablerows_left[i].getComponent(4))) {
+							found = true;
+							break;
 						}
 					}
-				} else if (e.getSource() instanceof JCheckBox) {
+					if (found) {
+						JTextField target = ((JTextField) tablerows_left[i]
+								.getComponents()[1]);
+						target.setText(fileChooser.getSelectedFile()
+								.getAbsolutePath());
+					} else {
+						for (i = 0; i < 5; i++) {
+							if (e.getSource().equals(
+									tablerows_right[i].getComponent(3))) {
+								found = true;
+								break;
+							}
+						}
+						if (found) {
+							JTextField target = ((JTextField) tablerows_right[i]
+									.getComponents()[1]);
+							target.setText(fileChooser.getSelectedFile()
+									.getAbsolutePath());
+						}
+
+					}
+				}
+				break;
+			default:
+				if (e.getSource() instanceof JCheckBox) {
 					int i = 0;
 					for (i = 0; i < 4; i++) {
 						if (e.getSource().equals(
