@@ -1,12 +1,7 @@
 package imagehandling;
 
-import ij.IJ;
 import ij.ImageJ;
-import ij.ImagePlus;
-import ij.ImageStack;
-import ij.plugin.DICOM;
 import ij.plugin.DragAndDrop;
-import ij.plugin.FolderOpener;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -274,7 +269,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// creating the output area
 			outputArea = new JTextArea();
 			outputArea.setEditable(false);
-			setfinalSize(outputArea, new Dimension(1100, 225));
+			setfinalSize(outputArea, new Dimension(1050, 200));
 			outputScroller = new JScrollPane(outputArea);
 			setfinalSize(outputScroller, new Dimension(1100, 225));
 			outputScroller
@@ -471,7 +466,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			} else {
 				currentdialog = new JFrame();
 				currentdialog.setLocationRelativeTo(this);
-//				currentdialog.setVisible(true);
+				// currentdialog.setVisible(true);
 				option = JOptionPane
 						.showConfirmDialog(
 								currentdialog,
@@ -535,6 +530,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				JTextField tooutput = (JTextField) left_stuff[3];
 				@SuppressWarnings("unchecked")
 				JComboBox<String> move = (JComboBox<String>) left_stuff[2];
+				JCheckBox nifti = (JCheckBox) left_stuff[6];
 
 				// catching empty input
 				if (inputfield.getText().equals("")) {
@@ -587,10 +583,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 							option = 0;
 						}
 
-						if (option == -1){
+						if (option == -1) {
 							option = 1;
 						}
-						
+
 						if (option == 1) {
 							status.setBackground(color_failed);
 							status.setText("No Outp. Dir");
@@ -621,14 +617,18 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 				// setting the file transfer option
 				String option = (String) move.getSelectedItem();
-				if (option.equals("Move")) {
-					sortAlgorithm.setCreateNiftis(false);
-					sortAlgorithm.setFilesOptionMove();
-				} else {
-					sortAlgorithm.setCreateNiftis(false);
+				if (nifti.isSelected()) {
+					sortAlgorithm.setCreateNiftis(true);
 					sortAlgorithm.setFilesOptionCopy();
+				} else {
+					if (option.equals("Move")) {
+						sortAlgorithm.setCreateNiftis(false);
+						sortAlgorithm.setFilesOptionMove();
+					} else {
+						sortAlgorithm.setCreateNiftis(false);
+						sortAlgorithm.setFilesOptionCopy();
+					}
 				}
-
 
 				// now the sortalgorithm can start
 				status.setText("In Progress...");
@@ -654,6 +654,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 
 			// To be sure, the user see the hole text.
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			this.outputArea.setText(this.sortListener.toString());
 			int i = this.outputScroller.getVerticalScrollBar().getMaximum();
 			this.outputScroller.getVerticalScrollBar().setValue(i);
@@ -842,7 +847,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		 * The Current ImageJ Frame
 		 */
 		private ImageJ imgj;
-		
+
 		/**
 		 * Standard Constructur.
 		 */
@@ -1128,19 +1133,20 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			switch (e.getActionCommand()) {
 			case "open in Imagej":
 				if (volume != null) {
-					if (imgj == null || !imgj.isVisible()){
-						imgj = new ImageJ();
+					if (imgj == null || !imgj.isVisible()) {
 					}
 					DragAndDrop dad = new DragAndDrop();
 					dad.openFile(new File(path.getText()));
-				}break;
-			case "browse": // searching for a volume
-				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
-				if (chooser.getSelectedFile().isDirectory()){
-					path.setText(chooser.getSelectedFile().toString());
-				}else if (chooser.getSelectedFile().isFile()){
-					path.setText(chooser.getSelectedFile().getParent().toString());
 				}
+				break;
+			case "browse": // searching for a volume
+				if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+					if (chooser.getSelectedFile().isDirectory()) {
+						path.setText(chooser.getSelectedFile().toString());
+					} else if (chooser.getSelectedFile().isFile()) {
+						path.setText(chooser.getSelectedFile().getParent()
+								.toString());
+					}
 				}
 				new Thread(this).start();
 				break;
@@ -1457,7 +1463,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	 * Filechooser for all Tabs.
 	 */
 	private JFileChooser filechooser;
-	
+
 	/**
 	 * One and only Constructur.
 	 */
@@ -1467,7 +1473,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		filechooser.setDialogTitle("Search Directory");
 		filechooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		filechooser.setAcceptAllFileFilterUsed(false);
-		
+
 		forceEnd = forceProgrammEndIfThereIsNoWindow;
 		JMenuBar menuBar;
 		JMenu menu;
@@ -1607,8 +1613,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				continue;
 			}
 
-			((MyTab) tabber.getComponentAt(tabber
-					.getSelectedIndex())).lifeUpdate(this);
+			((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
+					.lifeUpdate(this);
 		}
 	}
 

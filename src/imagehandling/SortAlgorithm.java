@@ -1,16 +1,17 @@
 package imagehandling;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.plugin.DICOM;
 import ij.plugin.Nifti_Writer;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,6 +25,12 @@ import java.util.Stack;
  *
  */
 public class SortAlgorithm {
+
+	/**
+	 * This boolean is used to print a error Message, when curropt data was
+	 * found. This way i only print one time a error Message.
+	 */
+	private boolean anyCurropt;
 
 	/**
 	 * Defines, if the dicoms transefered as a dicom or as a nifti.
@@ -101,15 +108,16 @@ public class SortAlgorithm {
 
 	/**
 	 * The HashMap protocolnames is used, if subfolders is false. The
-	 * protocolnames contains the praefix to a given protocol name.
+	 * protocolnames is used, to check, if 2 Dicoms with the same protocol Name
+	 * + series Number + patient ID are equal.
 	 */
-	private HashMap<String, String> protocolnames;
+	private HashMap<String, String> protocolInfo;
 
 	/**
-	 * Missing is used, to fill gaps in the protocol praefix (in the no
-	 * subfolder sort). If someone would delete the folder 010_protocolname,
-	 * than the next folder would use the praefix 010_, even if there are higher
-	 * praefix numbers.
+	 * Missing is used, to fill gaps in the protocol praefix (in the subfolder
+	 * sort). If someone would delete the folder 010_protocolname, than the next
+	 * folder would use the praefix 010_, even if there are higher praefix
+	 * numbers.
 	 */
 	private HashMap<String, ArrayList<Integer>> missing;
 
@@ -348,7 +356,8 @@ public class SortAlgorithm {
 		double start = deltaTimeHelp;
 		// new File, to test if the path is correct
 		File file = new File(searchin);
-		protocolnames = new HashMap<String, String>(100);
+		protocolInfo = new HashMap<String, String>(100);
+		anyCurropt = false;
 
 		// number of dicoms that the programm found
 		found = 0;
@@ -400,34 +409,58 @@ public class SortAlgorithm {
 			return false;
 		}
 
-//		if (createNiftis) {
-//			out.println("Creating Niftis..");
-//			Set<String> keys = niftihelp.keySet();
-////			Nifti_Writer writer = new Nifti_Writer();
-//			for (String key : keys) {
-//				KeyMap[] info = { KeyMap.KEY_ECHO_NUMBERS_S };
-//				ArrayList<String> dicoms = niftihelp.get(key);
-//				boolean image4d = false;
-//				DICOM dcm = new DICOM();
-//				for (String dicom : dicoms) {
-//					dcm.open(dicom);
-//					String[] att = Image.getAttributesDicom(dicom, info);
-//					if (Integer.parseInt(att[0]) != 1) {
-//						image4d = true;
-//					}
-//				}
-//				ImagePlus imp = dcm.duplicate();
-////				writer.save(imp, key, "data.nifti");
-//			}
-//		}
+		int numberofnii = 0;
+		if (createNiftis) {
+			out.println("Creating Niftis..");
+			Set<String> keys = niftihelp.keySet();
+			 Nifti_Writer writer = new Nifti_Writer();
+			 int slices = 0;
+			 int frames = 0;
+			 int width = 0;
+			 int height = 0;
+			for (String key : keys) {
+				KeyMap[] info = { KeyMap.KEY_ECHO_NUMBERS_S, KeyMap.KEY_ECHO_NUMBERS_S};
+				ArrayList<String> dicoms = niftihelp.get(key);
+				boolean image4d = false;
+				DICOM dcm = new DICOM();
+				for (String dicom : dicoms) {
+					dcm.open(dicom);
+					slices++;
+					String[] att = Image.getAttributesDicom(dicom, info);
+					if (image4d == false && Integer.parseInt(att[0]) != 1) {
+						image4d = true;
+						BufferedImage img = dcm.getBufferedImage();
+						width = img.getWidth();
+						height = img.getHeight();
+					}
+					if (image4d == true && Integer.parseInt(att[1]) > frames){
+						frames = Integer.parseInt(att[1]);
+						}
+				}
+				ImagePlus imp = dcm.duplicate();
+				if (image4d){
+					slices /= frames;
+					ImagePlus hyper = IJ.createHyperStack(imp.getTitle(),width,height, 1, slices, frames, 8);
+					hyper.setImage(imp);
+					imp = hyper;
+				}
+				 writer.save(imp, key, "data.nii");
+				 numberofnii++;
+			}
+		}
 
 		// The last output
 		start = System.currentTimeMillis() - start;
 		String operation = "";
-		if (move) {
-			operation = "moved";
+		if (!createNiftis) {
+			if (move) {
+				operation = "moved";
+			} else {
+				operation = "copied";
+			}
 		} else {
-			operation = "copied";
+			operation = "created niftis";
+			transfered = numberofnii;
 		}
 		out.println("I found and sorted " + found + " Dicoms in " + start
 				/ 1000 + " seconds! I " + operation + " " + transfered
@@ -569,8 +602,8 @@ public class SortAlgorithm {
 							String key = patientID + protocolName + att[0]
 									+ att[1];
 							// If there is no key, i gonna create it
-							if (!protocolnames.containsKey(key)) {
-								protocolnames.put(key, test);
+							if (!protocolInfo.containsKey(key)) {
+								protocolInfo.put(key, test);
 								continue;
 							}
 
@@ -679,24 +712,26 @@ public class SortAlgorithm {
 				}
 				path = potentialDicom.getAbsolutePath();
 				// We found a dicom?
-				if (path.endsWith(".dcm") || path.endsWith(".IMA") || Image.isDicom(potentialDicom.toPath())) {
+				if (path.endsWith(".dcm") || path.endsWith(".IMA")
+						|| Image.isDicom(potentialDicom.toPath())) {
 					// Using the sort structur the user have choosen
-					try{
-					if (subfolders) {
-						SASInSubfoldersSort(path, sortInDir);
-					} else {
-						SASInNoSubfoldersSort(path, sortInDir);
-					}
-					// Everytime we have another 50 Dicoms, we communicate with
-					// the
-					// user.
-					if (++found % 50 == 0) {
-						out.println("I found and sorted so far " + found
-								+ " Dicoms. (DeltaTime: " + deltaTime()
-								+ " millis.)");
-					}
-					}catch(Exception e){
-						// just for the presentation
+					try {
+						if (subfolders) {
+							SASInSubfoldersSort(path, sortInDir);
+						} else {
+							SASInNoSubfoldersSort(path, sortInDir);
+						}
+						// Everytime we have another 50 Dicoms, we communicate
+						// with
+						// the
+						// user.
+						if (++found % 50 == 0) {
+							out.println("I found and sorted so far " + found
+									+ " Dicoms. (DeltaTime: " + deltaTime()
+									+ " millis.)");
+						}
+					} catch (Exception e) {
+						// catching potential currupt data
 						continue;
 					}
 				} else {
@@ -741,7 +776,7 @@ public class SortAlgorithm {
 		existOrCreate(path);
 
 		// Block for protocolname/praefix
-		if (!protocolnames.containsKey(patientID + protocolName + instanceUID
+		if (!protocolInfo.containsKey(patientID + protocolName + instanceUID
 				+ birthDate)) {
 			// The praefix of a protocol folder
 			String numb;
@@ -767,12 +802,12 @@ public class SortAlgorithm {
 						index.get(patientID + protocolName) + 1);
 			}
 			// new protocol subfolder
-			protocolnames.put(patientID + protocolName + instanceUID
-					+ birthDate, numb);
+			protocolInfo.put(
+					patientID + protocolName + instanceUID + birthDate, numb);
 		}
 		// check next protocol and creating it, if its not existant
 		path.append("/"
-				+ protocolnames.get(patientID + protocolName + instanceUID
+				+ protocolInfo.get(patientID + protocolName + instanceUID
 						+ birthDate));
 		existOrCreate(path);
 
@@ -782,7 +817,11 @@ public class SortAlgorithm {
 		if (keepImgName) {
 			name = new File(input).getName();
 		} else {
-			name = toImgDigits(imageNumber) + ".dcm";
+			if (createNiftis) {
+				name = toImgDigits(imageNumber) + ".nii";
+			} else {
+				name = toImgDigits(imageNumber) + ".dcm";
+			}
 		}
 
 		// Copy/Move the data
@@ -802,30 +841,15 @@ public class SortAlgorithm {
 	private void SASInNoSubfolderWrapper(String searchin, String sortInDir) {
 		File file = new File(sortInDir);
 		File[] list = file.listFiles();
-		// Index to find the next praefix, that is needed for a protocol
-		index = new HashMap<>();
-		// missing praefix, that i need
-		missing = new HashMap<String, ArrayList<Integer>>();
 
 		if (list != null) {
 			for (File patientfolder : list) {
-				// her im only searching directorys
+				// here im only searching directorys
 				if (!patientfolder.isDirectory()) {
 					continue;
 				}
 
 				String patientID = patientfolder.getName();
-
-				// Initializing the arraylist in the HashMap missing, if there
-				// is no ArrayList
-				if (missing.get(patientID) == null) {
-					missing.put(patientID, new ArrayList<Integer>());
-				}
-				// Initializing the Integer in the HashMap index, if there is no
-				// entry
-				if (index.get(patientID) == null) {
-					index.put(patientID, 0);
-				}
 
 				File[] newlist = patientfolder.listFiles();
 				if (newlist == null) {
@@ -834,60 +858,17 @@ public class SortAlgorithm {
 				for (File protocolfolder : newlist) {
 					String protocolName = protocolfolder.getName();
 
-					// I dont need folders, when they are to short
-					if (protocolName.length() < protocol_digits + 1) {
-						continue;
-					}
 					try {
-						String test = null;
-						try {
-							// getting the paefix index
-							test = protocolName.substring(0,
-									protocolName.indexOf("_"));
 
-							// maybe we have the false folder
-							if (test.length() == 0) {
-								continue;
-							}
-
-							// is test a number?
-							int nextParse = Integer.parseInt(test);
-							// maybe a praefix is "marked" as missing, but we
-							// found it now
-							if (missing.get(patientID).contains(nextParse)) {
-								missing.get(patientID).remove(
-										new Integer(nextParse));
-							}
-							// filling the missing praefix, if we guess there
-							// are gaps
-							if (nextParse > index.get(patientID)) {
-								if (nextParse - index.get(patientID) > 1) {
-									for (int i = index.get(patientfolder
-											.getName()) + 1; i < nextParse; i++) {
-										missing.get(patientID).add(i);
-									}
-								}
-								// making the highest index higher
-								index.put(patientID, nextParse);
-							}
-						} catch (NullPointerException e) {
-							// The index was missing i guess. Maybe not needed
-							// anymore.
-							index.put(patientID, 1);
-						} catch (NumberFormatException e) {
-							// I couldnt cut out a number of the praefix
-							continue;
-						} catch (IndexOutOfBoundsException e) {
-							// if the index not contains a "_"
-							continue;
-						}
 						// getting two informations, which are needed to compare
 						// the dicoms
 						KeyMap info[] = { KeyMap.KEY_SERIES_INSTANCE_UID,
-								KeyMap.KEY_PATIENTS_BIRTH_DATE };
+								KeyMap.KEY_PATIENTS_BIRTH_DATE,
+								KeyMap.KEY_SERIES_NUMBER };
 						String[] att = null;
 						for (File dicom : protocolfolder.listFiles()) {
-							if (dicom.getAbsolutePath().endsWith(".dcm")) {
+							if (dicom.getAbsolutePath().endsWith(".dcm")
+									|| dicom.getAbsolutePath().endsWith(".IMA")) {
 								// static method, for getting the attributes,
 								// because if we always Initialize a new Image
 								// class, than we would loose a lot of time.
@@ -902,13 +883,13 @@ public class SortAlgorithm {
 
 						// Key for the protocolnames HashMap
 						String key = patientID
+								+ att[2]
 								+ protocolName.substring(
 										protocolName.indexOf("_") + 1,
-										protocolName.length()) + att[0]
-								+ att[1];
+										protocolName.length());
 						// If there is no key, i gonna create it
-						if (!protocolnames.containsKey(key)) {
-							protocolnames.put(key, test);
+						if (!protocolInfo.containsKey(key)) {
+							protocolInfo.put(key, att[1] + att[0]);
 							continue;
 						}
 
@@ -954,37 +935,26 @@ public class SortAlgorithm {
 		path.append(dir + "/" + patientID);
 		existOrCreate(path);
 
-//		// Block for protocolname/praefix
-//		if (!protocolnames.containsKey(patientID + protocolName + instanceUID
-//				+ birthDate)) {
-//			// The praefix of a protocol folder
-//			String numb;
-//			if (missing.get(patientID) != null
-//					&& missing.get(patientID).size() != 0) {
-//				// filling the missing praefix
-//				numb = toProtocolDigits(missing.get(patientID).get(0) + "");
-//				missing.get(patientID).remove(0);
-//			} else {
-//				// initializing a the index value to this patientID if its
-//				// missing
-//				if (index.get(patientID) == null) {
-//					index.put(patientID, 1);
-//				}
-//				// If the index is equal to zero, than i put it to 1
-//				if (index.get(patientID) == 0) {
-//					index.put(patientID, 1);
-//				}
-//				// getting the praefix number
-//				numb = toProtocolDigits(index.get(patientID) + "");
-//				index.put(patientID, index.get(patientID) + 1);
-//			}
-//			// new protocol subfolder
-//			protocolnames.put(patientID + protocolName + instanceUID
-//					+ birthDate, numb);
-//		}
+		// Block for checking birth date with target folder
+		String key = patientID + seriesNumber + protocolName;
+		String curValue = birthDate + instanceUID;
+		if (protocolInfo.containsKey(key)) {
+			String value = protocolInfo.get(key);
+			if (!value.equals(curValue)) {
+				if (anyCurropt == false) {
+					out.println("ALERT! SOME DATA SEEMS TO BE CORRUPT.\nTHE MOST INFORMATION ARE EQUAL, BUT THE BIRTH DATE + INSTANCE UID ARE NOT.");
+					anyCurropt = true;
+				}
+				path.append("/Corrupt");
+				existOrCreate(path);
+			}
+		} else {
+			protocolInfo.put(key, curValue);
+		}
+
 		// check next protocol and creating it, if its not existant
-		path.append("/"
-				+ toProtocolDigits(seriesNumber+"")+ "_" + protocolName);
+		path.append("/" + toProtocolDigits(seriesNumber + "") + "_"
+				+ protocolName);
 		existOrCreate(path);
 
 		// next the dicom name
@@ -993,7 +963,7 @@ public class SortAlgorithm {
 			name = new File(input).getName();
 		} else {
 			if (createNiftis) {
-				name = toImgDigits(imageNumber) + ".nifti";
+				name = toImgDigits(imageNumber) + ".nii";
 			} else {
 				name = toImgDigits(imageNumber) + ".dcm";
 			}
@@ -1005,15 +975,15 @@ public class SortAlgorithm {
 
 	private void moveDicom(String input, String output, String name) {
 		if (createNiftis) {
-			File test = new File(output+"/data.nifti");
-			if (!test.exists()){
-			ArrayList<String> target = niftihelp.get(output);
-			if (target == null) {
-				target = new ArrayList<String>();
-			}
-			target.add(input);
-			niftihelp.put(output, target);
-			transfered++;
+			File test = new File(output + "/data.nii");
+			if (!test.exists()) {
+				ArrayList<String> target = niftihelp.get(output);
+				if (target == null) {
+					target = new ArrayList<String>();
+				}
+				target.add(input);
+				niftihelp.put(output, target);
+				transfered++;
 			}
 		} else {
 			File test = new File(output + "/" + name);

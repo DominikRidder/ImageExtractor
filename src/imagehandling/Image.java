@@ -8,7 +8,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import ij.plugin.DICOM;
 import ij.util.WildcardMatch;
 
 /**
