@@ -1,5 +1,6 @@
 package imagehandling;
 
+import ij.IJ;
 import ij.ImageJ;
 import ij.plugin.DragAndDrop;
 
@@ -1152,6 +1153,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			case "open in Imagej":
 				if (volume != null) {
 					if (imgj == null || !imgj.isVisible()) {
+						imgj = new ImageJ();
 					}
 					DragAndDrop dad = new DragAndDrop();
 					dad.openFile(new File(path.getText()));
@@ -1461,8 +1463,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 	/**
 	 * If there is no Window anymore, the forceEnd boolean can call
-	 * System.exit(1) to rly force an End to all remaining Threads. If this GUI
-	 * is just a part of another programm, than you should not force an End,
+	 * System.exit(1) to really force an end to all remaining Threads. If this GUI
+	 * is just a part of another programm, than you should not force an end,
 	 * because you would even kill the other Programm.
 	 */
 	private boolean forceEnd;
