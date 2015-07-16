@@ -413,13 +413,14 @@ public class SortAlgorithm {
 		if (createNiftis) {
 			out.println("Creating Niftis..");
 			Set<String> keys = niftihelp.keySet();
-			 Nifti_Writer writer = new Nifti_Writer();
-			 int slices = 0;
-			 int frames = 0;
-			 int width = 0;
-			 int height = 0;
+			Nifti_Writer writer = new Nifti_Writer();
+			int slices = 0;
+			int frames = 0;
+			int width = 0;
+			int height = 0;
 			for (String key : keys) {
-				KeyMap[] info = { KeyMap.KEY_ECHO_NUMBERS_S, KeyMap.KEY_ECHO_NUMBERS_S};
+				KeyMap[] info = { KeyMap.KEY_ECHO_NUMBERS_S,
+						KeyMap.KEY_ECHO_NUMBERS_S };
 				ArrayList<String> dicoms = niftihelp.get(key);
 				boolean image4d = false;
 				DICOM dcm = new DICOM();
@@ -433,19 +434,20 @@ public class SortAlgorithm {
 						width = img.getWidth();
 						height = img.getHeight();
 					}
-					if (image4d == true && Integer.parseInt(att[1]) > frames){
+					if (image4d == true && Integer.parseInt(att[1]) > frames) {
 						frames = Integer.parseInt(att[1]);
-						}
+					}
 				}
 				ImagePlus imp = dcm.duplicate();
-				if (image4d){
+				if (image4d) {
 					slices /= frames;
-					ImagePlus hyper = IJ.createHyperStack(imp.getTitle(),width,height, 1, slices, frames, 8);
+					ImagePlus hyper = IJ.createHyperStack(imp.getTitle(),
+							width, height, 1, slices, frames, 8);
 					hyper.setImage(imp);
 					imp = hyper;
 				}
-				 writer.save(imp, key, "data.nii");
-				 numberofnii++;
+				writer.save(imp, key, "data.nii");
+				numberofnii++;
 			}
 		}
 
@@ -459,12 +461,18 @@ public class SortAlgorithm {
 				operation = "copied";
 			}
 		} else {
-			operation = "created niftis";
+			operation = "created";
 			transfered = numberofnii;
 		}
-		out.println("I found and sorted " + found + " Dicoms in " + start
-				/ 1000 + " seconds! I " + operation + " " + transfered
-				+ " of them to the Output directory.");
+		if (!createNiftis) {
+			out.println("I found and sorted " + found + " Dicoms in " + start
+					/ 1000 + " seconds! I " + operation + " " + transfered
+					+ " of them to the Output directory.");
+		} else {
+			out.println("I found and sorted " + found + " Dicoms in " + start
+					/ 1000 + " seconds! I " + operation + " " + transfered
+					+ " niftis in the Output directory.");
+		}
 		return true;
 	}
 

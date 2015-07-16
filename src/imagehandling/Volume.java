@@ -523,7 +523,7 @@ public class Volume {
 		} else if (i < 0) {
 			System.out
 					.println("You can not get the Image of a negative Index. The Index should be betweeen 0-"
-							+ size
+							+ (size-1)
 							+ " in this case.\nReturning instead the first slice (0).");
 			return slices.get(0);
 		}
@@ -558,4 +558,39 @@ public class Volume {
 	public int size() {
 		return slices.size();
 	}
+	
+//	/**
+//	 * Returning the decay of Signal belonging to different Echoes.
+//	 */
+//	public ArrayList<BufferedImage> getDecayImages(){
+//		int size = size();
+//		ArrayList<BufferedImage> rightnow = getData();
+//		KeyMap[] info = {KeyMap.KEY_ECHO_NUMBERS_S};
+//		String[] att = getSlice(size-1).getAttributesDicom(info);
+//		int echoNumbers = Integer.parseInt(att[0]);
+//		int slices = size/echoNumbers;
+//		int width = rightnow.get(0).getWidth();
+//		int height = rightnow.get(0).getHeight();
+//		int rgbtype = rightnow.get(0).getType();
+//		
+//		ArrayList<BufferedImage> ret = new ArrayList<>(slices);
+//		int values[][][] = new int[slices][echoNumbers][width*height];
+//		int sum = 0;
+//		
+//		for (int s=0; s<slices; s++){
+//			BufferedImage next = new BufferedImage(width,height,rgbtype);
+//			for (int e=0; e<echoNumbers; e++){
+//				BufferedImage val = rightnow.get(s+e*slices);
+//				for (int x=0; x<height; x++){
+//					for (int y=0; y<width; y++){
+//						values[s][e][y+x*width] = val.getRGB(y, x);
+//					}
+//				}
+//			}
+//		}
+//		System.out.println("done");
+//		System.out.println(slices*echoNumbers*height*width+" Pixels");
+//		
+//		return null;
+//	}
 }
