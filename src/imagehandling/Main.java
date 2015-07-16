@@ -10,7 +10,7 @@ public class Main {
 	public static void main(String agrs[]) {
 		String filepath = "/opt/dridder_local/TestDicoms/AllDicoms/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/12_gre_t2star";
 		Volume vol = new Volume(filepath);
-		vol.getDecayImages();
+
 //
 //		TextOptions topt = new TextOptions();
 //		topt.addSearchOption(TextOptions.ATTRIBUTE_NAME);
