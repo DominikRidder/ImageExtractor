@@ -1,7 +1,7 @@
 package imagehandling;
 
-import ij.IJ;
 import ij.ImageJ;
+import ij.gui.Plot;
 import ij.plugin.DragAndDrop;
 
 import java.awt.Color;
@@ -14,6 +14,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
@@ -46,6 +48,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicArrowButton;
 
+import polyfitter.Point;
+import polyfitter.Point2D;
+import polyfitter.VolumeFitter;
+
 /**
  * This GUI is used, to look the Header and Images of Dicoms and to Search and
  * Sort Dicoms.
@@ -53,7 +59,7 @@ import javax.swing.plaf.basic.BasicArrowButton;
  * @author dridder_local
  *
  */
-public class GUI extends JFrame implements ActionListener, Runnable {
+public class GUI extends JFrame implements ActionListener,ChangeListener, Runnable {
 
 	/**
 	 * Main method, to start the GUI.
@@ -73,7 +79,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	interface MyTab {
 		public String getClassName();
 
-		public void lifeUpdate(JFrame parent);
+		public void lifeUpdate();
 	}
 
 	/**
@@ -159,9 +165,16 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		private JFrame currentdialog;
 
 		/**
+		 * This is the parent of this SorterTab istance.
+		 */
+		private GUI parent;
+		
+		/**
 		 * Default Constructur.
 		 */
-		public SorterTab(JFileChooser filechooser) {
+		public SorterTab(JFileChooser filechooser, GUI gui) {
+			parent = gui;
+			
 			// Tool tip text's
 			image_digits_tooltip = new String(
 					"Set the Image Digits to 0, to not change the DICOM names.");
@@ -270,7 +283,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			// creating the output area
 			outputArea = new JTextArea();
 			outputArea.setEditable(false);
-			outputArea.setMargin(new Insets(0,0,0,0));
+			outputArea.setMargin(new Insets(0, 0, 0, 0));
 			setfinalSize(outputArea, new Dimension(1050, 200));
 			outputScroller = new JScrollPane(outputArea);
 			setfinalSize(outputScroller, new Dimension(1100, 225));
@@ -312,7 +325,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			browseButton.setText("...");
 			browseButton.setMaximumSize(new Dimension(29, 27));
 			browseButton.setPreferredSize(new Dimension(29, 27));
-			browseButton.setMargin(new Insets(0,0,0,0));
+			browseButton.setMargin(new Insets(0, 0, 0, 0));
 			browseButton.addActionListener(this);
 
 			JCheckBox tonifti = new JCheckBox();
@@ -349,13 +362,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		private JPanel createOutputRow(int index) {
 			// Button for searching a dir
 			JButton browseButton = new JButton();
-			// the number at the start is used to know, where the browsed
-			// directory have to be set. The ":" is important for the splitt. At
-			// the end you will just the a "..." in the button.
+			// at  the end you will just the a "..." in the button.
 			browseButton.setText("...");
 			browseButton.setMaximumSize(new Dimension(29, 27));
 			browseButton.setPreferredSize(new Dimension(29, 27));
-			browseButton.setMargin(new Insets(0,0,0,0));
+			browseButton.setMargin(new Insets(0, 0, 0, 0));
 			browseButton.addActionListener(this);
 
 			JPanel rowPanel = new JPanel();
@@ -495,7 +506,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 		}
 
-		public void lifeUpdate(JFrame parent) {
+		public void lifeUpdate() {
 			while (this.isVisible() && parent.isVisible()) {
 				try {
 					if (this.currentSortThread != null) {
@@ -696,7 +707,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	 *
 	 */
 	class VolumeTab extends JPanel implements ActionListener, MyTab,
-			ChangeListener, MouseWheelListener, KeyListener, Runnable {
+			ChangeListener, MouseWheelListener, MouseListener, KeyListener, Runnable {
 
 		/**
 		 * Default serialVersionUID
@@ -868,9 +879,29 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		private ImageJ imgj;
 
 		/**
+		 * The parent is the actual window, that created this VolumeTab.
+		 */
+		private GUI parent;
+		
+		/**
+		 * This boolean is important to know, if this tab was in an extended state or not.
+		 */
+		private Boolean ownExtended = false;
+		
+		private JPanel roiPanel;
+		
+		BufferedImage roiimage;
+
+		ImageIcon roiimgicon;
+
+		JLabel roilabel;
+		
+		/**
 		 * Standard Constructur.
 		 */
-		public VolumeTab(JFileChooser filechooser) {
+		public VolumeTab(JFileChooser filechooser, GUI gui) {
+			parent = gui;
+			
 			// The path for the Volume
 			path = new JTextField("");
 			path.addKeyListener(this);
@@ -890,6 +921,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			imagelabel = new JLabel(imgicon);
 			imagelabel.addMouseWheelListener(this);
 			imagelabel.addKeyListener(this);
+			imagelabel.addMouseListener(this);
 
 			// initialize the Buttons
 			open_imagej = new JButton("open in Imagej");
@@ -1030,12 +1062,32 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 					volumePanel, index_Panel, attributeConfig, outputScroller };
 			addComponents(leftSidePanel, panelstuff);
 
+			// image
+			roiimage = new BufferedImage(300, 300, BufferedImage.TYPE_BYTE_GRAY);
+			// The ImageIcon is kinda a wrapper for the image
+			roiimgicon = new ImageIcon(roiimage);
+			// imagepanel wrapps the ImageIcon
+			roilabel = new JLabel(roiimgicon);
+//			roilabel.addMouseWheelListener(this);
+//			roilabel.addKeyListener(this);
+//			roilabel.addMouseListener(this);
+			
+			// Putting the roi Panel together
+			roiPanel = new JPanel();
+			roiPanel.setLayout(new BoxLayout(roiPanel, BoxLayout.PAGE_AXIS));
+			setfinalSize(roiPanel, new Dimension(400, 1100));
+			Component[] roistuff = {Box.createRigidArea(new Dimension(0, 50)), roilabel};
+			addComponents(roiPanel, roistuff);
+			roiPanel.setVisible(false);
+			
 			// Putting everything together now
 			toppanel = new JPanel();
 			toppanel.setLayout(new BoxLayout(toppanel, BoxLayout.LINE_AXIS));
 			setfinalSize(toppanel, new Dimension(1100, 450));
 			toppanel.add(leftSidePanel);
 			toppanel.add(imagelabel);
+			toppanel.add(Box.createRigidArea(new Dimension(35,0)));
+			toppanel.add(roiPanel);
 
 			// Some this stuff
 			this.setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
@@ -1054,7 +1106,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 				// speciall Constructur which throws an Exception if new Volume
 				// fails, instead of calling System.exit(1)
 				volume = new Volume(path.getText(), this);
-
+				
 				// Default Index
 				actual_slice = 1;
 				actual_echo = 1;
@@ -1137,7 +1189,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 						outputArea.setText(outputstring.toString());
 					}
 				}
-			} catch (NumberFormatException e) {
+			} catch (NumberFormatException | NullPointerException e) {
 
 			}
 		}
@@ -1204,7 +1256,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		}
 
 		@Override
-		public void lifeUpdate(JFrame parent) {
+		public void lifeUpdate() {
+			parent.setExtendedWindow(this.ownExtended);
 			String lasttime_echo = "0";
 			String lasttime_slice = "0";
 			String lasttime_filter = "";
@@ -1267,7 +1320,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 							if (next <= perEcho) {
 								this.index_slice.setText("" + next);
 							}
-							// max 40 changes per second
+							// max 20 changes per second
 							try {
 								Thread.sleep(50);
 							} catch (InterruptedException e) {
@@ -1308,7 +1361,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 							if (next <= echoNumbers) {
 								this.index_echo.setText("" + next);
 							}
-							// max 40 changes per second
+							// max 20 changes per second
 							try {
 								Thread.sleep(50);
 							} catch (InterruptedException e) {
@@ -1449,6 +1502,49 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			createVolume();
 		}
 
+		public void mouseClicked(MouseEvent e) {
+			BufferedImage orig = this.volume
+			.getSlice(actualSliceIndex())
+			.getData();
+			
+			Point roi = new Point2D((double)e.getX()/this.image.getHeight()*orig.getHeight(),(double)e.getY()/this.image.getWidth()*orig.getWidth());
+			VolumeFitter vf = new VolumeFitter();
+			this.roiimage.getGraphics().drawImage(
+					vf.getbla(this.path.getText(), roi, this.actual_slice)
+							.getScaledInstance(this.roiimage.getWidth(),
+									this.roiimage.getHeight(),
+									BufferedImage.SCALE_AREA_AVERAGING), 0, 0,
+					null);
+			if (!ownExtended){
+				parent.setExtendedWindow(true);
+				ownExtended = true;
+				setfinalSize(toppanel, new Dimension(1400, 450));
+			}
+			roiPanel.setVisible(true);
+			this.repaint();
+			
+		}
+
+		public void mousePressed(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void mouseReleased(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void mouseEntered(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public void mouseExited(MouseEvent e) {
+			// TODO Auto-generated method stub
+			
+		}
+
 	}
 
 	/**
@@ -1463,8 +1559,8 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 	/**
 	 * If there is no Window anymore, the forceEnd boolean can call
-	 * System.exit(1) to really force an end to all remaining Threads. If this GUI
-	 * is just a part of another programm, than you should not force an end,
+	 * System.exit(1) to really force an end to all remaining Threads. If this
+	 * GUI is just a part of another programm, than you should not force an end,
 	 * because you would even kill the other Programm.
 	 */
 	private boolean forceEnd;
@@ -1484,6 +1580,11 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	 */
 	private JFileChooser filechooser;
 
+	/**
+	 * This boolean contains the Information, whether the window have a extra width or not.
+	 */
+	boolean extendedWindow = false;
+	
 	/**
 	 * One and only Constructur.
 	 */
@@ -1523,9 +1624,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		// Menu stuff ends here
 
 		tabber = new JTabbedPane();
-		newTab(new VolumeTab(filechooser));
-		newTab(new SorterTab(filechooser));
+		newTab(new VolumeTab(filechooser, this));
+		newTab(new SorterTab(filechooser, this));
 
+		tabber.addChangeListener(this);
 		add(tabber);
 		setLocationRelativeTo(null);
 		setTitle("ImageExtractor");
@@ -1555,10 +1657,10 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	public void actionPerformed(ActionEvent e) {
 		switch (e.getActionCommand()) {
 		case "new Volume Tab":
-			newTab(new VolumeTab(filechooser));
+			newTab(new VolumeTab(filechooser, this));
 			break;
 		case "new Sort Tab":
-			newTab(new SorterTab(filechooser));
+			newTab(new SorterTab(filechooser, this));
 			break;
 		case "new Window":
 			new GUI(forceEnd);
@@ -1576,6 +1678,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		if (tabber.getTabCount() >= 9) {
 			return;
 		}
+
 		// Making the Counter Higher
 		tabint++;
 
@@ -1619,6 +1722,19 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 		tabber.setSelectedIndex(tabber.getTabCount() - 1);
 	}
 
+	public void setExtendedWindow(boolean bool){
+		if (extendedWindow == bool){
+			return;
+		}
+		extendedWindow = bool;
+		
+		if (extendedWindow){
+			setfinalSize(this, new Dimension(1400, 550));
+		}else{
+			setfinalSize(this, new Dimension(1100, 550));
+		}
+	}
+	
 	/**
 	 * Method, which is always running, to handle the lifeupdate of the tabs.
 	 */
@@ -1634,7 +1750,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 			}
 
 			((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-					.lifeUpdate(this);
+					.lifeUpdate();
 		}
 	}
 
@@ -1644,6 +1760,7 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 	private void setfinalSize(Component p, Dimension d) {
 		p.setMinimumSize(d);
 		p.setMaximumSize(d);
+		p.setSize(d);
 	}
 
 	/**
@@ -1689,5 +1806,12 @@ public class GUI extends JFrame implements ActionListener, Runnable {
 
 		}
 
+	}
+
+	public void stateChanged(ChangeEvent e) {
+		if (e.getSource() == tabber){
+			this.setExtendedWindow(false);
+		}
+		
 	}
 }

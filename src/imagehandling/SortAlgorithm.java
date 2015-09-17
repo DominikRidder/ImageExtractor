@@ -5,7 +5,6 @@ import ij.ImagePlus;
 import ij.plugin.DICOM;
 import ij.plugin.Nifti_Writer;
 
-import java.awt.image.BufferedImage;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -40,8 +39,15 @@ public class SortAlgorithm {
 	/**
 	 * This hashmap helps, to create niftis.
 	 */
-	private HashMap<String, ArrayList<String>> niftihelp;
-
+	private HashMap<String, DICOM> dicomtonifti;
+	
+	/**
+	 * 
+	 */
+	private HashMap<String, Boolean> niftiAs4D;
+	
+	private HashMap<String, String> oneDicomPath;
+	
 	/**
 	 * Value, which can be called, to know, if there is a problem with the
 	 * permissions.
@@ -346,7 +352,7 @@ public class SortAlgorithm {
 	 */
 	public boolean searchAndSortIn(String searchin, String sortInDir) {
 		// a list of found dicoms is needed, if nifti should be used
-		niftihelp = new HashMap<>();
+		dicomtonifti = new HashMap<>();
 		// true if an IOException appears somewhere
 		permissionProblem = false;
 		// false until the user calls stopSort()
@@ -412,34 +418,17 @@ public class SortAlgorithm {
 		int numberofnii = 0;
 		if (createNiftis) {
 			out.println("Creating Niftis..");
-			Set<String> keys = niftihelp.keySet();
+			Set<String> keys = dicomtonifti.keySet();
 			Nifti_Writer writer = new Nifti_Writer();
 			int slices = 0;
 			int frames = 0;
 			int width = 0;
 			int height = 0;
 			for (String key : keys) {
-				KeyMap[] info = { KeyMap.KEY_ECHO_NUMBERS_S,
-						KeyMap.KEY_ECHO_NUMBERS_S };
-				ArrayList<String> dicoms = niftihelp.get(key);
-				boolean image4d = false;
-				DICOM dcm = new DICOM();
-				for (String dicom : dicoms) {
-					dcm.open(dicom);
-					slices++;
-					String[] att = Image.getAttributesDicom(dicom, info);
-					if (image4d == false && Integer.parseInt(att[0]) != 1) {
-						image4d = true;
-						BufferedImage img = dcm.getBufferedImage();
-						width = img.getWidth();
-						height = img.getHeight();
-					}
-					if (image4d == true && Integer.parseInt(att[1]) > frames) {
-						frames = Integer.parseInt(att[1]);
-					}
-				}
-				ImagePlus imp = dcm.duplicate();
-				if (image4d) {
+				
+				
+				ImagePlus imp =  dicomtonifti.get(key).duplicate();
+				if (niftiAs4D.get(key)) {
 					slices /= frames;
 					ImagePlus hyper = IJ.createHyperStack(imp.getTitle(),
 							width, height, 1, slices, frames, 8);
@@ -766,7 +755,7 @@ public class SortAlgorithm {
 		// Getting the necessarie Informations
 		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
 				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID,
-				KeyMap.KEY_PATIENTS_BIRTH_DATE };
+				KeyMap.KEY_PATIENTS_BIRTH_DATE, KeyMap.KEY_ECHO_NUMBERS_S };
 		String[] att = Image.getAttributesDicom(input, info);
 		// This makes it more readable
 		String patientID = att[0];
@@ -774,6 +763,7 @@ public class SortAlgorithm {
 		String imageNumber = att[2];
 		String instanceUID = att[3];
 		String birthDate = att[4];
+		String echoNumbers = att[5];
 
 		// Check existing
 		StringBuilder path = new StringBuilder();
@@ -833,7 +823,11 @@ public class SortAlgorithm {
 		}
 
 		// Copy/Move the data
-		moveDicom(input, path.toString(), name);
+		if (createNiftis){
+			prepareNiftis(input, path.toString(), echoNumbers, imageNumber);
+		}else{
+			moveDicom(input, path.toString(), name);
+		}
 	}
 
 	/**
@@ -928,7 +922,7 @@ public class SortAlgorithm {
 		// Getting the necessarie Informations
 		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
 				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID,
-				KeyMap.KEY_PATIENTS_BIRTH_DATE, KeyMap.KEY_SERIES_NUMBER };
+				KeyMap.KEY_PATIENTS_BIRTH_DATE, KeyMap.KEY_SERIES_NUMBER, KeyMap.KEY_ECHO_NUMBERS_S };
 		String[] att = Image.getAttributesDicom(input, info);
 		// This makes the code more readable
 		String patientID = att[0];
@@ -937,6 +931,7 @@ public class SortAlgorithm {
 		String instanceUID = att[3];
 		String birthDate = att[4];
 		String seriesNumber = att[5];
+		String echoNumbers = att[6];
 
 		StringBuilder path = new StringBuilder();
 		// Check existing
@@ -950,7 +945,7 @@ public class SortAlgorithm {
 			String value = protocolInfo.get(key);
 			if (!value.equals(curValue)) {
 				if (anyCurropt == false) {
-					out.println("ALERT! SOME DATA SEEMS TO BE CORRUPT.\nTHE MOST INFORMATION ARE EQUAL, BUT THE BIRTH DATE + INSTANCE UID ARE NOT.");
+					out.println("ALERT! SOME DATA SEEMS TO BE CORRUPT.\nTHE MOST INFORMATION ARE EQUAL, BUT THE BIRTH DATE && INSTANCE UID ARE NOT.");
 					anyCurropt = true;
 				}
 				path.append("/Corrupt");
@@ -978,22 +973,37 @@ public class SortAlgorithm {
 		}
 
 		// Copy/Move the data
-		moveDicom(input, path.toString(), name);
+		if (createNiftis){
+			prepareNiftis(input, path.toString(), echoNumbers, imageNumber);
+		}else{
+			moveDicom(input, path.toString(), name);
+		}
 	}
 
-	private void moveDicom(String input, String output, String name) {
-		if (createNiftis) {
-			File test = new File(output + "/data.nii");
-			if (!test.exists()) {
-				ArrayList<String> target = niftihelp.get(output);
-				if (target == null) {
-					target = new ArrayList<String>();
-				}
-				target.add(input);
-				niftihelp.put(output, target);
-				transfered++;
+	private void prepareNiftis(String input, String output, String echoNumbers, String imageNumber){
+		File test = new File(output + "/data.nii");
+		if (!test.exists()) {
+			if (!oneDicomPath.containsKey(output)){
+				oneDicomPath.put(output, input);
 			}
-		} else {
+			if (!dicomtonifti.containsKey(output)){
+				dicomtonifti.put(output, new DICOM());
+			}
+			if (!niftiAs4D.containsKey(output)){
+				niftiAs4D.put(output, false);
+			}
+			int echon = Integer.parseInt(echoNumbers);
+			
+			if (echon > 1){
+				niftiAs4D.put(output, true);
+			}
+			
+			dicomtonifti.get(output).open(input);
+			transfered++;
+		}
+	}
+	
+	private void moveDicom(String input, String output, String name) {
 			File test = new File(output + "/" + name);
 			if (!test.exists()) {
 				try {
@@ -1012,7 +1022,6 @@ public class SortAlgorithm {
 					permissionProblem = true;
 					stopSort();
 				}
-			}
 		}
 	}
 

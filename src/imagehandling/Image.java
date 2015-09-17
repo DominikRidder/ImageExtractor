@@ -320,23 +320,13 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @return
 	 */
-	public static boolean isDicom(Path path) {
-//		File test = new File(path);
-//		if (test.length()>50000) {
-//			DICOM dcm = new DICOM();
-//			dcm.open(path);
-//			return dcm.getWidth() != 0;
-//		}
-		
+	public static boolean isDicom(Path path) {		
 		try {
 			switch(Files.probeContentType(path)){
 			case "application/dicom": return true;
-			case "application/octet-stream": return true;
 			case "application/x-ima": return true;
 			}
 		} catch (IOException | NullPointerException e) {
-			// TODO Auto-generated catch block
-//			e.printStackTrace();
 		}
 		return false;
 	}

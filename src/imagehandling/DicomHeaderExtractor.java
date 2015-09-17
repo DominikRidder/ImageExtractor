@@ -11,7 +11,9 @@ import ij.plugin.DICOM;
 import ij.util.WildcardMatch;
 
 /**
- * Implemtation of the interface HeaderExtractor for the image type "dcm" ("IMA").
+ * Implemtation of the interface HeaderExtractor for the image type "dcm"
+ * ("IMA").
+ * 
  * @author dridder_local
  *
  */
@@ -108,8 +110,8 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		wm.setCaseSensitive(false);
 		StringBuilder returnexp = new StringBuilder(topt.getReturnExpression());
 		HashSet<Integer> searchopt = topt.getSearchOptions();
-		String linetest = "*"+regularExpression+"*";
-		
+		String linetest = "*" + regularExpression + "*";
+
 		boolean searchInNumber = searchopt
 				.contains(TextOptions.ATTRIBUTE_NUMBER);
 		boolean searchInName = searchopt.contains(TextOptions.ATTRIBUTE_NAME);
@@ -119,20 +121,20 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		ArrayList<Integer> replaceListType = new ArrayList<Integer>();
 
 		for (int i = 0; i < returnexp.length(); i++) {
-			String c = ""+returnexp.charAt(i);
+			String c = "" + returnexp.charAt(i);
 			switch (c) {
-			case TextOptions.ATTRIBUTE_NUMBER+"":
+			case TextOptions.ATTRIBUTE_NUMBER + "":
 				replaceListPos.add(i);
 				replaceListType.add(TextOptions.ATTRIBUTE_NUMBER);
 				break;
-			case TextOptions.ATTRIBUTE_NAME+"":
+			case TextOptions.ATTRIBUTE_NAME + "":
 				replaceListPos.add(i);
 				replaceListType.add(TextOptions.ATTRIBUTE_NAME);
 				break;
-			case TextOptions.ATTRIBUTE_VALUE+"":
+			case TextOptions.ATTRIBUTE_VALUE + "":
 				replaceListPos.add(i);
 				replaceListType.add(TextOptions.ATTRIBUTE_VALUE);
-				break;		
+				break;
 			default:
 				break;
 			}
@@ -144,10 +146,10 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		String name;
 		String value;
 		StringBuilder searchin;
-		
+
 		for (String line : getHeader(path).split("\n")) {
 			try {
-				if (!wm.match(line, linetest)){
+				if (!wm.match(line, linetest)) {
 					continue;
 				}
 				firstsplitt = line.split(":");
@@ -157,7 +159,7 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 				value = firstsplitt[1].replace(" ", "");
 
 				searchin = new StringBuilder();
-		
+
 				if (searchInNumber) {
 					searchin.append(number + " ");
 				}
@@ -165,7 +167,7 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 					searchin.append(" " + name + ": ");
 				}
 				if (searchInValue) {
-					searchin.append(" " + value+ " ");
+					searchin.append(" " + value + " ");
 				}
 
 				if (wm.match(searchin.toString(), regularExpression)) {
@@ -173,19 +175,23 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 					int offset = 0;
 					int pos = 0;
 					String replace = "";
-					for (int i=0; i < replaceListPos.size(); i++) {
-						switch(replaceListType.get(i)){
+					for (int i = 0; i < replaceListPos.size(); i++) {
+						switch (replaceListType.get(i)) {
 						case TextOptions.ATTRIBUTE_NUMBER:
-							replace = number;break;
+							replace = number;
+							break;
 						case TextOptions.ATTRIBUTE_NAME:
-							replace = name;break;
+							replace = name;
+							break;
 						case TextOptions.ATTRIBUTE_VALUE:
-							replace = value;break;
-						default:break;
+							replace = value;
+							break;
+						default:
+							break;
 						}
-						pos = replaceListPos.get(i)+offset;
-						returnexp.replace(pos, pos+1, replace);
-						offset+=replace.length()-1;
+						pos = replaceListPos.get(i) + offset;
+						returnexp.replace(pos, pos + 1, replace);
+						offset += replace.length() - 1;
 					}
 					str.append(returnexp);
 					str.append("\n");
@@ -196,8 +202,9 @@ public class DicomHeaderExtractor implements HeaderExtractor {
 		}
 		if (str.length() > 0) {
 			return str.substring(0, str.length() - 1);
+		} else {
+			return str.toString();
 		}
-		return str.toString();
 	}
 
 }
