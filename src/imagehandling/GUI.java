@@ -48,6 +48,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicArrowButton;
 
+import com.sun.prism.Graphics;
+
 import polyfitter.Point;
 import polyfitter.Point2D;
 import polyfitter.VolumeFitter;
@@ -896,6 +898,10 @@ public class GUI extends JFrame implements ActionListener,ChangeListener, Runnab
 
 		JLabel roilabel;
 		
+		private Point2D roi;
+		
+		private JCheckBox alsolog;
+		
 		/**
 		 * Standard Constructur.
 		 */
@@ -1063,20 +1069,20 @@ public class GUI extends JFrame implements ActionListener,ChangeListener, Runnab
 			addComponents(leftSidePanel, panelstuff);
 
 			// image
-			roiimage = new BufferedImage(300, 300, BufferedImage.TYPE_BYTE_GRAY);
+			roiimage = new BufferedImage(300, 300, BufferedImage.TYPE_4BYTE_ABGR);
 			// The ImageIcon is kinda a wrapper for the image
 			roiimgicon = new ImageIcon(roiimage);
 			// imagepanel wrapps the ImageIcon
 			roilabel = new JLabel(roiimgicon);
-//			roilabel.addMouseWheelListener(this);
-//			roilabel.addKeyListener(this);
-//			roilabel.addMouseListener(this);
+			
+			// Checkbox for showing also the log evaluation
+			alsolog = new JCheckBox();
 			
 			// Putting the roi Panel together
 			roiPanel = new JPanel();
 			roiPanel.setLayout(new BoxLayout(roiPanel, BoxLayout.PAGE_AXIS));
 			setfinalSize(roiPanel, new Dimension(400, 1100));
-			Component[] roistuff = {Box.createRigidArea(new Dimension(0, 50)), roilabel};
+			Component[] roistuff = {Box.createRigidArea(new Dimension(0, 50)), roilabel,Box.createRigidArea(new Dimension(0, 50)), alsolog};
 			addComponents(roiPanel, roistuff);
 			roiPanel.setVisible(false);
 			
@@ -1126,7 +1132,6 @@ public class GUI extends JFrame implements ActionListener,ChangeListener, Runnab
 				max_slice.setText("/" + perEcho);
 
 				index_slice.requestFocus();
-				displayAttributes();
 				displayImage();
 			} catch (RuntimeException ert) {
 				// thrown by new Volume() if it didit worked.
@@ -1287,6 +1292,11 @@ public class GUI extends JFrame implements ActionListener,ChangeListener, Runnab
 					} catch (InterruptedException e) {
 					}
 				}
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+				
+				}
 				// No Volume = nothing to do
 				if (volume == null) {
 					try {
@@ -1433,6 +1443,11 @@ public class GUI extends JFrame implements ActionListener,ChangeListener, Runnab
 									this.image.getHeight(),
 									BufferedImage.SCALE_AREA_AVERAGING), 0, 0,
 					null);
+			if (roi != null){
+				image.getGraphics().setColor(Color.red);
+				image.getGraphics().fillRect((int) roi.getX()-3,(int) roi.getY()-3,(int) roi.getX()+3,(int) roi.getY()+3);
+				System.out.println(roi);
+			}
 		}
 
 		public void mouseWheelMoved(MouseWheelEvent e) {
@@ -1507,10 +1522,12 @@ public class GUI extends JFrame implements ActionListener,ChangeListener, Runnab
 			.getSlice(actualSliceIndex())
 			.getData();
 			
-			Point roi = new Point2D((double)e.getX()/this.image.getHeight()*orig.getHeight(),(double)e.getY()/this.image.getWidth()*orig.getWidth());
+			System.out.println(e.getX()+"/"+e.getY());
+			System.out.println((double)e.getX()/this.image.getHeight()*orig.getHeight()+"/"+(double)e.getY()/this.image.getWidth()*orig.getWidth());
+			roi = new Point2D((double)e.getX()/this.image.getHeight()*orig.getHeight(),(double)e.getY()/this.image.getWidth()*orig.getWidth());
 			VolumeFitter vf = new VolumeFitter();
 			this.roiimage.getGraphics().drawImage(
-					vf.getbla(this.path.getText(), roi, this.actual_slice)
+					vf.getbla(this.path.getText(), roi, this.actual_slice, alsolog.isSelected())
 							.getScaledInstance(this.roiimage.getWidth(),
 									this.roiimage.getHeight(),
 									BufferedImage.SCALE_AREA_AVERAGING), 0, 0,
