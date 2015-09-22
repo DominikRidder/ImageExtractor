@@ -8,6 +8,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import ij.IJ;
+import ij.ImagePlus;
+import ij.plugin.DICOM;
+import ij.util.DicomTools;
 import ij.util.WildcardMatch;
 
 /**
@@ -316,19 +320,22 @@ public class Image implements Comparable<Image> {
 	}
 
 	/**
-	 * This method trys to find out, if the Initialized path is a Image.
+	 * This method trys to find out, if the Initialized path can be handeld as a Dicom.
 	 * 
 	 * @return
 	 */
-	public static boolean isDicom(Path path) {		
-		try {
-			switch(Files.probeContentType(path)){
-			case "application/dicom": return true;
-			case "application/x-ima": return true;
+	public static boolean isDicom(Path path) {
+		ImagePlus imp = new ImagePlus(path.toString());
+		
+		KeyMap testdata[] = { KeyMap.KEY_PROTOCOL_NAME, KeyMap.KEY_PATIENT_ID,KeyMap.KEY_IMAGE_NUMBER};
+		
+		for (KeyMap test : testdata){
+			if (DicomTools.getTag(imp, test.getValue("IMA")) == null){
+				return false;
 			}
-		} catch (IOException | NullPointerException e) {
 		}
-		return false;
+		
+		return true;
 	}
 
 	/**

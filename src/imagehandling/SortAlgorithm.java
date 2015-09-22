@@ -426,13 +426,14 @@ public class SortAlgorithm {
 			int height = 0;
 			for (String key : keys) {
 				
-				
 				ImagePlus imp =  dicomtonifti.get(key).duplicate();
 				if (niftiAs4D.get(key)) {
 					slices /= frames;
 					ImagePlus hyper = IJ.createHyperStack(imp.getTitle(),
 							width, height, 1, slices, frames, 8);
 					hyper.setImage(imp);
+					System.out.println(hyper.getWidth());
+//					hyper.setStack(null);
 					imp = hyper;
 				}
 				writer.save(imp, key, "data.nii");
@@ -451,7 +452,7 @@ public class SortAlgorithm {
 			}
 		} else {
 			operation = "created";
-			transfered = numberofnii;
+//			transfered = numberofnii;
 		}
 		if (!createNiftis) {
 			out.println("I found and sorted " + found + " Dicoms in " + start
@@ -709,8 +710,8 @@ public class SortAlgorithm {
 				}
 				path = potentialDicom.getAbsolutePath();
 				// We found a dicom?
-				if (path.endsWith(".dcm") || path.endsWith(".IMA")
-						|| Image.isDicom(potentialDicom.toPath())) {
+				if (!potentialDicom.isDirectory() && (path.endsWith(".dcm") || path.endsWith(".IMA")
+						|| Image.isDicom(potentialDicom.toPath()))) {
 					// Using the sort structur the user have choosen
 					try {
 						if (subfolders) {
@@ -981,8 +982,8 @@ public class SortAlgorithm {
 	}
 
 	private void prepareNiftis(String input, String output, String echoNumbers, String imageNumber){
-		File test = new File(output + "/data.nii");
-		if (!test.exists()) {
+//		File test = new File(output + "/data.nii");
+//		if (!test.exists()) {
 			if (!oneDicomPath.containsKey(output)){
 				oneDicomPath.put(output, input);
 			}
@@ -1000,7 +1001,7 @@ public class SortAlgorithm {
 			
 			dicomtonifti.get(output).open(input);
 			transfered++;
-		}
+//		}
 	}
 	
 	private void moveDicom(String input, String output, String name) {

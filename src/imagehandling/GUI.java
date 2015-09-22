@@ -1292,11 +1292,7 @@ public class GUI extends JFrame implements ActionListener,ChangeListener, Runnab
 					} catch (InterruptedException e) {
 					}
 				}
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
 				
-				}
 				// No Volume = nothing to do
 				if (volume == null) {
 					try {
@@ -1441,13 +1437,8 @@ public class GUI extends JFrame implements ActionListener,ChangeListener, Runnab
 							.getData()
 							.getScaledInstance(this.image.getWidth(),
 									this.image.getHeight(),
-									BufferedImage.SCALE_AREA_AVERAGING), 0, 0,
+									BufferedImage.SCALE_FAST), 0, 0,
 					null);
-			if (roi != null){
-				image.getGraphics().setColor(Color.red);
-				image.getGraphics().fillRect((int) roi.getX()-3,(int) roi.getY()-3,(int) roi.getX()+3,(int) roi.getY()+3);
-				System.out.println(roi);
-			}
 		}
 
 		public void mouseWheelMoved(MouseWheelEvent e) {
@@ -1522,9 +1513,7 @@ public class GUI extends JFrame implements ActionListener,ChangeListener, Runnab
 			.getSlice(actualSliceIndex())
 			.getData();
 			
-			System.out.println(e.getX()+"/"+e.getY());
-			System.out.println((double)e.getX()/this.image.getHeight()*orig.getHeight()+"/"+(double)e.getY()/this.image.getWidth()*orig.getWidth());
-			roi = new Point2D((double)e.getX()/this.image.getHeight()*orig.getHeight(),(double)e.getY()/this.image.getWidth()*orig.getWidth());
+			roi = new Point2D(((double)e.getY())/this.image.getWidth()*orig.getWidth(),((double)e.getX())/this.image.getHeight()*orig.getHeight());
 			VolumeFitter vf = new VolumeFitter();
 			this.roiimage.getGraphics().drawImage(
 					vf.getbla(this.path.getText(), roi, this.actual_slice, alsolog.isSelected())
