@@ -3,6 +3,7 @@ package imagehandling;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -328,9 +329,10 @@ public class Image implements Comparable<Image> {
 		ImagePlus imp = new ImagePlus(path.toString());
 		
 		KeyMap testdata[] = { KeyMap.KEY_PROTOCOL_NAME, KeyMap.KEY_PATIENT_ID,KeyMap.KEY_IMAGE_NUMBER};
-		
+
 		for (KeyMap test : testdata){
-			if (DicomTools.getTag(imp, test.getValue("IMA")) == null){
+			String k = DicomTools.getTag(imp, test.getValue("IMA"));
+			if (k == null){
 				return false;
 			}
 		}
@@ -384,8 +386,7 @@ public class Image implements Comparable<Image> {
 
 	/**
 	 * Extracting the Header to a given outputdir path name. The boolean value
-	 * decides if this method throws an Exception, if it failed. This is needed,
-	 * for
+	 * decides if this method throws an Exception, if it failed.
 	 * 
 	 * @param throwException
 	 * @param outputdir

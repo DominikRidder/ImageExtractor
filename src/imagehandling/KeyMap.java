@@ -21,7 +21,7 @@ public enum KeyMap {
 			break;
 		default:
 			System.out.println("The Image type " + type
-					+ " ist not supported by the KeyMap.");
+					+ " is not supported by the KeyMap.");
 			break;
 		}
 		return str;
