@@ -48,7 +48,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicArrowButton;
 
 import polyfitter.Point2D;
-import polyfitter.VolumeFitter;
 
 /**
  * This GUI is used, to look the Header and Images of Dicoms and to Search and

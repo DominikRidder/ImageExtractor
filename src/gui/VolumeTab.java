@@ -38,7 +38,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicArrowButton;
 
 import polyfitter.Point2D;
-import polyfitter.VolumeFitter;
 
 /**
  * This class representing a Tab in the GUI window, where you can look up
