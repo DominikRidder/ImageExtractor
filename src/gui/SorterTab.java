@@ -141,6 +141,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 				"Search in and Sort to:");
 		GUI.setfinalSize(upperleft_header, new Dimension(150, 30));
 		upperleft_header.setEditable(false);
+		upperleft_header.setBackground(null);
 		upperleft_header.setBorder(null);
 
 		// The header shifter is used to put the header to the left side,
@@ -183,6 +184,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 		JTextField upperright_header = new JTextField("Target Folder:");
 		GUI.setfinalSize(upperright_header, new Dimension(175, 30));
 		upperright_header.setEditable(false);
+		upperright_header.setBackground(null);
 		upperright_header.setBorder(null);
 
 		// Button for starting/stopping a sort
@@ -336,6 +338,9 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 		JTextField textfield = new JTextField(text);
 		GUI.setfinalSize(textfield, new Dimension(width, height));
 		textfield.setEditable(editable);
+		if (!editable){
+			textfield.setBackground(null);
+		}
 		return textfield;
 	}
 

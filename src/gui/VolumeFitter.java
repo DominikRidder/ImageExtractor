@@ -1,25 +1,15 @@
 package gui;
 
-import fitterAlgorithm.LRDecomposition;
 import fitterAlgorithm.PolynomialLowestSquare;
-import ij.gui.Plot;
 import imagehandling.KeyMap;
 import imagehandling.Volume;
 
-import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.JTextField;
 
 import polyfitter.Point;
 import polyfitter.Polyfitter;
@@ -34,7 +24,7 @@ public class VolumeFitter{
 	
 	int width,height,echo_numbers,perEcho;
 	
-	public BufferedImage getbla(Volume vol, Point roi, int slice, boolean alsolog){
+	public BufferedImage getPlot(Volume vol, Point roi, int slice, boolean alsolog){
 		data = vol.getData();
 		String str_echo_numbers = vol.getSlice(vol.size() - 1).getAttribute(
 				KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
@@ -71,7 +61,7 @@ public class VolumeFitter{
 //			System.out.println("imgwidth = "+img.getWidth()+"| imgheight = "+img.getHeight());
 //			System.out.println("roi0 = "+(int)roi.getElementbyNumber(1)+"| roi1 = "+(int)roi.getElementbyNumber(0));
 			iArray = img.getRaster().getPixel((int) roi.getElementbyNumber(1), (int) roi.getElementbyNumber(0), itest);
-			fitter.addPoint(i, iArray[0], Math.log10(iArray[0])*10);
+			fitter.addPoint(i, iArray[0], Math.log10(iArray[0])+10);
 		}
 		
 		return fitter.plotVolume(alsolog);

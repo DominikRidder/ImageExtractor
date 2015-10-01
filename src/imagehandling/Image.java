@@ -1,19 +1,14 @@
 package imagehandling;
 
+import ij.ImagePlus;
+import ij.util.DicomTools;
+import ij.util.WildcardMatch;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-
-import ij.IJ;
-import ij.ImagePlus;
-import ij.plugin.DICOM;
-import ij.util.DicomTools;
-import ij.util.WildcardMatch;
 
 /**
  * The Image class is at the moment only used for Dicoms. You can use it to get

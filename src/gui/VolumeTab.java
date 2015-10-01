@@ -9,7 +9,6 @@ import imagehandling.Volume;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -251,6 +250,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		path = new JTextField("");
 		path.addKeyListener(this);
 		path.setEditable(false);
+		path.setBackground(null);
 		GUI.setfinalSize(path, new Dimension(500, 100));
 
 		// The Attribute Filter
@@ -302,12 +302,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// Next some not editable TextFields
 		max_slice = new JTextField("/0");
 		max_slice.setEditable(false);
+		max_slice.setBackground(null);
 		max_slice.setBorder(null);
 		max_slice.addMouseWheelListener(this);
 		GUI.setfinalSize(max_slice, new Dimension(75, 100));
 
 		max_echo = new JTextField("/0");
 		max_echo.setEditable(false);
+		max_echo.setBackground(null);
 		max_echo.setBorder(null);
 		max_echo.addMouseWheelListener(this);
 		GUI.setfinalSize(max_echo, new Dimension(75, 100));
@@ -326,18 +328,21 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 		JTextField slice = new JTextField("Slice:");
 		slice.setEditable(false);
+		slice.setBackground(null);
 		GUI.setfinalSize(slice, new Dimension(35, 100));
 		slice.setBorder(null);
 		slice.addMouseWheelListener(this);
 
 		JTextField echo = new JTextField("Echo:");
 		echo.setEditable(false);
+		echo.setBackground(null);
 		GUI.setfinalSize(echo, new Dimension(35, 100));
 		echo.setBorder(null);
 		echo.addMouseWheelListener(this);
 
 		JTextField search = new JTextField("Search:");
 		search.setEditable(false);
+		search.setBackground(null);
 		GUI.setfinalSize(search, new Dimension(50, 100));
 		search.setBorder(null);
 
@@ -408,12 +413,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// Graph legend
 		JTextField leg_echo = new JTextField("Echo Nr.");
 		leg_echo.setEditable(false);
+		leg_echo.setBackground(null);
 		leg_echo.setBorder(null);
 		GUI.setfinalSize(leg_echo, new Dimension(100, 50));
 		
 		// Graph legend
 		leg_gray = new RotatePanel("Grayscale");
 		leg_gray.setBorder(null);
+		leg_gray.setBackground(null);
 		GUI.setfinalSize(leg_gray, new Dimension(20, 100));
 		leg_gray.setVisible(false);
 		
@@ -438,6 +445,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// Log Checkbox text
 		JTextField logtext = new JTextField("also log (GREEN)");
 		logtext.setEditable(false);
+		logtext.setBackground(null);
 		logtext.setBorder(null);
 		GUI.setfinalSize(logtext, new Dimension(200, 100));
 		
@@ -488,7 +496,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			// Default Index
 			actual_slice = 1;
 			actual_echo = 1;
-			this.index_slice.setText("1");
+			index_slice.setText("1");
 			index_echo.setText("1");
 			// User can change fields again
 			index_slice.setEditable(true);
@@ -504,6 +512,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			max_slice.setText("/" + perEcho);
 
 			index_slice.requestFocus();
+			showROI(false);
 			displayImage();
 		} catch (RuntimeException ert) {
 			// thrown by new Volume() if it didit worked.
@@ -625,7 +634,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			change_echo = -1;
 		}
 		if (e.getSource() == alsolog){
-			showROI();
+			showROI(true);
 		}
 	}
 
@@ -823,7 +832,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					.getHeight()),
 					(int) (this.roi.getY() * this.image.getWidth() / orig
 							.getWidth()), 1, 1);
-			showROI();
+			showROI(true);
 		}
 	}
 
@@ -894,10 +903,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		createVolume();
 	}
 
-	private void showROI(){
+	private void showROI(boolean visible){
+		if (visible){
 		VolumeFitter vf = new VolumeFitter();
 		this.roiimage.getGraphics().drawImage(
-				vf.getbla(this.volume, roi, this.actual_slice - 1,
+				vf.getPlot(this.volume, roi, this.actual_slice - 1,
 						alsolog.isSelected()).getScaledInstance(
 						this.roiimage.getWidth(), this.roiimage.getHeight(),
 						BufferedImage.SCALE_AREA_AVERAGING), 0, 0, null);
@@ -908,6 +918,17 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			leg_gray.setVisible(true);
 			GUI.setfinalSize(toppanel, new Dimension(1400, 450));
 			GUI.setfinalSize(parent, new Dimension(1450, 550));
+		}
+		}else{
+			roi = null;
+			roiPanel.setVisible(false);
+			if (ownExtended){
+				parent.setExtendedWindow(false);
+				ownExtended = false;
+				leg_gray.setVisible(false);
+				GUI.setfinalSize(toppanel, new Dimension(1100, 450));
+				GUI.setfinalSize(parent, new Dimension(1100, 550));
+			}
 		}
 		this.repaint();
 	}
@@ -921,7 +942,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		roi = new Point2D(roi.getY(), roi.getX());
 		
 		displayImage();
-		showROI();
+		showROI(true);
 	}
 
 	public void mousePressed(MouseEvent e) {

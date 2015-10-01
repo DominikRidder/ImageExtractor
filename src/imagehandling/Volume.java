@@ -1,6 +1,5 @@
 package imagehandling;
 
-import gui.GUI;
 import gui.VolumeTab;
 
 import java.awt.image.BufferedImage;
