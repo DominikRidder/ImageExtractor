@@ -5,10 +5,13 @@ import imagehandling.SortAlgorithm;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FileDialog;
 import java.awt.Insets;
+import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 
 import javax.swing.Box;
@@ -33,7 +36,8 @@ import javax.swing.SwingConstants;
  * @author dridder_local
  *
  */
-public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable {
+public class SorterTab extends JPanel implements ActionListener, MyTab,
+		Runnable {
 	/**
 	 * Default serialVersionUID
 	 */
@@ -61,14 +65,13 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 	private JTextArea outputArea;
 
 	/**
-	 * JScrollPane, which adding the possibility for scrolling to the
-	 * TextArea "output".
+	 * JScrollPane, which adding the possibility for scrolling to the TextArea
+	 * "output".
 	 */
 	private JScrollPane outputScroller;
 
 	/**
-	 * Array of JPanels, where each JPanel representing a row in the left
-	 * table.
+	 * Array of JPanels, where each JPanel representing a row in the left table.
 	 */
 	private JPanel[] tablerows_left;
 
@@ -137,8 +140,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 		this.fileChooser = filechooser;
 
 		// upperleft rectangle
-		JTextField upperleft_header = new JTextField(
-				"Search in and Sort to:");
+		JTextField upperleft_header = new JTextField("Search in and Sort to:");
 		GUI.setfinalSize(upperleft_header, new Dimension(150, 30));
 		upperleft_header.setEditable(false);
 		upperleft_header.setBackground(null);
@@ -150,8 +152,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 		header_shifter_left.setLayout(new BoxLayout(header_shifter_left,
 				BoxLayout.LINE_AXIS));
 		header_shifter_left.add(upperleft_header);
-		header_shifter_left
-				.add(Box.createRigidArea(new Dimension(1000, 0)));
+		header_shifter_left.add(Box.createRigidArea(new Dimension(1000, 0)));
 
 		// Setting the headline of the table, which should be as long as the
 		// rows below it
@@ -178,6 +179,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 			tablerows_left[i] = createInputRow(i + 1);
 			upperleft.add(tablerows_left[i]);
 		}
+		upperleft.add(Box.createRigidArea(new Dimension(0, 50)));
 		// -- upperleft end
 
 		// upperright rectangle
@@ -197,8 +199,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 		header_shifter_right.setLayout(new BoxLayout(header_shifter_right,
 				BoxLayout.LINE_AXIS));
 		header_shifter_right.add(upperright_header);
-		header_shifter_right.add(Box
-				.createRigidArea(new Dimension(1000, 0)));
+		header_shifter_right.add(Box.createRigidArea(new Dimension(1000, 0)));
 
 		// Setting the headline of the table, which should be as long as the
 		// rows below it
@@ -212,8 +213,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 
 		// Panel that contains the upper right rectangle
 		JPanel upperright = new JPanel();
-		upperright
-				.setLayout(new BoxLayout(upperright, BoxLayout.PAGE_AXIS));
+		upperright.setLayout(new BoxLayout(upperright, BoxLayout.PAGE_AXIS));
 		GUI.setfinalSize(upperright, new Dimension(500, 250));
 		upperright.add(header_shifter_right);
 		upperright.add(Box.createRigidArea(new Dimension(0, 10)));
@@ -338,7 +338,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 		JTextField textfield = new JTextField(text);
 		GUI.setfinalSize(textfield, new Dimension(width, height));
 		textfield.setEditable(editable);
-		if (!editable){
+		if (!editable) {
 			textfield.setBackground(null);
 		}
 		return textfield;
@@ -371,21 +371,32 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 			}
 			break;
 		case "...":
-			if (fileChooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+			System.setProperty("apple.awt.fileDialogForDirectories", "false");
+			FileDialog fd = new FileDialog(this.parent);
+			fd.setMode(FileDialog.LOAD);
+			fd.setVisible(true);
+
+			// if (fileChooser.showOpenDialog(null) ==
+			// JFileChooser.APPROVE_OPTION) {
+			if (fd.getDirectory() != null) {
+
 				boolean found = false;
 				int i = 0;
+				// File f = new File(fileChooser.getSelectedFile()
+				// .getAbsolutePath());
+				File f = new File(fd.getDirectory());
+				String path = f.isDirectory() ? f.getAbsolutePath() : f
+						.getParent();
 				for (i = 0; i < 5; i++) {
-					if (e.getSource().equals(
-							tablerows_left[i].getComponent(4))) {
+					if (e.getSource().equals(tablerows_left[i].getComponent(4))) {
 						found = true;
 						break;
 					}
 				}
 				if (found) {
-					JTextField target = ((JTextField) tablerows_left[i]
+					JTextField targetIn = ((JTextField) tablerows_left[i]
 							.getComponents()[1]);
-					target.setText(fileChooser.getSelectedFile()
-							.getAbsolutePath());
+					targetIn.setText(path);
 				} else {
 					for (i = 0; i < 5; i++) {
 						if (e.getSource().equals(
@@ -394,26 +405,24 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 							break;
 						}
 					}
-					if (found) {
-						JTextField target = ((JTextField) tablerows_right[i]
-								.getComponents()[1]);
-						target.setText(fileChooser.getSelectedFile()
-								.getAbsolutePath());
-					}
-
+				}
+				if (found) {
+					JTextField targetOut = ((JTextField) tablerows_right[i]
+							.getComponents()[1]);
+					targetOut.setText(path);
 				}
 			}
+			System.setProperty("apple.awt.fileDialogForDirectories", "true");
 			break;
 		default:
 			if (e.getSource() instanceof JCheckBox) {
-				int i = 0;
-				for (i = 0; i < 4; i++) {
-					if (e.getSource().equals(
-							tablerows_left[i].getComponent(6))) {
+				int j = 0;
+				for (j = 0; j < 4; j++) {
+					if (e.getSource().equals(tablerows_left[j].getComponent(6))) {
 						break;
 					}
 				}
-				JComboBox<String> target = ((JComboBox<String>) tablerows_left[i]
+				JComboBox<String> target = ((JComboBox<String>) tablerows_left[j]
 						.getComponents()[2]);
 				if (target.isEnabled()) {
 					target.setEnabled(false);
@@ -427,8 +436,8 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 	}
 
 	/**
-	 * This method is usefull for the GUI class to decide what kind of Tab
-	 * is in the focus.
+	 * This method is usefull for the GUI class to decide what kind of Tab is in
+	 * the focus.
 	 */
 	public String getClassName() {
 		return "SorterTab";
@@ -450,8 +459,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 					.showConfirmDialog(
 							currentdialog,
 							"The Output Dir is empty. Should I sort the Dicoms to the Input folder?\nChoosing yes, setting the Image Digits to 0.\n(After 10 Seconds yes is picked automatically.)",
-							"The Outputdir is empty",
-							JOptionPane.YES_NO_OPTION);
+							"The Outputdir is empty", JOptionPane.YES_NO_OPTION);
 		}
 	}
 
@@ -534,8 +542,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab, Runnable
 				try {
 					// Integer.parseInt may throws an exception
 					Component[] right_stuff = tablerows_right[Integer
-							.parseInt(tooutput.getText()) - 1]
-							.getComponents();
+							.parseInt(tooutput.getText()) - 1].getComponents();
 					target = (JTextField) right_stuff[1];
 					image_digits = (JTextField) right_stuff[2];
 				} catch (IndexOutOfBoundsException | NumberFormatException e) {

@@ -6,6 +6,8 @@ import ij.util.WildcardMatch;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -325,13 +327,27 @@ public class Image implements Comparable<Image> {
 		
 		KeyMap testdata[] = { KeyMap.KEY_PROTOCOL_NAME, KeyMap.KEY_PATIENT_ID,KeyMap.KEY_IMAGE_NUMBER};
 
+		PrintStream stdout = System.out;
+
+		try {
+			System.setOut(new PrintStream(new File("/opt/dridder_local/Test/Syntaxfehler")){
+//				public void print(String s){}
+//				public void println(String s){}
+//				public void print(char c){}
+//				public PrintStream append(CharSequence cs){return null;}
+			});
+		} catch (FileNotFoundException e) {
+
+		}
+		
 		for (KeyMap test : testdata){
 			String k = DicomTools.getTag(imp, test.getValue("IMA"));
 			if (k == null){
+				System.setOut(stdout);
 				return false;
 			}
 		}
-		
+		System.setOut(stdout);
 		return true;
 	}
 
