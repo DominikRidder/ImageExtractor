@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.FileChooserUI;
 
 import sun.swing.FilePane;
@@ -93,7 +94,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		filechooser.setCurrentDirectory(new java.io.File("$HOME"));
 		filechooser.setDialogTitle("Search Directory");
 		filechooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		filechooser.setAcceptAllFileFilterUsed(false);
+//		filechooser.setAcceptAllFileFilterUsed(false);
 		
 		forceEnd = forceProgrammEndIfThereIsNoWindow;
 		JMenuBar menuBar;
@@ -103,7 +104,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		// Create the menu bar.
 		menuBar = new JMenuBar();
 
-		// Build first menu in the menu bar.
+		// Build menu in the menu bar.
 		newVolumeTab = new JMenuItem("new Volume Tab");
 		newVolumeTab.addActionListener(this);
 		newSortTab = new JMenuItem("new Sort Tab");

@@ -1,12 +1,16 @@
 package gui;
 
 import java.awt.Component;
+import java.awt.Frame;
 import java.awt.HeadlessException;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 
 import sun.swing.FilePane;
 
@@ -21,23 +25,13 @@ public class ContextMenuFileChooser extends JFileChooser {
 
 	public ContextMenuFileChooser() {
 		super();
-	}
-
-	public int showOpenDialog(Component parent) throws HeadlessException {
-		JDialog d = createDialog(parent);
-
-		// FI Remove when we get ancestor property
-		d.setTitle("Open");
-		setDialogType(OPEN_DIALOG);
-
+		
 		JMenuItem menuItem = new JMenuItem("Delete Folder");
 		menuItem.addActionListener(new DeleteAction(this));
 
 		FilePane output = (FilePane) this.getComponent(2);
 		output.getComponentPopupMenu().add(menuItem);
-
-		d.setVisible(true);
-		return ERROR_OPTION;
 	}
+
 
 }

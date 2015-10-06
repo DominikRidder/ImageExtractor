@@ -415,7 +415,7 @@ public class SortAlgorithm {
 			return false;
 		}
 
-		int numberofnii = 0;
+		/**int numberofnii = 0;
 		if (createNiftis) {
 			out.println("Creating Niftis..");
 			Set<String> keys = dicomtonifti.keySet();
@@ -439,7 +439,7 @@ public class SortAlgorithm {
 				writer.save(imp, key, "data.nii");
 				numberofnii++;
 			}
-		}
+		}**/
 
 		// The last output
 		start = System.currentTimeMillis() - start;
