@@ -22,6 +22,10 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.FileChooserUI;
+
+import sun.swing.FilePane;
+import sun.swing.FilePane.FileChooserUIAccessor;
 
 /**
  * This GUI is used, to look the Header and Images of Dicoms and to Search and
@@ -85,12 +89,12 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 * One and only Constructur.
 	 */
 	public GUI(boolean forceProgrammEndIfThereIsNoWindow) {
-		filechooser = new JFileChooser();
+		filechooser = new ContextMenuFileChooser();
 		filechooser.setCurrentDirectory(new java.io.File("$HOME"));
 		filechooser.setDialogTitle("Search Directory");
 		filechooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		filechooser.setAcceptAllFileFilterUsed(false);
-
+		
 		forceEnd = forceProgrammEndIfThereIsNoWindow;
 		JMenuBar menuBar;
 		JMenu menu;

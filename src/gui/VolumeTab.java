@@ -600,15 +600,15 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			}
 			break;
 		case "browse": // searching for a volume
-			if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+			if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
 				if (chooser.getSelectedFile().isDirectory()) {
 					path.setText(chooser.getSelectedFile().toString());
 				} else if (chooser.getSelectedFile().isFile()) {
 					path.setText(chooser.getSelectedFile().getParent()
 							.toString());
 				}
+				new Thread(this).start();
 			}
-			new Thread(this).start();
 			break;
 		case "Display all Attributes": // forcing to display really all
 										// attributes

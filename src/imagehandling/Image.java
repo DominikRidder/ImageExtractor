@@ -329,16 +329,16 @@ public class Image implements Comparable<Image> {
 
 		PrintStream stdout = System.out;
 
-		try {
-			System.setOut(new PrintStream(new File("/opt/dridder_local/Test/Syntaxfehler")){
-//				public void print(String s){}
-//				public void println(String s){}
-//				public void print(char c){}
-//				public PrintStream append(CharSequence cs){return null;}
-			});
-		} catch (FileNotFoundException e) {
-
-		}
+//		try {
+//			System.setOut(new PrintStream(new File("/opt/dridder_local/Test/Syntaxfehler")){
+////				public void print(String s){}
+////				public void println(String s){}
+////				public void print(char c){}
+////				public PrintStream append(CharSequence cs){return null;}
+//			});
+//		} catch (FileNotFoundException e) {
+//
+//		}
 		
 		for (KeyMap test : testdata){
 			String k = DicomTools.getTag(imp, test.getValue("IMA"));
@@ -347,7 +347,7 @@ public class Image implements Comparable<Image> {
 				return false;
 			}
 		}
-		System.setOut(stdout);
+//		System.setOut(stdout);
 		return true;
 	}
 

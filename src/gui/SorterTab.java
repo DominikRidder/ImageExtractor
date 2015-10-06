@@ -371,20 +371,12 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 			}
 			break;
 		case "...":
-			System.setProperty("apple.awt.fileDialogForDirectories", "false");
-			FileDialog fd = new FileDialog(this.parent);
-			fd.setMode(FileDialog.LOAD);
-			fd.setVisible(true);
-
-			// if (fileChooser.showOpenDialog(null) ==
-			// JFileChooser.APPROVE_OPTION) {
-			if (fd.getDirectory() != null) {
-
+			 if (fileChooser.showOpenDialog(this) ==
+			 JFileChooser.APPROVE_OPTION) {
 				boolean found = false;
 				int i = 0;
-				// File f = new File(fileChooser.getSelectedFile()
-				// .getAbsolutePath());
-				File f = new File(fd.getDirectory());
+				 File f = new File(fileChooser.getSelectedFile()
+				 .getAbsolutePath());
 				String path = f.isDirectory() ? f.getAbsolutePath() : f
 						.getParent();
 				for (i = 0; i < 5; i++) {
