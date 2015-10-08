@@ -479,7 +479,7 @@ public class SortAlgorithm {
 					/ 1000 + " seconds! I " + operation + " " + transfered
 					+ " of them to the Output directory.");
 		} else {
-			out.println("I found and sorted " + found + " Dicoms in " + start
+			out.println("I found " + found + " Dicoms in " + start
 					/ 1000 + " seconds! I " + operation + " " + numberofnii
 					+ " niftis in the Output directory.");
 		}

@@ -1,5 +1,8 @@
 package imagehandling;
 
+import polyfitter.Point2D;
+import gui.VolumeFitter;
+
 /**
  * This main class is an example for some methods of this Java-project.
  * 
@@ -8,7 +11,10 @@ package imagehandling;
  */
 public class Main {
 	public static void main(String agrs[]) {
-		
+		Volume vol = new Volume("/opt/dridder_local/TestDicoms/AllDicoms/112233/2_si_gre_m0w__w2dfl");
+		Point2D roi = new Point2D(30,30);
+		VolumeFitter vf = new VolumeFitter();
+		vf.getPlot(vol, roi, 10, false);
 //
 //		TextOptions topt = new TextOptions();
 //		topt.addSearchOption(TextOptions.ATTRIBUTE_NAME);
@@ -22,15 +28,15 @@ public class Main {
 //
 //		System.out.println(vol.getAttribute("echo"));
 
-		 SortAlgorithm sa = new SortAlgorithm();
-		 sa.useSubfolders(false);
+//		 SortAlgorithm sa = new SortAlgorithm();
+//		 sa.useSubfolders(false);
 //		 sa.setImgDigits(0);
 //		 sa.setProtocolDigits(0);
 //		 sa.setFilesOptionCopy();
 //		 sa.setKeepImageName(true);
-		 sa.setCreateNiftis(true);
-		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms/NiftiTest/112233/2_si_gre_m0w__w2dfl",
-		 "/opt/dridder_local/TestDicoms/NiftiTest/");
+//		 sa.setCreateNiftis(true);
+//		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms/NiftiTest/112233/2_si_gre_m0w__w2dfl",
+//		 "/opt/dridder_local/TestDicoms/NiftiTest/");
 
 //		 sa.useSubfolders(true);
 //		 sa.searchAndSortIn("/opt/dridder_local/TestDicoms/AllDicoms",

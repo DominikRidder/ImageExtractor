@@ -1,5 +1,6 @@
 package gui;
 
+import fitterAlgorithm.LRDecomposition;
 import fitterAlgorithm.PolynomialLowestSquare;
 import imagehandling.KeyMap;
 import imagehandling.Volume;
@@ -40,8 +41,8 @@ public class VolumeFitter{
 
 		// the programm for the fitting
 		Polyfitter fitter = new Polyfitter();
-//		fitter.setAlgorithm(new LRDecomposition(echo_numbers-1));
-		fitter.setAlgorithm(new PolynomialLowestSquare(echo_numbers -1));
+		fitter.setAlgorithm(new LRDecomposition(echo_numbers-1));
+//		fitter.setAlgorithm(new PolynomialLowestSquare(echo_numbers -1));
 
 		// Just the window, to display the fit
 		JFrame frame = new JFrame();

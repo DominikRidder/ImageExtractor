@@ -39,8 +39,8 @@ import javax.swing.plaf.basic.BasicArrowButton;
 import polyfitter.Point2D;
 
 /**
- * This class representing a Tab in the GUI window, where you can look up
- * the header and images of a Volume.
+ * This class representing a Tab in the GUI window, where you can look up the
+ * header and images of a Volume.
  * 
  * @author dridder_local
  *
@@ -240,6 +240,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private JCheckBox alsolog;
 
 	private RotatePanel leg_gray;
+
 	/**
 	 * Standard Constructur.
 	 */
@@ -416,21 +417,21 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		leg_echo.setBackground(null);
 		leg_echo.setBorder(null);
 		GUI.setfinalSize(leg_echo, new Dimension(100, 50));
-		
+
 		// Graph legend
 		leg_gray = new RotatePanel("Grayscale");
 		leg_gray.setBorder(null);
 		leg_gray.setBackground(null);
 		GUI.setfinalSize(leg_gray, new Dimension(20, 100));
 		leg_gray.setVisible(false);
-		
+
 		// log Checkbox + text
 		JLabel legWrapper = new JLabel();
 		legWrapper.setLayout(new BoxLayout(legWrapper, BoxLayout.LINE_AXIS));
 		legWrapper.add(Box.createRigidArea(new Dimension(120, 0)));
 		legWrapper.add(leg_echo);
 		GUI.setfinalSize(legWrapper, new Dimension(300, 100));
-		
+
 		// image
 		roiimage = new BufferedImage(300, 300, BufferedImage.TYPE_4BYTE_ABGR);
 		// The ImageIcon is kinda a wrapper for the image
@@ -441,27 +442,28 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// Checkbox for showing also the log evaluation
 		alsolog = new JCheckBox();
 		alsolog.addChangeListener(this);
-		
+
 		// Log Checkbox text
 		JTextField logtext = new JTextField("also log (GREEN)");
 		logtext.setEditable(false);
 		logtext.setBackground(null);
 		logtext.setBorder(null);
 		GUI.setfinalSize(logtext, new Dimension(200, 100));
-		
+
 		// log Checkbox + text
 		JLabel loglabel = new JLabel();
 		loglabel.setLayout(new BoxLayout(loglabel, BoxLayout.LINE_AXIS));
 		loglabel.add(alsolog);
 		loglabel.add(logtext);
 		GUI.setfinalSize(loglabel, new Dimension(300, 100));
-		
+
 		// Putting the roi Panel together
 		roiPanel = new JPanel();
 		roiPanel.setLayout(new BoxLayout(roiPanel, BoxLayout.PAGE_AXIS));
 		GUI.setfinalSize(roiPanel, new Dimension(400, 1100));
 		Component[] roistuff = { Box.createRigidArea(new Dimension(0, 50)),
-				roilabel,legWrapper, Box.createRigidArea(new Dimension(0, 50)), loglabel };
+				roilabel, legWrapper,
+				Box.createRigidArea(new Dimension(0, 50)), loglabel };
 		GUI.addComponents(roiPanel, roistuff);
 		roiPanel.setVisible(false);
 
@@ -471,7 +473,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		GUI.setfinalSize(toppanel, new Dimension(1100, 450));
 		toppanel.add(leftSidePanel);
 		toppanel.add(imagelabel);
-//		toppanel.add(Box.createRigidArea(new Dimension(35, 0)));
+		// toppanel.add(Box.createRigidArea(new Dimension(35, 0)));
 		toppanel.add(leg_gray);
 		toppanel.add(roiPanel);
 
@@ -600,7 +602,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			}
 			break;
 		case "browse": // searching for a volume
-			if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
+			if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION
+					&& chooser.getSelectedFile() != null) {
 				if (chooser.getSelectedFile().isDirectory()) {
 					path.setText(chooser.getSelectedFile().toString());
 				} else if (chooser.getSelectedFile().isFile()) {
@@ -633,7 +636,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		if (arrow_down_echo.getModel().isPressed()) {
 			change_echo = -1;
 		}
-		if (e.getSource() == alsolog){
+		if (e.getSource() == alsolog) {
 			showROI(true);
 		}
 	}
@@ -903,26 +906,27 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		createVolume();
 	}
 
-	private void showROI(boolean visible){
-		if (visible){
-		VolumeFitter vf = new VolumeFitter();
-		this.roiimage.getGraphics().drawImage(
-				vf.getPlot(this.volume, roi, this.actual_slice - 1,
-						alsolog.isSelected()).getScaledInstance(
-						this.roiimage.getWidth(), this.roiimage.getHeight(),
-						BufferedImage.SCALE_AREA_AVERAGING), 0, 0, null);
-		roiPanel.setVisible(true);
-		if (!ownExtended) {
-			parent.setExtendedWindow(true);
-			ownExtended = true;
-			leg_gray.setVisible(true);
-			GUI.setfinalSize(toppanel, new Dimension(1400, 450));
-			GUI.setfinalSize(parent, new Dimension(1450, 550));
-		}
-		}else{
+	private void showROI(boolean visible) {
+		if (visible) {
+			VolumeFitter vf = new VolumeFitter();
+			this.roiimage.getGraphics().drawImage(
+					vf.getPlot(this.volume, roi, this.actual_slice - 1,
+							alsolog.isSelected()).getScaledInstance(
+							this.roiimage.getWidth(),
+							this.roiimage.getHeight(),
+							BufferedImage.SCALE_AREA_AVERAGING), 0, 0, null);
+			roiPanel.setVisible(true);
+			if (!ownExtended) {
+				parent.setExtendedWindow(true);
+				ownExtended = true;
+				leg_gray.setVisible(true);
+				GUI.setfinalSize(toppanel, new Dimension(1400, 450));
+				GUI.setfinalSize(parent, new Dimension(1450, 550));
+			}
+		} else {
 			roi = null;
 			roiPanel.setVisible(false);
-			if (ownExtended){
+			if (ownExtended) {
 				parent.setExtendedWindow(false);
 				ownExtended = false;
 				leg_gray.setVisible(false);
@@ -930,19 +934,23 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				GUI.setfinalSize(parent, new Dimension(1100, 550));
 			}
 		}
+
 		this.repaint();
 	}
-	
-	public void mouseClicked(MouseEvent e) {
-		BufferedImage orig = this.volume.getSlice(actualSliceIndex()).getData();
 
-		roi = new Point2D(((double) e.getY()) / this.image.getWidth()
-				* orig.getWidth(), ((double) e.getX()) / this.image.getHeight()
-				* orig.getHeight());
-		roi = new Point2D(roi.getY(), roi.getX());
-		
-		displayImage();
-		showROI(true);
+	public void mouseClicked(MouseEvent e) {
+		if (e.getSource() == this.imagelabel && volume != null) {
+			BufferedImage orig = this.volume.getSlice(actualSliceIndex())
+					.getData();
+
+			roi = new Point2D(((double) e.getY()) / this.image.getWidth()
+					* orig.getWidth(), ((double) e.getX())
+					/ this.image.getHeight() * orig.getHeight());
+			roi = new Point2D(roi.getY(), roi.getX());
+
+			displayImage();
+			showROI(true);
+		}
 	}
 
 	public void mousePressed(MouseEvent e) {
