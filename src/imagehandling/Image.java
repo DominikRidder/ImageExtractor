@@ -6,7 +6,6 @@ import ij.util.WildcardMatch;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.ArrayList;

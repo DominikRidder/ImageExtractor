@@ -22,11 +22,6 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.plaf.FileChooserUI;
-
-import sun.swing.FilePane;
-import sun.swing.FilePane.FileChooserUIAccessor;
 
 /**
  * This GUI is used, to look the Header and Images of Dicoms and to Search and

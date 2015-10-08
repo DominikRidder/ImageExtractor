@@ -2,8 +2,10 @@ package imagehandling;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.plugin.DICOM;
 import ij.plugin.Nifti_Writer;
+import ij.util.DicomTools;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,6 +15,7 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Stack;
@@ -39,15 +42,13 @@ public class SortAlgorithm {
 	/**
 	 * This hashmap helps, to create niftis.
 	 */
-	private HashMap<String, DICOM> dicomtonifti;
-	
+	private HashMap<String, ArrayList<String>> dicomtonifti;
+
 	/**
 	 * 
 	 */
-	private HashMap<String, Boolean> niftiAs4D;
-	
-	private HashMap<String, String> oneDicomPath;
-	
+	private HashMap<String, Integer> numbOfEchos;
+
 	/**
 	 * Value, which can be called, to know, if there is a problem with the
 	 * permissions.
@@ -364,6 +365,7 @@ public class SortAlgorithm {
 		File file = new File(searchin);
 		protocolInfo = new HashMap<String, String>(100);
 		anyCurropt = false;
+		numbOfEchos = new HashMap<String, Integer>();
 
 		// number of dicoms that the programm found
 		found = 0;
@@ -420,24 +422,42 @@ public class SortAlgorithm {
 			out.println("Creating Niftis..");
 			Set<String> keys = dicomtonifti.keySet();
 			Nifti_Writer writer = new Nifti_Writer();
-			int slices = 0;
-			int frames = 0;
-			int width = 0;
-			int height = 0;
+
 			for (String key : keys) {
-				
-				ImagePlus imp =  dicomtonifti.get(key).createImagePlus();
-				if (niftiAs4D.get(key)) {
-					slices /= frames;
-					ImagePlus hyper = IJ.createHyperStack(imp.getTitle(),
-							width, height, 1, slices, frames, 8);
-					hyper.setImage(imp);
-					System.out.println(hyper.getWidth());
-//					hyper.setStack(null);
-					imp = hyper;
+				int echon = numbOfEchos.get(key);
+				ImageStack is = null;
+				dicomtonifti.get(key).sort(new Comparator<String>() {
+
+					public int compare(String o1, String o2) {
+						int nr1 = Integer.parseInt(o1.split("#")[0]);
+						int nr2 = Integer.parseInt(o2.split("#")[0]);
+						if (nr1 > nr2) {
+							return 1;
+						} else if (nr1 < nr2) {
+							return -2;
+						} else {
+							return 0;
+						}
+					}
+				});
+				for (String str : dicomtonifti.get(key)) {
+					DICOM dcm = new DICOM();
+					dcm.open(str.split("#")[1]);
+					if (is == null) {
+						is = new ImageStack(dcm.getWidth(), dcm.getHeight());
+					}
+					is.addSlice(dcm.getProcessor());
 				}
-				System.out.println(writer.save(imp, key, "data.nii"));
-				numberofnii++;
+
+				ImagePlus ip = new ImagePlus();
+				ip.setStack(is);
+				if (echon != 1) {
+					ip.setDimensions(1, is.getSize() / echon, echon);
+					ip.setOpenAsHyperStack(true);
+				}
+				if (writer.save(ip, key, "data.nii")) {
+					numberofnii++;
+				}
 			}
 		}
 
@@ -452,7 +472,7 @@ public class SortAlgorithm {
 			}
 		} else {
 			operation = "created";
-//			transfered = numberofnii;
+			// transfered = numberofnii;
 		}
 		if (!createNiftis) {
 			out.println("I found and sorted " + found + " Dicoms in " + start
@@ -460,7 +480,7 @@ public class SortAlgorithm {
 					+ " of them to the Output directory.");
 		} else {
 			out.println("I found and sorted " + found + " Dicoms in " + start
-					/ 1000 + " seconds! I " + operation + " " + transfered
+					/ 1000 + " seconds! I " + operation + " " + numberofnii
 					+ " niftis in the Output directory.");
 		}
 		return true;
@@ -710,8 +730,9 @@ public class SortAlgorithm {
 				}
 				path = potentialDicom.getAbsolutePath();
 				// We found a dicom?
-				if (!potentialDicom.isDirectory() && (path.endsWith(".dcm") || path.endsWith(".IMA")
-						|| Image.isDicom(potentialDicom.toPath()))) {
+				if (!potentialDicom.isDirectory()
+						&& (path.endsWith(".dcm") || path.endsWith(".IMA") || Image
+								.isDicom(potentialDicom.toPath()))) {
 					// Using the sort structur the user have choosen
 					try {
 						if (subfolders) {
@@ -824,9 +845,9 @@ public class SortAlgorithm {
 		}
 
 		// Copy/Move the data
-		if (createNiftis){
+		if (createNiftis) {
 			prepareNiftis(input, path.toString(), echoNumbers, imageNumber);
-		}else{
+		} else {
 			moveDicom(input, path.toString(), name);
 		}
 	}
@@ -923,7 +944,8 @@ public class SortAlgorithm {
 		// Getting the necessarie Informations
 		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
 				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID,
-				KeyMap.KEY_PATIENTS_BIRTH_DATE, KeyMap.KEY_SERIES_NUMBER, KeyMap.KEY_ECHO_NUMBERS_S };
+				KeyMap.KEY_PATIENTS_BIRTH_DATE, KeyMap.KEY_SERIES_NUMBER,
+				KeyMap.KEY_ECHO_NUMBERS_S };
 		String[] att = Image.getAttributesDicom(input, info);
 		// This makes the code more readable
 		String patientID = att[0];
@@ -974,44 +996,53 @@ public class SortAlgorithm {
 		}
 
 		// Copy/Move the data
-		if (createNiftis){
+		if (createNiftis) {
 			prepareNiftis(input, path.toString(), echoNumbers, imageNumber);
-		}else{
+		} else {
 			moveDicom(input, path.toString(), name);
 		}
 	}
 
-	private void prepareNiftis(String input, String output, String echoNumbers, String imageNumber){
-            
-		int echon = Integer.parseInt(echoNumbers);
-			
-		if (echon > 1){
-			niftiAs4D.put(output, true);
+	private void prepareNiftis(String input, String output, String echoNumbers,
+			String imageNumber) {
+
+		if (!dicomtonifti.containsKey(output)) {
+			dicomtonifti.put(output, new ArrayList<String>());
+		}
+		if (!numbOfEchos.containsKey(output)) {
+			numbOfEchos.put(output, 1);
 		}
 
+		int echon = Integer.parseInt(echoNumbers);
+
+		if (echon > numbOfEchos.get(output)) {
+			numbOfEchos.put(output, echon);
+		}
+
+		dicomtonifti.get(output).add(imageNumber + "#" + input);
 		transfered++;
-//		
+		//
 	}
-	
+
 	private void moveDicom(String input, String output, String name) {
-			File test = new File(output + "/" + name);
-			if (!test.exists()) {
-				try {
+		File test = new File(output + "/" + name);
+		if (!test.exists()) {
+			try {
 
-					if (move) {
-						Files.move(new File(input).toPath(), test.toPath(),
-								StandardCopyOption.REPLACE_EXISTING);
-					} else {
-						Files.copy(new File(input).toPath(), test.toPath(),
-								StandardCopyOption.REPLACE_EXISTING);
-					}
-
-					transfered++;
-				} catch (IOException e) {
-					out.println("Filetransfer didnt worked");
-					permissionProblem = true;
-					stopSort();
+				if (move) {
+					Files.move(new File(input).toPath(), test.toPath(),
+							StandardCopyOption.REPLACE_EXISTING);
+				} else {
+					Files.copy(new File(input).toPath(), test.toPath(),
+							StandardCopyOption.REPLACE_EXISTING);
 				}
+
+				transfered++;
+			} catch (IOException e) {
+				out.println("Filetransfer didnt worked");
+				permissionProblem = true;
+				stopSort();
+			}
 		}
 	}
 
