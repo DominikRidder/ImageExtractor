@@ -402,9 +402,11 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 					JTextField targetOut = ((JTextField) tablerows_right[i]
 							.getComponents()[1]);
 					targetOut.setText(path);
+					if (e.getSource() instanceof JButton){
+						GUI.setfinalSize(((JButton)e.getSource()),new Dimension(29, 27));
+					}
 				}
 			}
-			System.setProperty("apple.awt.fileDialogForDirectories", "true");
 			break;
 		default:
 			if (e.getSource() instanceof JCheckBox) {
