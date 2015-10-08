@@ -415,7 +415,7 @@ public class SortAlgorithm {
 			return false;
 		}
 
-		/**int numberofnii = 0;
+		int numberofnii = 0;
 		if (createNiftis) {
 			out.println("Creating Niftis..");
 			Set<String> keys = dicomtonifti.keySet();
@@ -426,7 +426,7 @@ public class SortAlgorithm {
 			int height = 0;
 			for (String key : keys) {
 				
-				ImagePlus imp =  dicomtonifti.get(key).duplicate();
+				ImagePlus imp =  dicomtonifti.get(key).createImagePlus();
 				if (niftiAs4D.get(key)) {
 					slices /= frames;
 					ImagePlus hyper = IJ.createHyperStack(imp.getTitle(),
@@ -436,10 +436,10 @@ public class SortAlgorithm {
 //					hyper.setStack(null);
 					imp = hyper;
 				}
-				writer.save(imp, key, "data.nii");
+				System.out.println(writer.save(imp, key, "data.nii"));
 				numberofnii++;
 			}
-		}**/
+		}
 
 		// The last output
 		start = System.currentTimeMillis() - start;
@@ -729,7 +729,7 @@ public class SortAlgorithm {
 									+ " millis.)");
 						}
 					} catch (Exception e) {
-						// catching potential currupt data
+						e.printStackTrace();
 						continue;
 					}
 				} else {
@@ -982,26 +982,15 @@ public class SortAlgorithm {
 	}
 
 	private void prepareNiftis(String input, String output, String echoNumbers, String imageNumber){
-//		File test = new File(output + "/data.nii");
-//		if (!test.exists()) {
-			if (!oneDicomPath.containsKey(output)){
-				oneDicomPath.put(output, input);
-			}
-			if (!dicomtonifti.containsKey(output)){
-				dicomtonifti.put(output, new DICOM());
-			}
-			if (!niftiAs4D.containsKey(output)){
-				niftiAs4D.put(output, false);
-			}
-			int echon = Integer.parseInt(echoNumbers);
+            
+		int echon = Integer.parseInt(echoNumbers);
 			
-			if (echon > 1){
-				niftiAs4D.put(output, true);
-			}
-			
-			dicomtonifti.get(output).open(input);
-			transfered++;
-//		}
+		if (echon > 1){
+			niftiAs4D.put(output, true);
+		}
+
+		transfered++;
+//		
 	}
 	
 	private void moveDicom(String input, String output, String name) {
