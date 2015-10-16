@@ -19,6 +19,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 
 import javax.swing.Box;
@@ -241,6 +242,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	private RotatePanel leg_gray;
 
+	private VolumeFitter vf;
+	
+	private boolean waiting = true;
 	/**
 	 * Standard Constructur.
 	 */
@@ -319,6 +323,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		index_slice.setEditable(false);
 		index_slice.addMouseWheelListener(this);
 		index_slice.addKeyListener(this);
+		index_slice.addPropertyChangeListener(this);
 		GUI.setfinalSize(index_slice, new Dimension(75, 100));
 
 		index_echo = new JTextField("0");
@@ -494,7 +499,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			// speciall Constructur which throws an Exception if new Volume
 			// fails, instead of calling System.exit(1)
 			volume = new Volume(path.getText(), this);
-
+			
 			// Default Index
 			actual_slice = 1;
 			actual_echo = 1;
@@ -528,7 +533,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			index_echo.setEditable(false);
 			index_echo.setText("0");
 			max_echo.setText("/0");
-			ert.printStackTrace();
 		}
 		creatingVolume = false;
 	}
@@ -639,6 +643,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		if (e.getSource() == alsolog) {
 			showROI(true);
 		}
+		if (e.getSource().equals(index_slice)){
+			int slice = Integer.parseInt(index_slice.getText());
+			int next = slice<=0 ? 1 : slice;
+			next = next>perEcho ? perEcho : next;
+			if (next != slice){
+				index_slice.setText(""+next);
+			}
+		}
 	}
 
 	/**
@@ -664,6 +676,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 		while (this.isVisible() && parent.isVisible()) {
 			if (creatingVolume) {
+				waiting = true;
 				switch (status++) {
 				case 0:
 					outputArea.setText("Creating Volume.");
@@ -684,6 +697,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				} catch (InterruptedException e) {
 				}
 			}
+			waiting = false;
 
 			// No Volume = nothing to do
 			if (volume == null) {
@@ -908,7 +922,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	private void showROI(boolean visible) {
 		if (visible) {
-			VolumeFitter vf = new VolumeFitter();
+			if (vf == null){
+				vf = new VolumeFitter();
+			}
 			this.roiimage.getGraphics().drawImage(
 					vf.getPlot(this.volume, roi, this.actual_slice - 1,
 							alsolog.isSelected()).getScaledInstance(

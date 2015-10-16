@@ -2,6 +2,7 @@ package gui;
 
 import imagehandling.SortAlgorithm;
 
+import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -378,6 +379,9 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 				String path = f.isDirectory() ? f.getAbsolutePath() : f
 						.getParent();
 				for (i = 0; i < 5; i++) {
+					if (tablerows_left[i].getComponent(3) instanceof JButton){
+						GUI.setfinalSize(((JButton)tablerows_left[i].getComponent(3)),new Dimension(29, 27));
+					}
 					if (e.getSource().equals(tablerows_left[i].getComponent(4))) {
 						found = true;
 						break;
@@ -389,6 +393,9 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 					targetIn.setText(path);
 				} else {
 					for (i = 0; i < 5; i++) {
+						if (tablerows_right[i].getComponent(3) instanceof JButton){
+							GUI.setfinalSize(((JButton)tablerows_right[i].getComponent(3)),new Dimension(29, 27));
+						}
 						if (e.getSource().equals(
 								tablerows_right[i].getComponent(3))) {
 							found = true;
@@ -400,9 +407,6 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 					JTextField targetOut = ((JTextField) tablerows_right[i]
 							.getComponents()[1]);
 					targetOut.setText(path);
-					if (e.getSource() instanceof JButton){
-						GUI.setfinalSize(((JButton)e.getSource()),new Dimension(29, 27));
-					}
 				}
 			}
 			break;
@@ -482,7 +486,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 			}
 		}
 	}
-
+	
 	/**
 	 * This method is called by a Thread, to start the sorting.
 	 */
