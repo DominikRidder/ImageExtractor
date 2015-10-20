@@ -28,8 +28,9 @@ import java.util.Collections;
  */
 public class Image implements Comparable<Image> {
 
-	public static final int ROI_RECTANGLE=1,ROI_POINT=2,ROI_OVAL=3,ROI_POLYGON=4,ROI_FREEHAND=5;
-	
+	public static final int ROI_RECTANGLE = 1, ROI_POINT = 2, ROI_OVAL = 3,
+			ROI_POLYGON = 4, ROI_FREEHAND = 5;
+
 	/**
 	 * Type of the Image. Normally the ending of the file.
 	 */
@@ -45,6 +46,12 @@ public class Image implements Comparable<Image> {
 	 * the image, when calling getData().
 	 */
 	private Roi roi;
+
+	/**
+	 * Once the data is requestet, the Image class will save the data, so it
+	 * dont have to be computed over and over again.
+	 */
+	private ImagePlus data;
 
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
@@ -161,12 +168,13 @@ public class Image implements Comparable<Image> {
 
 	/**
 	 * This method returns the current roi.
+	 * 
 	 * @return
 	 */
-	public Roi getRoi(){
+	public Roi getRoi() {
 		return roi;
 	}
-	
+
 	/**
 	 * Returns the Image typ. Known Implementation in this class: IMA and dcm.
 	 * 
@@ -176,7 +184,6 @@ public class Image implements Comparable<Image> {
 		return type;
 	}
 
-	
 	/**
 	 * Returns the path of the Image as a String.
 	 * 
@@ -328,6 +335,13 @@ public class Image implements Comparable<Image> {
 	 * @return
 	 */
 	public ImagePlus getData() {
+		if (data == null) {
+			loadData();
+		}
+		return data;
+	}
+
+	public void loadData(){
 		DataExtractor de = null;
 		switch (type) {
 		case "dcm":
@@ -337,15 +351,17 @@ public class Image implements Comparable<Image> {
 		default:
 			throw new RuntimeException("The Image Type can't be handeld.");
 		}
-		ImagePlus ip = de.getData(path);
-		ip.setRoi(roi);
-		return ip;
-	}
-
-	public void setROI(Roi roi){
-		this.roi = roi;
+		data = de.getData(path);
 	}
 	
+	public void setROI(Roi roi) {
+		this.roi = roi;
+		if (data == null){
+			loadData();
+		}
+		data.setRoi(roi);
+	}
+
 	public void setROI(int roitype, int x, int y, int width, int height) {
 		switch (roitype) {
 		case ROI_RECTANGLE:
@@ -367,6 +383,7 @@ public class Image implements Comparable<Image> {
 			roi = null;
 			break;
 		}
+		setROI(roi);
 	}
 
 	public void setROI(int roitype, int x, int y) {
@@ -390,6 +407,7 @@ public class Image implements Comparable<Image> {
 			roi = null;
 			break;
 		}
+		setROI(roi);
 	}
 
 	/**

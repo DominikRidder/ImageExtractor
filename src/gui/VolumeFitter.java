@@ -7,6 +7,7 @@ import ij.gui.Roi;
 import imagehandling.KeyMap;
 import imagehandling.Volume;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
@@ -23,9 +24,11 @@ public class VolumeFitter{
 	
 	private ArrayList<ImagePlus> data;
 	
-	int width,height,echo_numbers,perEcho;
+	private int width,height,echo_numbers,perEcho;
 	
-	public BufferedImage getPlot(Volume vol, Roi roi, int slice, boolean alsolog){
+	private int lastdegree;
+	
+	public BufferedImage getPlot(Volume vol, Roi roi, int slice, int degree, boolean logScale){
 		data = vol.getData();
 		String str_echo_numbers = vol.getSlice(vol.size() - 1).getAttribute(
 				KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
@@ -36,8 +39,17 @@ public class VolumeFitter{
 		// the programm for the fitting
 		if (fitter == null){
 			fitter = new Polyfitter();
-//			fitter.setAlgorithm(new LRDecomposition(echo_numbers-1));
-			fitter.setAlgorithm(new LRDecomposition(2));
+			fitter.setAlgorithm(new PolynomialLowestSquare(degree));
+			lastdegree = degree;
+//			fitter.setAlgorithm(new LRDecomposition(2));
+		}else if(lastdegree != degree){
+			fitter.removeAlgorithm();
+			if (degree != -1){
+				fitter.setAlgorithm(new PolynomialLowestSquare(degree));
+			}else{
+				fitter.setAlgorithm(new PolynomialLowestSquare(echo_numbers-1));
+			}
+			lastdegree = degree;
 		}
 		fitter.removePoints();
 		
@@ -57,10 +69,14 @@ public class VolumeFitter{
 		for (int i=0; i<buffimg.size(); i++){
 			BufferedImage img = buffimg.get(i);
 			iArray = img.getRaster().getPixel((int) roi.getBounds().getX(), (int) roi.getBounds().getY(), itest);
-			fitter.addPoint(i, iArray[0], Math.log10(iArray[0])+10);
+			if (logScale){
+				fitter.addPoint(i, Math.log10(iArray[0]));
+			}else{
+				fitter.addPoint(i, iArray[0]);
+			}
 		}
 		
-		return fitter.plotVolume(alsolog);
+		return fitter.plotVolume(logScale);
 	}
 
 }

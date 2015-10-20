@@ -5,6 +5,7 @@ import ij.gui.PointRoi;
 import ij.gui.Roi;
 import ij.plugin.DragAndDrop;
 import imagehandling.Image;
+import imagehandling.ImageExtractorConfig;
 import imagehandling.KeyMap;
 import imagehandling.TextOptions;
 import imagehandling.Volume;
@@ -31,6 +32,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -247,13 +249,21 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private RotatePanel leg_gray;
 
 	private VolumeFitter vf;
-	
+
 	private boolean waiting = true;
+
+	private String customImagej;
+
+	private JComboBox<String> dimension;
+
 	/**
 	 * Standard Constructur.
 	 */
 	public VolumeTab(JFileChooser filechooser, GUI gui) {
 		parent = gui;
+
+		// ImageExtractorConfig iec = new ImageExtractorConfig();
+		// customImagej.
 
 		// The path for the Volume
 		path = new JTextField("");
@@ -267,6 +277,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		filter.addKeyListener(this);
 		GUI.setfinalSize(filter, new Dimension(500, 100));
 
+		String []shapes = {"Point", "Circle"};
+		JComboBox<String> shape = new JComboBox<String>(shapes);
+		GUI.setfinalSize(shape, new Dimension(70, 30));
+		
 		// image
 		image = new BufferedImage(443, 443, BufferedImage.TYPE_4BYTE_ABGR);
 		// The ImageIcon is kinda a wrapper for the image
@@ -277,6 +291,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		imagelabel.addMouseWheelListener(this);
 		imagelabel.addKeyListener(this);
 		imagelabel.addMouseListener(this);
+		
+		JLabel imagewithOptions = new JLabel();
+		imagewithOptions.add(shape);
+		imagewithOptions.add(imagelabel);
+		GUI.setfinalSize(imagewithOptions, new Dimension(443, 443));
 
 		// initialize the Buttons
 		open_imagej = new JButton("open in Imagej");
@@ -327,7 +346,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		index_slice.setEditable(false);
 		index_slice.addMouseWheelListener(this);
 		index_slice.addKeyListener(this);
-//		index_slice.addPropertyChangeListener(this);
+		// index_slice.addPropertyChangeListener(this);
 		GUI.setfinalSize(index_slice, new Dimension(75, 100));
 
 		index_echo = new JTextField("0");
@@ -441,6 +460,30 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		legWrapper.add(leg_echo);
 		GUI.setfinalSize(legWrapper, new Dimension(300, 100));
 
+		JTextField text_dim = new JTextField("Fitting: ");
+		text_dim.setEditable(false);
+		text_dim.setBackground(null);
+		text_dim.setBorder(null);
+		GUI.setfinalSize(text_dim, new Dimension(70, 50));
+
+//		String[] dim = { "Polynomial (0 order)", "Polynomial (0 order)", "", "3", "4", "N" };
+		dimension = new JComboBox<String>();
+		for (int i=0; i<5; i++){
+			dimension.addItem("Polynomial ("+i+" order)");
+		}
+		dimension.addItem("Polynomial (n order)");
+		dimension.addItem("Exponential (missing)");
+		dimension.setSelectedIndex(3);
+		dimension.addActionListener(this);
+		GUI.setfinalSize(dimension, new Dimension(200, 50));
+
+		JLabel dimselection = new JLabel();
+		dimselection
+				.setLayout(new BoxLayout(dimselection, BoxLayout.LINE_AXIS));
+		dimselection.add(text_dim);
+		dimselection.add(dimension);
+		GUI.setfinalSize(dimselection, new Dimension(270, 50));
+
 		// image
 		roiimage = new BufferedImage(300, 300, BufferedImage.TYPE_4BYTE_ABGR);
 		// The ImageIcon is kinda a wrapper for the image
@@ -448,7 +491,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// imagepanel wrapps the ImageIcon
 		roilabel = new JLabel(roiimgicon);
 
-		// Checkbox for showing also the log evaluation
+		// Checkbox for showing the log evaluation
 		alsolog = new JCheckBox();
 		alsolog.addChangeListener(this);
 
@@ -470,8 +513,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		roiPanel = new JPanel();
 		roiPanel.setLayout(new BoxLayout(roiPanel, BoxLayout.PAGE_AXIS));
 		GUI.setfinalSize(roiPanel, new Dimension(400, 1100));
-		Component[] roistuff = { Box.createRigidArea(new Dimension(0, 50)),
-				roilabel, legWrapper,
+		Component[] roistuff = { Box.createRigidArea(new Dimension(0, 5)),
+				dimselection, Box.createRigidArea(new Dimension(0, 5)),
+				roilabel, /* legWrapper, */
 				Box.createRigidArea(new Dimension(0, 50)), loglabel };
 		GUI.addComponents(roiPanel, roistuff);
 		roiPanel.setVisible(false);
@@ -482,8 +526,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		GUI.setfinalSize(toppanel, new Dimension(1100, 450));
 		toppanel.add(leftSidePanel);
 		toppanel.add(imagelabel);
+//		toppanel.add(imagewithOptions);
 		// toppanel.add(Box.createRigidArea(new Dimension(35, 0)));
-		toppanel.add(leg_gray);
+		// toppanel.add(leg_gray);
+		toppanel.add(Box.createRigidArea(new Dimension(10, 0)));
 		toppanel.add(roiPanel);
 
 		// Some this stuff
@@ -503,7 +549,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			// speciall Constructur which throws an Exception if new Volume
 			// fails, instead of calling System.exit(1)
 			volume = new Volume(path.getText(), this);
-			
+
 			// Default Index
 			actual_slice = 1;
 			actual_echo = 1;
@@ -627,6 +673,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			displayAttributes();
 			break;
 		default:
+			if (e.getSource() == dimension) {
+				if (relativroi != null) {
+					showROI(true);
+				}
+			}
 			break;
 		}
 	}
@@ -647,12 +698,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		if (e.getSource() == alsolog) {
 			showROI(true);
 		}
-		if (e.getSource().equals(index_slice)){
+		if (e.getSource().equals(index_slice)) {
 			int slice = Integer.parseInt(index_slice.getText());
-			int next = slice<=0 ? 1 : slice;
-			next = next>perEcho ? perEcho : next;
-			if (next != slice){
-				index_slice.setText(""+next);
+			int next = slice <= 0 ? 1 : slice;
+			next = next > perEcho ? perEcho : next;
+			if (next != slice) {
+				index_slice.setText("" + next);
 			}
 		}
 	}
@@ -839,22 +890,23 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	private void displayImage() {
 		Image curimg = this.volume.getSlice(actualSliceIndex());
-		BufferedImage orig = curimg.getData().getBufferedImage();
+//		BufferedImage orig = curimg.getData().getBufferedImage();
 		java.awt.Graphics gr = this.image.getGraphics();
 		gr.drawImage(
 				this.volume
 						.getSlice(actualSliceIndex())
-						.getData().getBufferedImage()
+						.getData()
+						.getBufferedImage()
 						.getScaledInstance(this.image.getWidth(),
 								this.image.getHeight(),
 								BufferedImage.SCALE_FAST), 0, 0, null);
 		if (curimg.getRoi() != null) {
-			System.out.println("Can you see the roi?");
-//			gr.setColor(Color.RED);
-//			gr.drawRect((int) (this.roi.getX() * this.image.getHeight() / orig
-//					.getHeight()),
-//					(int) (this.roi.getY() * this.image.getWidth() / orig
-//							.getWidth()), 1, 1);
+			// gr.setColor(Color.RED);
+			// gr.drawRect((int) (this.roi.getX() * this.image.getHeight() /
+			// orig
+			// .getHeight()),
+			// (int) (this.roi.getY() * this.image.getWidth() / orig
+			// .getWidth()), 1, 1);
 			relativroi.draw(gr);
 			showROI(true);
 		}
@@ -929,15 +981,28 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	private void showROI(boolean visible) {
 		if (visible) {
-			if (vf == null){
+			if (vf == null) {
 				vf = new VolumeFitter();
 			}
-			this.roiimage.getGraphics().drawImage(
-					vf.getPlot(this.volume, this.volume.getSlice(actualSliceIndex()).getRoi(), this.actual_slice - 1,
-							alsolog.isSelected()).getScaledInstance(
-							this.roiimage.getWidth(),
-							this.roiimage.getHeight(),
-							BufferedImage.SCALE_AREA_AVERAGING), 0, 0, null);
+			int degree = -1;
+			for (int i=0; i<5; i++){
+				if (((String)dimension.getSelectedItem()).contains(""+i)){
+					degree = i;
+				}
+			}
+			this.roiimage
+					.getGraphics()
+					.drawImage(
+							vf.getPlot(
+									this.volume,
+									this.volume.getSlice(actualSliceIndex())
+											.getRoi(), this.actual_slice - 1,
+									degree, alsolog.isSelected())
+									.getScaledInstance(
+											this.roiimage.getWidth(),
+											this.roiimage.getHeight(),
+											BufferedImage.SCALE_AREA_AVERAGING),
+							0, 0, null);
 			roiPanel.setVisible(true);
 			if (!ownExtended) {
 				parent.setExtendedWindow(true);
@@ -967,13 +1032,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					.getData().getBufferedImage();
 
 			relativroi = new PointRoi(e.getX(), e.getY());
-			
-			Roi realroi = new PointRoi(((double) e.getX())
-					/ this.image.getHeight() * orig.getHeight(), ((double) e.getY()) / this.image.getWidth()
-					* orig.getWidth());
+
+			Roi realroi = new PointRoi(
+					((double) e.getY()) / this.image.getWidth()
+							* orig.getWidth(),((double) e.getX())
+							/ this.image.getHeight() * orig.getHeight());
 
 			volume.setRoi(realroi);
-			
+
 			displayImage();
 			showROI(true);
 		}
