@@ -728,10 +728,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		actual_slice = 0;
 		actual_echo = 0;
 		int status = 0;
-
+		boolean firstout = false;
+		
 		while (this.isVisible() && parent.isVisible()) {
 			if (creatingVolume) {
-				waiting = true;
+				firstout = true;
+				outputArea.repaint();
 				switch (status++) {
 				case 0:
 					outputArea.setText("Creating Volume.");
@@ -745,14 +747,18 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				default:
 					break;
 				}
-				outputArea.repaint();
 				status = status % 3;
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
 				}
 			}
-			waiting = false;
+			
+			if (firstout){
+				outputArea.repaint();
+				firstout = false;
+			}
+			
 
 			// No Volume = nothing to do
 			if (volume == null) {
