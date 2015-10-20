@@ -277,10 +277,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		filter.addKeyListener(this);
 		GUI.setfinalSize(filter, new Dimension(500, 100));
 
-		String []shapes = {"Point", "Circle"};
+		String[] shapes = { "Point", "Circle" };
 		JComboBox<String> shape = new JComboBox<String>(shapes);
 		GUI.setfinalSize(shape, new Dimension(70, 30));
-		
+
 		// image
 		image = new BufferedImage(443, 443, BufferedImage.TYPE_4BYTE_ABGR);
 		// The ImageIcon is kinda a wrapper for the image
@@ -291,7 +291,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		imagelabel.addMouseWheelListener(this);
 		imagelabel.addKeyListener(this);
 		imagelabel.addMouseListener(this);
-		
+
 		JLabel imagewithOptions = new JLabel();
 		imagewithOptions.add(shape);
 		imagewithOptions.add(imagelabel);
@@ -466,10 +466,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		text_dim.setBorder(null);
 		GUI.setfinalSize(text_dim, new Dimension(70, 50));
 
-//		String[] dim = { "Polynomial (0 order)", "Polynomial (0 order)", "", "3", "4", "N" };
+		// String[] dim = { "Polynomial (0 order)", "Polynomial (0 order)", "",
+		// "3", "4", "N" };
 		dimension = new JComboBox<String>();
-		for (int i=0; i<5; i++){
-			dimension.addItem("Polynomial ("+i+" order)");
+		String help[] = {"", "st", "nd", "rd", "th", "th"};
+		for (int i = 0; i < 5; i++) {
+			dimension.addItem("Polynomial (" + i +help[i]+" order)");
 		}
 		dimension.addItem("Polynomial (n order)");
 		dimension.addItem("Exponential (missing)");
@@ -526,7 +528,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		GUI.setfinalSize(toppanel, new Dimension(1100, 450));
 		toppanel.add(leftSidePanel);
 		toppanel.add(imagelabel);
-//		toppanel.add(imagewithOptions);
+		// toppanel.add(imagewithOptions);
 		// toppanel.add(Box.createRigidArea(new Dimension(35, 0)));
 		// toppanel.add(leg_gray);
 		toppanel.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -729,7 +731,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		actual_echo = 0;
 		int status = 0;
 		boolean firstout = false;
-		
+
 		while (this.isVisible() && parent.isVisible()) {
 			if (creatingVolume) {
 				firstout = true;
@@ -753,16 +755,15 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				} catch (InterruptedException e) {
 				}
 			}
-			
-			if (firstout){
-                               try {
+
+			if (firstout) {
+				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
 				}
 				outputArea.repaint();
 				firstout = false;
 			}
-			
 
 			// No Volume = nothing to do
 			if (volume == null) {
@@ -900,7 +901,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	private void displayImage() {
 		Image curimg = this.volume.getSlice(actualSliceIndex());
-//		BufferedImage orig = curimg.getData().getBufferedImage();
+		// BufferedImage orig = curimg.getData().getBufferedImage();
 		java.awt.Graphics gr = this.image.getGraphics();
 		gr.drawImage(
 				this.volume
@@ -995,8 +996,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				vf = new VolumeFitter();
 			}
 			int degree = -1;
-			for (int i=0; i<5; i++){
-				if (((String)dimension.getSelectedItem()).contains(""+i)){
+			for (int i = 0; i < 5; i++) {
+				if (((String) dimension.getSelectedItem()).contains("" + i)) {
 					degree = i;
 				}
 			}
@@ -1043,10 +1044,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 			relativroi = new PointRoi(e.getX(), e.getY());
 
-			Roi realroi = new PointRoi(
-					((double) e.getY()) / this.image.getWidth()
-							* orig.getWidth(),((double) e.getX())
-							/ this.image.getHeight() * orig.getHeight());
+			Roi realroi = new PointRoi(((double) e.getY())
+					/ this.image.getWidth() * orig.getWidth(),
+					((double) e.getX()) / this.image.getHeight()
+							* orig.getHeight());
 
 			volume.setRoi(realroi);
 
