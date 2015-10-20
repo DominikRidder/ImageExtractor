@@ -755,6 +755,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			}
 			
 			if (firstout){
+                               try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+				}
 				outputArea.repaint();
 				firstout = false;
 			}
