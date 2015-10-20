@@ -2,6 +2,8 @@ package gui;
 
 import fitterAlgorithm.LRDecomposition;
 import fitterAlgorithm.PolynomialLowestSquare;
+import ij.ImagePlus;
+import ij.gui.Roi;
 import imagehandling.KeyMap;
 import imagehandling.Volume;
 
@@ -19,11 +21,11 @@ public class VolumeFitter{
 
 	private Polyfitter fitter;
 	
-	private ArrayList<BufferedImage> data;
+	private ArrayList<ImagePlus> data;
 	
 	int width,height,echo_numbers,perEcho;
 	
-	public BufferedImage getPlot(Volume vol, Point roi, int slice, boolean alsolog){
+	public BufferedImage getPlot(Volume vol, Roi roi, int slice, boolean alsolog){
 		data = vol.getData();
 		String str_echo_numbers = vol.getSlice(vol.size() - 1).getAttribute(
 				KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
@@ -47,14 +49,14 @@ public class VolumeFitter{
 		ArrayList<BufferedImage>buffimg = new ArrayList<BufferedImage>(echo_numbers);
 		
 		for (int e=0; e<echo_numbers; e++){
-			buffimg.add(data.get(slice+perEcho*e));
+			buffimg.add(data.get(slice+perEcho*e).getBufferedImage());
 		}
 		
 		int iArray[] = new int[4];
 		int itest[] = new int[100];
 		for (int i=0; i<buffimg.size(); i++){
 			BufferedImage img = buffimg.get(i);
-			iArray = img.getRaster().getPixel((int) roi.getElementbyNumber(1), (int) roi.getElementbyNumber(0), itest);
+			iArray = img.getRaster().getPixel((int) roi.getBounds().getX(), (int) roi.getBounds().getY(), itest);
 			fitter.addPoint(i, iArray[0], Math.log10(iArray[0])+10);
 		}
 		

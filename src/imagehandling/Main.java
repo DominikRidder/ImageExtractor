@@ -14,7 +14,6 @@ public class Main {
 		Volume vol = new Volume("/opt/dridder_local/TestDicoms/AllDicoms/112233/2_si_gre_m0w__w2dfl");
 		Point2D roi = new Point2D(30,30);
 		VolumeFitter vf = new VolumeFitter();
-		vf.getPlot(vol, roi, 10, false);
 //
 //		TextOptions topt = new TextOptions();
 //		topt.addSearchOption(TextOptions.ATTRIBUTE_NAME);

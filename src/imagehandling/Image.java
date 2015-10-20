@@ -1,9 +1,16 @@
 package imagehandling;
 
 import ij.ImagePlus;
+import ij.gui.FreehandRoi;
+import ij.gui.OvalRoi;
+import ij.gui.PointRoi;
+import ij.gui.PolygonRoi;
+import ij.gui.Roi;
+import ij.plugin.DICOM;
 import ij.util.DicomTools;
 import ij.util.WildcardMatch;
 
+import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.PrintStream;
@@ -21,6 +28,8 @@ import java.util.Collections;
  */
 public class Image implements Comparable<Image> {
 
+	public static final int ROI_RECTANGLE=1,ROI_POINT=2,ROI_OVAL=3,ROI_POLYGON=4,ROI_FREEHAND=5;
+	
 	/**
 	 * Type of the Image. Normally the ending of the file.
 	 */
@@ -30,6 +39,12 @@ public class Image implements Comparable<Image> {
 	 * Path of the Image File.
 	 */
 	private String path;
+
+	/**
+	 * This value can be set with different types of ROI. This roi is added to
+	 * the image, when calling getData().
+	 */
+	private Roi roi;
 
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
@@ -145,6 +160,14 @@ public class Image implements Comparable<Image> {
 	}
 
 	/**
+	 * This method returns the current roi.
+	 * @return
+	 */
+	public Roi getRoi(){
+		return roi;
+	}
+	
+	/**
 	 * Returns the Image typ. Known Implementation in this class: IMA and dcm.
 	 * 
 	 * @return
@@ -153,6 +176,7 @@ public class Image implements Comparable<Image> {
 		return type;
 	}
 
+	
 	/**
 	 * Returns the path of the Image as a String.
 	 * 
@@ -303,50 +327,105 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @return
 	 */
-	public BufferedImage getData() {
-		DataExtractor he = null;
+	public ImagePlus getData() {
+		DataExtractor de = null;
 		switch (type) {
 		case "dcm":
 		case "IMA":
-			he = new DicomDataExtractor();
+			de = new DicomDataExtractor();
 			break;
 		default:
 			throw new RuntimeException("The Image Type can't be handeld.");
 		}
-		return he.getData(path);
+		ImagePlus ip = de.getData(path);
+		ip.setRoi(roi);
+		return ip;
+	}
+
+	public void setROI(Roi roi){
+		this.roi = roi;
+	}
+	
+	public void setROI(int roitype, int x, int y, int width, int height) {
+		switch (roitype) {
+		case ROI_RECTANGLE:
+			roi = new Roi(x, y, width, height);
+			break;
+		case ROI_OVAL:
+			roi = new OvalRoi(x, y, width, height);
+			break;
+		case ROI_POINT:
+			roi = new PointRoi(x, y);
+			break;
+		case ROI_FREEHAND:
+			roi = new FreehandRoi(x, y, null);
+			break;
+		case ROI_POLYGON:
+			roi = new PolygonRoi(new Polygon(), PolygonRoi.POLYGON);
+			break;
+		default:
+			roi = null;
+			break;
+		}
+	}
+
+	public void setROI(int roitype, int x, int y) {
+		switch (roitype) {
+		case 1:
+			roi = new Roi(x, y, 10, 10);
+			break;
+		case 2:
+			roi = new OvalRoi(x, y, 10, 10);
+			break;
+		case 3:
+			roi = new PointRoi(x, y);
+			break;
+		case 4:
+			roi = new FreehandRoi(x, y, null);
+			break;
+		case 5:
+			roi = new PolygonRoi(new Polygon(), PolygonRoi.POLYGON);
+			break;
+		default:
+			roi = null;
+			break;
+		}
 	}
 
 	/**
-	 * This method trys to find out, if the Initialized path can be handeld as a Dicom.
+	 * This method trys to find out, if the Initialized path can be handeld as a
+	 * Dicom.
 	 * 
 	 * @return
 	 */
 	public static boolean isDicom(Path path) {
 		ImagePlus imp = new ImagePlus(path.toString());
-		
-		KeyMap testdata[] = { KeyMap.KEY_PROTOCOL_NAME, KeyMap.KEY_PATIENT_ID,KeyMap.KEY_IMAGE_NUMBER};
+
+		KeyMap testdata[] = { KeyMap.KEY_PROTOCOL_NAME, KeyMap.KEY_PATIENT_ID,
+				KeyMap.KEY_IMAGE_NUMBER };
 
 		PrintStream stdout = System.out;
 
-//		try {
-//			System.setOut(new PrintStream(new File("/opt/dridder_local/Test/Syntaxfehler")){
-////				public void print(String s){}
-////				public void println(String s){}
-////				public void print(char c){}
-////				public PrintStream append(CharSequence cs){return null;}
-//			});
-//		} catch (FileNotFoundException e) {
-//
-//		}
-		
-		for (KeyMap test : testdata){
+		// try {
+		// System.setOut(new PrintStream(new
+		// File("/opt/dridder_local/Test/Syntaxfehler")){
+		// // public void print(String s){}
+		// // public void println(String s){}
+		// // public void print(char c){}
+		// // public PrintStream append(CharSequence cs){return null;}
+		// });
+		// } catch (FileNotFoundException e) {
+		//
+		// }
+
+		for (KeyMap test : testdata) {
 			String k = DicomTools.getTag(imp, test.getValue("IMA"));
-			if (k == null){
+			if (k == null) {
 				System.setOut(stdout);
 				return false;
 			}
 		}
-//		System.setOut(stdout);
+		// System.setOut(stdout);
 		return true;
 	}
 

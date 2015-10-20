@@ -1,11 +1,15 @@
 package gui;
 
 import ij.ImageJ;
+import ij.gui.PointRoi;
+import ij.gui.Roi;
 import ij.plugin.DragAndDrop;
+import imagehandling.Image;
 import imagehandling.KeyMap;
 import imagehandling.TextOptions;
 import imagehandling.Volume;
 
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -236,7 +240,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	private JLabel roilabel;
 
-	private Point2D roi;
+	private Roi relativroi;
 
 	private JCheckBox alsolog;
 
@@ -323,7 +327,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		index_slice.setEditable(false);
 		index_slice.addMouseWheelListener(this);
 		index_slice.addKeyListener(this);
-		index_slice.addPropertyChangeListener(this);
+//		index_slice.addPropertyChangeListener(this);
 		GUI.setfinalSize(index_slice, new Dimension(75, 100));
 
 		index_echo = new JTextField("0");
@@ -449,7 +453,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		alsolog.addChangeListener(this);
 
 		// Log Checkbox text
-		JTextField logtext = new JTextField("also log (GREEN)");
+		JTextField logtext = new JTextField("log");
 		logtext.setEditable(false);
 		logtext.setBackground(null);
 		logtext.setBorder(null);
@@ -834,21 +838,24 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	private void displayImage() {
-		BufferedImage orig = this.volume.getSlice(actualSliceIndex()).getData();
+		Image curimg = this.volume.getSlice(actualSliceIndex());
+		BufferedImage orig = curimg.getData().getBufferedImage();
 		java.awt.Graphics gr = this.image.getGraphics();
 		gr.drawImage(
 				this.volume
 						.getSlice(actualSliceIndex())
-						.getData()
+						.getData().getBufferedImage()
 						.getScaledInstance(this.image.getWidth(),
 								this.image.getHeight(),
 								BufferedImage.SCALE_FAST), 0, 0, null);
-		if (this.roi != null) {
-			gr.setColor(Color.RED);
-			gr.drawRect((int) (this.roi.getX() * this.image.getHeight() / orig
-					.getHeight()),
-					(int) (this.roi.getY() * this.image.getWidth() / orig
-							.getWidth()), 1, 1);
+		if (curimg.getRoi() != null) {
+			System.out.println("Can you see the roi?");
+//			gr.setColor(Color.RED);
+//			gr.drawRect((int) (this.roi.getX() * this.image.getHeight() / orig
+//					.getHeight()),
+//					(int) (this.roi.getY() * this.image.getWidth() / orig
+//							.getWidth()), 1, 1);
+			relativroi.draw(gr);
 			showROI(true);
 		}
 	}
@@ -926,7 +933,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				vf = new VolumeFitter();
 			}
 			this.roiimage.getGraphics().drawImage(
-					vf.getPlot(this.volume, roi, this.actual_slice - 1,
+					vf.getPlot(this.volume, this.volume.getSlice(actualSliceIndex()).getRoi(), this.actual_slice - 1,
 							alsolog.isSelected()).getScaledInstance(
 							this.roiimage.getWidth(),
 							this.roiimage.getHeight(),
@@ -940,7 +947,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				GUI.setfinalSize(parent, new Dimension(1450, 550));
 			}
 		} else {
-			roi = null;
+			relativroi = null;
 			roiPanel.setVisible(false);
 			if (ownExtended) {
 				parent.setExtendedWindow(false);
@@ -957,13 +964,16 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	public void mouseClicked(MouseEvent e) {
 		if (e.getSource() == this.imagelabel && volume != null) {
 			BufferedImage orig = this.volume.getSlice(actualSliceIndex())
-					.getData();
+					.getData().getBufferedImage();
 
-			roi = new Point2D(((double) e.getY()) / this.image.getWidth()
-					* orig.getWidth(), ((double) e.getX())
-					/ this.image.getHeight() * orig.getHeight());
-			roi = new Point2D(roi.getY(), roi.getX());
+			relativroi = new PointRoi(e.getX(), e.getY());
+			
+			Roi realroi = new PointRoi(((double) e.getX())
+					/ this.image.getHeight() * orig.getHeight(), ((double) e.getY()) / this.image.getWidth()
+					* orig.getWidth());
 
+			volume.setRoi(realroi);
+			
 			displayImage();
 			showROI(true);
 		}

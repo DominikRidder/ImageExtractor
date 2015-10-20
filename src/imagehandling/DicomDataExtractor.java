@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
+import ij.ImagePlus;
 import ij.plugin.DICOM;
 
 /**
@@ -18,17 +19,17 @@ public class DicomDataExtractor implements DataExtractor {
 	/**
 	 * Returns the image of a Dicom.
 	 */
-	public BufferedImage getData(String path) {
+	public ImagePlus getData(String path) {
 		DICOM dcm = new DICOM();
 		dcm.open(path);
-		return dcm.getBufferedImage();
+		return dcm;
 	}
 
 	/**
 	 * This methods creates png Files in the outputdir folder, of the image to the given dicom path.
 	 */
 	public void extractData(String path, String outputdir) {
-		BufferedImage bi = getData(path);
+		BufferedImage bi = getData(path).getBufferedImage();
 		File img = new File(path);
 		File output = new File(outputdir + "/"
 				+ img.getName().substring(0, img.getName().length() - 3)

@@ -1,6 +1,8 @@
 package imagehandling;
 
 import gui.VolumeTab;
+import ij.ImagePlus;
+import ij.gui.Roi;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -443,8 +445,8 @@ public class Volume {
 	 * 
 	 * @return
 	 */
-	public ArrayList<BufferedImage> getData() {
-		ArrayList<BufferedImage> data = new ArrayList<BufferedImage>();
+	public ArrayList<ImagePlus> getData() {
+		ArrayList<ImagePlus> data = new ArrayList<ImagePlus>();
 		for (Image img : slices) {
 			data.add(img.getData());
 		}
@@ -501,6 +503,24 @@ public class Volume {
 		return topt;
 	}
 
+	public void setRoi(Roi roi){
+		for (Image img : slices){
+			img.setROI(roi);
+		}
+	}
+	
+	public void setRoi(int roitype, int x, int y){
+		for (Image img : slices){
+			img.setROI(roitype, x, y);
+		}
+	}
+	
+	public void setRoi(int roitype, int x, int y, int width, int height){
+		for (Image img : slices){
+			img.setROI(roitype, x, y, width, height);
+		}
+	}
+	
 	/**
 	 * Setting the TextOptions to the Default setting.
 	 */

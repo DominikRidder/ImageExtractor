@@ -1,5 +1,7 @@
 package imagehandling;
 
+import ij.ImagePlus;
+
 import java.awt.image.BufferedImage;
 
 /**
@@ -17,7 +19,7 @@ interface DataExtractor {
 	 * @param path
 	 * @return
 	 */
-	public BufferedImage getData(String path);
+	public ImagePlus getData(String path);
 
 	/**
 	 * This class creates png files to in the outputdir folder, to a given path
