@@ -1,4 +1,6 @@
-package gui;
+package gui.volumetab;
+
+import gui.GUI;
 
 import java.awt.Dimension;
 import java.awt.Graphics;

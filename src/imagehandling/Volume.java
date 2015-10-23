@@ -1,6 +1,6 @@
 package imagehandling;
 
-import gui.VolumeTab;
+import gui.volumetab.VolumeTab;
 import ij.ImagePlus;
 import ij.gui.Roi;
 

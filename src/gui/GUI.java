@@ -1,5 +1,8 @@
 package gui;
 
+import gui.sortertab.SorterTab;
+import gui.volumetab.VolumeTab;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -22,6 +25,8 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import tools.ImageExtractorConfig;
 
 /**
  * This GUI is used, to look the Header and Images of Dicoms and to Search and
@@ -82,9 +87,15 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	boolean extendedWindow = false;
 
 	/**
+	 * 
+	 */
+	public ImageExtractorConfig imec;
+	/**
 	 * One and only Constructur.
 	 */
 	public GUI(boolean forceProgrammEndIfThereIsNoWindow) {
+		imec = new ImageExtractorConfig();
+		
 		filechooser = new ContextMenuFileChooser();
 		filechooser.setCurrentDirectory(new java.io.File("$HOME"));
 		filechooser.setDialogTitle("Search Directory");
@@ -122,6 +133,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		tabber = new JTabbedPane();
 		newTab(new VolumeTab(filechooser, this));
 		newTab(new SorterTab(filechooser, this));
+		tabber.setSelectedIndex(0);
 
 		tabber.addChangeListener(this);
 		add(tabber);
@@ -258,7 +270,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	/**
 	 * Method, which should force a choosen Size for a Component.
 	 */
-	protected static void setfinalSize(Component p, Dimension d) {
+	public static void setfinalSize(Component p, Dimension d) {
 		p.setMinimumSize(d);
 		p.setMaximumSize(d);
 		p.setSize(d);
@@ -267,7 +279,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	/**
 	 * Method to add a list of Components to a JPanel.
 	 */
-	protected static void addComponents(JPanel here, Component[] toadd) {
+	public static void addComponents(JPanel here, Component[] toadd) {
 		for (int i = 0; i < toadd.length; i++) {
 			here.add(toadd[i]);
 		}
@@ -313,6 +325,14 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		if (e.getSource() == tabber) {
 			this.setExtendedWindow(false);
 		}
-
+	}
+	
+	public MyTab getCurrentTab(){
+		Component current = tabber.getSelectedComponent();
+		if (current!= null){
+			return (MyTab) current;
+		}else{
+			return null;
+		}
 	}
 }

@@ -1,6 +1,7 @@
-package gui;
+package gui.sortertab;
 
-import imagehandling.SortAlgorithm;
+import gui.GUI;
+import gui.MyTab;
 
 import java.awt.AWTEvent;
 import java.awt.Color;
@@ -27,6 +28,8 @@ import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+
+import tools.SortAlgorithm;
 
 /**
  * Tab of the GUI class. Used to represent a Tab, which is usefull to sort

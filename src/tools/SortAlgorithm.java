@@ -1,4 +1,4 @@
-package imagehandling;
+package tools;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -6,6 +6,8 @@ import ij.ImageStack;
 import ij.plugin.DICOM;
 import ij.plugin.Nifti_Writer;
 import ij.util.DicomTools;
+import imagehandling.Image;
+import imagehandling.KeyMap;
 
 import java.io.BufferedWriter;
 import java.io.File;

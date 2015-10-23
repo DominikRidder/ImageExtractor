@@ -6,7 +6,7 @@ package gui;
  * @author dridder_local
  *
  */
-interface MyTab {
+public interface MyTab {
 	public String getClassName();
 
 	public void lifeUpdate();

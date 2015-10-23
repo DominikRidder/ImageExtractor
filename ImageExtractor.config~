@@ -4,5 +4,4 @@
 
 #standard:
 #External=java -jar libs/ij.jar $FILE
-
 External=java -jar libs/ij.jar $FILE
