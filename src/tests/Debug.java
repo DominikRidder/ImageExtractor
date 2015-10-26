@@ -17,8 +17,8 @@ public class Debug {
 		
 		if (curtab instanceof VolumeTab){
 			voltab = (VolumeTab) curtab;
-
-			voltab.setPath("/opt/dridder_local/TestDicoms/AllDicoms/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/15_si_gre_b0");
+			voltab.setPath("C:/Users/Dominik/Desktop/Dominik_ordner/Learning/Dicom/Testfolder");
+//			voltab.setPath("/opt/dridder_local/TestDicoms/AllDicoms/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/15_si_gre_b0");
 			voltab.createVolume();
 
 			while(voltab.isCreatingVolume()){

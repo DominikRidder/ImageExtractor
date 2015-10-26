@@ -42,6 +42,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicArrowButton;
 
+import sun.java2d.pipe.DrawImage;
 import tools.ImageExtractorConfig;
 import tools.VolumeFitter;
 import tools.ZeroEcho;
@@ -736,54 +737,62 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		}
 	}
 
-	private void checkSlice(){
+	private void checkSlice() {
 		Runnable handlechange = new Runnable() {
-		    public void run() {
-		    	int act = 0;
-				try{
+			public void run() {
+				int act = 0;
+				try {
 					act = Integer.parseInt(index_slice.getText());
-				}catch(NumberFormatException e){
-					String newtext = index_slice.getText().replaceAll("[^\\d]", "");
-					if (newtext.length() == 0){
+				} catch (NumberFormatException e) {
+					String newtext = index_slice.getText().replaceAll("[^\\d]",
+							"");
+					if (newtext.length() == 0) {
 						act = 0;
-					}else{
+					} else {
 						act = Integer.parseInt(newtext);
 					}
 				}
-				if (act > perEcho){
+				if (act > perEcho) {
 					act = perEcho;
-				}else if(act < 1 && volume != null){
+				} else if (act < 1 && volume != null) {
 					act = 1;
-				}else{
+				} else {
 					return;
 				}
-		    	index_slice.setText(act+"");
-		    }
+				index_slice.setText(act + "");
+			}
 		};
-		 
-		SwingUtilities.invokeLater(handlechange); 
+
+		SwingUtilities.invokeLater(handlechange);
 	}
 
 	private void checkEcho() {
-		int act = 0;
-		try{
-			act = Integer.parseInt(index_echo.getText());
-		}catch(NumberFormatException e){
-			String newtext = index_echo.getText().replaceAll("[^\\d]", "");
-			if (newtext.length() == 0){
-				act = 0;
-			}else{
-				act = Integer.parseInt(newtext);
+		Runnable handlechange = new Runnable() {
+			public void run() {
+				int act = 0;
+				try {
+					act = Integer.parseInt(index_echo.getText());
+				} catch (NumberFormatException e) {
+					String newtext = index_echo.getText().replaceAll("[^\\d]",
+							"");
+					if (newtext.length() == 0) {
+						act = 0;
+					} else {
+						act = Integer.parseInt(newtext);
+					}
+				}
+				if (act > echoNumbers) {
+					act = echoNumbers;
+				} else if (act < 1 && volume != null) {
+					act = 1;
+				} else {
+					return;
+				}
+				index_echo.setText(act + "");
 			}
-		}
-		if (act > echoNumbers) {
-			act = echoNumbers;
-		} else if (act < 1 && volume != null) {
-			act = 1;
-		} else {
-			return;
-		}
-		index_echo.setText(act + "");
+		};
+
+		SwingUtilities.invokeLater(handlechange);
 	}
 
 	public int getActualSlice() {
@@ -799,22 +808,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			JButton b = (JButton) e.getSource();
 			String name = b.getText();
 			if (name.contains("arrow")) {
-//				if (arrow_up_slice.getModel().isPressed()) {
-//					index_slice.setText("" + (getActualSlice() + 1));
-//				} else if (arrow_down_slice.getModel().isPressed()) {
-//					index_slice.setText("" + (getActualSlice() - 1));
-//				} else if (arrow_up_echo.getModel().isPressed()) {
-//					index_echo.setText("" + (getActualEcho() + 1));
-//				} else if (arrow_down_echo.getModel().isPressed()) {
-//					index_echo.setText("" + (getActualEcho() - 1));
-//				}
-//				if (name.contains("slice")) {
-//					checkSlice();
-//				} else {
-//					checkEcho();
-//				}
-//				displayImage();
-				
 				whilePressed();
 			}
 		} else if (e.getSource() == alsolog) {
@@ -822,10 +815,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		}
 	}
 
-	public void whilePressed(){
-    	boolean slice = true;
-    	boolean pressed = false;
-    	if (arrow_up_slice.getModel().isPressed()) {
+	public void whilePressed() {
+		boolean slice = true;
+		boolean pressed = true;
+		if (arrow_up_slice.getModel().isPressed()) {
 			index_slice.setText("" + (getActualSlice() + 1));
 		} else if (arrow_down_slice.getModel().isPressed()) {
 			index_slice.setText("" + (getActualSlice() - 1));
@@ -835,31 +828,26 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		} else if (arrow_down_echo.getModel().isPressed()) {
 			slice = false;
 			index_echo.setText("" + (getActualEcho() - 1));
+		} else {
+			pressed = false;
 		}
+
 		if (slice) {
 			checkSlice();
 		} else {
 			checkEcho();
 		}
-		
-//		Runnable stillpressed = new Runnable() {
-//		    public void run() {
-//				whilePressed();
-//		    }
-//		}; 
-//		SwingUtilities.invokeLater(stillpressed);
-		new java.util.Timer().schedule( 
-		        new java.util.TimerTask() {
-		            @Override
-		            public void run() {
-		                whilePressed();
-		            }
-		        }, 
-		        100
-		);
-		displayImage();
+
+		if (pressed) {
+			new java.util.Timer().schedule(new java.util.TimerTask() {
+				public void run() {
+					whilePressed();
+				}
+			}, 100);
+			displayImage();
+		}
 	}
-	
+
 	/**
 	 * This method is used by the GUI to find easily out, which Tab the user is
 	 * using right now.
@@ -915,100 +903,67 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				continue;
 			}
 
-			/*if (!this.index_slice.getText().equals("")) {
-				// index to high / index is not a Number
-				try {
-					actual_slice = Integer.parseInt(this.index_slice.getText());
-					if (actual_slice > perEcho) {
-						actual_slice = perEcho;
-						index_slice.setText(perEcho + "");
-					}
-				} catch (NumberFormatException e) {
-					// Not a number -> i dont accept the new text
-					this.index_slice.setText(lasttime_slice + "");
-					continue;
-				}
-				// something wanna change the slice over buttons/arrows?
-				if (this.change_slice != 0) {
-					// We wont accept a negativ slice
-					if (!((actual_slice + this.change_slice) <= 0)) {
-						// the next slice
-						int next = actual_slice + this.change_slice;
-						// perEcho is max for next
-						if (next <= perEcho) {
-							this.index_slice.setText("" + next);
-						}
-						// max 20 changes per second
-						sleep(50);
-					}
-					// one arrow still getting pressed?
-					if (!(arrow_up_slice.getModel().isPressed() || arrow_down_slice
-							.getModel().isPressed())
-							| (change_slice < 0 && index_slice.getText()
-									.equals("1"))) {
-						this.change_slice = 0;
-					}
-				}
-			}*/
+			/*
+			 * if (!this.index_slice.getText().equals("")) { // index to high /
+			 * index is not a Number try { actual_slice =
+			 * Integer.parseInt(this.index_slice.getText()); if (actual_slice >
+			 * perEcho) { actual_slice = perEcho; index_slice.setText(perEcho +
+			 * ""); } } catch (NumberFormatException e) { // Not a number -> i
+			 * dont accept the new text this.index_slice.setText(lasttime_slice
+			 * + ""); continue; } // something wanna change the slice over
+			 * buttons/arrows? if (this.change_slice != 0) { // We wont accept a
+			 * negativ slice if (!((actual_slice + this.change_slice) <= 0)) {
+			 * // the next slice int next = actual_slice + this.change_slice; //
+			 * perEcho is max for next if (next <= perEcho) {
+			 * this.index_slice.setText("" + next); } // max 20 changes per
+			 * second sleep(50); } // one arrow still getting pressed? if
+			 * (!(arrow_up_slice.getModel().isPressed() || arrow_down_slice
+			 * .getModel().isPressed()) | (change_slice < 0 &&
+			 * index_slice.getText() .equals("1"))) { this.change_slice = 0; } }
+			 * }
+			 */
 
-			/*if (!this.index_echo.getText().equals("")) {
-				// index to high / index is not a Number
-				try {
-					actual_echo = Integer.parseInt(this.index_echo.getText());
-					if (actual_echo > echoNumbers) {
-						actual_echo = echoNumbers;
-						index_echo.setText(echoNumbers + "");
-					}
-				} catch (NumberFormatException e) {
-					// Not a number -> i dont accept the new text
-					this.index_echo.setText(lasttime_echo + "");
-					continue;
-				}
-				// something wanna change the echo over buttons/arrows?
-				if (this.change_echo != 0) {
-					// We wont accept a negativ echo
-					if (!((actual_echo + this.change_echo) <= 0)) {
-						// the next echo
-						int next = actual_echo + this.change_echo;
-						// echoNumbers is max for next
-						if (next <= echoNumbers) {
-							this.index_echo.setText("" + next);
-						}
-						// max 20 changes per second
-						sleep(50);
-					}
-					// one arrow still getting pressed?
-					if (!(arrow_up_echo.getModel().isPressed() || arrow_down_echo
-							.getModel().isPressed())
-							| (change_echo < 0 && index_echo.getText().equals(
-									"1"))) {
-						this.change_echo = 0;
-					}
-				}
-			}*/
+			/*
+			 * if (!this.index_echo.getText().equals("")) { // index to high /
+			 * index is not a Number try { actual_echo =
+			 * Integer.parseInt(this.index_echo.getText()); if (actual_echo >
+			 * echoNumbers) { actual_echo = echoNumbers;
+			 * index_echo.setText(echoNumbers + ""); } } catch
+			 * (NumberFormatException e) { // Not a number -> i dont accept the
+			 * new text this.index_echo.setText(lasttime_echo + ""); continue; }
+			 * // something wanna change the echo over buttons/arrows? if
+			 * (this.change_echo != 0) { // We wont accept a negativ echo if
+			 * (!((actual_echo + this.change_echo) <= 0)) { // the next echo int
+			 * next = actual_echo + this.change_echo; // echoNumbers is max for
+			 * next if (next <= echoNumbers) { this.index_echo.setText("" +
+			 * next); } // max 20 changes per second sleep(50); } // one arrow
+			 * still getting pressed? if (!(arrow_up_echo.getModel().isPressed()
+			 * || arrow_down_echo .getModel().isPressed()) | (change_echo < 0 &&
+			 * index_echo.getText().equals( "1"))) { this.change_echo = 0; } } }
+			 */
 
-//			// do we have a text in the indexes?
-//			if ((!this.index_slice.getText().equals(""))
-//					&& (!this.index_echo.getText().equals(""))) {
-//				try {
-//					// reacting to the changing index
-//					if (!lasttime_slice.equals(this.index_slice.getText())
-//							|| !lasttime_echo.equals(this.index_echo.getText())) {
-//						if (!(actual_slice > perEcho)
-//								&& !(actual_echo > echoNumbers)) {
-//							lasttime_echo = this.index_echo.getText();
-//							lasttime_slice = this.index_slice.getText();
-//							this.displayAttributes();
-//							this.displayImage();
-//							this.repaint();
-//
-//						}
-//					}
-//				} catch (NumberFormatException | NullPointerException e) {
-//
-//				}
-//			}
-			
+			// // do we have a text in the indexes?
+			// if ((!this.index_slice.getText().equals(""))
+			// && (!this.index_echo.getText().equals(""))) {
+			// try {
+			// // reacting to the changing index
+			// if (!lasttime_slice.equals(this.index_slice.getText())
+			// || !lasttime_echo.equals(this.index_echo.getText())) {
+			// if (!(actual_slice > perEcho)
+			// && !(actual_echo > echoNumbers)) {
+			// lasttime_echo = this.index_echo.getText();
+			// lasttime_slice = this.index_slice.getText();
+			// this.displayAttributes();
+			// this.displayImage();
+			// this.repaint();
+			//
+			// }
+			// }
+			// } catch (NumberFormatException | NullPointerException e) {
+			//
+			// }
+			// }
+
 			// is there a filter?
 			if (!this.filter.getText().equals("")) {
 				// filter got changed?
@@ -1034,7 +989,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	private void displayImage() {
-		if (volume==null){
+		if (volume == null || actualSliceIndex()<1 || actualSliceIndex()>=volume.size()) {
 			return;
 		}
 		
@@ -1063,29 +1018,35 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			JTextField index = (JTextField) obj;
 			if (index.equals(index_slice) || index.equals(max_slice)
 					|| index.getText().equals("Slice:")) {
-				change_slice += change;
+				index_slice.setText(""+(Integer.parseInt(index_slice.getText())+change));
+				checkSlice();
 			} else {
-				change_echo += change;
+				index_echo.setText(""+(Integer.parseInt(index_echo.getText())+change));
+				checkEcho();
 			}
 		} else if (obj instanceof JLabel) {
 			JLabel img = (JLabel) obj;
 			if (img.equals(imagelabel)) {
 				if (index_echo.hasFocus()) {
-					change_echo += change;
+					index_echo.setText(""+(Integer.parseInt(index_echo.getText())+change));
+					checkEcho();
 				} else {
-					change_slice += change;
+					index_slice.setText(""+(Integer.parseInt(index_slice.getText())+change));
+					checkSlice();
 				}
 			}
 		} else if (obj instanceof JPanel) {
 			JPanel arrow = (JPanel) obj;
-			if (arrow.equals(arrows_slice)) {
-				change_slice += change;
+			if (!arrow.equals(arrows_slice)) {
+				index_echo.setText(""+(Integer.parseInt(index_echo.getText())+change));
+				checkEcho();
 			} else {
-				change_echo += change;
+				index_slice.setText(""+(Integer.parseInt(index_slice.getText())+change));
+				checkSlice();
 			}
 
 		}
-
+		displayImage();
 	}
 
 	public void keyPressed(KeyEvent e) {
