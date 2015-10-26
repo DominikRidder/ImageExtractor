@@ -570,6 +570,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 			index_slice.requestFocus();
 			showROI(false);
+			displayAttributes();
 			displayImage();
 		} catch (RuntimeException ert) {
 			// thrown by new Volume() if it didit worked.
@@ -742,7 +743,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				try{
 					act = Integer.parseInt(index_slice.getText());
 				}catch(NumberFormatException e){
-					String newtext = index_slice.getText().replaceAll("^[0-9]", "");
+					String newtext = index_slice.getText().replaceAll("[^\\d]", "");
 					if (newtext.length() == 0){
 						act = 0;
 					}else{
@@ -768,7 +769,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		try{
 			act = Integer.parseInt(index_echo.getText());
 		}catch(NumberFormatException e){
-			String newtext = index_echo.getText().replaceAll("^[0-9]", "");
+			String newtext = index_echo.getText().replaceAll("[^\\d]", "");
 			if (newtext.length() == 0){
 				act = 0;
 			}else{
@@ -798,34 +799,67 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			JButton b = (JButton) e.getSource();
 			String name = b.getText();
 			if (name.contains("arrow")) {
-				if (arrow_up_slice.getModel().isPressed()) {
-					index_slice.setText("" + (getActualSlice() + 1));
-				} else if (arrow_down_slice.getModel().isPressed()) {
-					index_slice.setText("" + (getActualSlice() - 1));
-				} else if (arrow_up_echo.getModel().isPressed()) {
-					index_echo.setText("" + (getActualEcho() + 1));
-				} else if (arrow_down_echo.getModel().isPressed()) {
-					index_echo.setText("" + (getActualEcho() - 1));
-				}
-				if (name.contains("slice")) {
-					checkSlice();
-				} else {
-					checkEcho();
-				}
-				displayImage();
-			}
-		} else if (e.getSource().equals(index_slice)) {
-			int slice = Integer.parseInt(index_slice.getText());
-			int next = slice <= 0 ? 1 : slice;
-			next = next > perEcho ? perEcho : next;
-			if (next != slice) {
-				index_slice.setText("" + next);
+//				if (arrow_up_slice.getModel().isPressed()) {
+//					index_slice.setText("" + (getActualSlice() + 1));
+//				} else if (arrow_down_slice.getModel().isPressed()) {
+//					index_slice.setText("" + (getActualSlice() - 1));
+//				} else if (arrow_up_echo.getModel().isPressed()) {
+//					index_echo.setText("" + (getActualEcho() + 1));
+//				} else if (arrow_down_echo.getModel().isPressed()) {
+//					index_echo.setText("" + (getActualEcho() - 1));
+//				}
+//				if (name.contains("slice")) {
+//					checkSlice();
+//				} else {
+//					checkEcho();
+//				}
+//				displayImage();
+				
+				whilePressed();
 			}
 		} else if (e.getSource() == alsolog) {
 			showROI(true);
 		}
 	}
 
+	public void whilePressed(){
+    	boolean slice = true;
+    	boolean pressed = false;
+    	if (arrow_up_slice.getModel().isPressed()) {
+			index_slice.setText("" + (getActualSlice() + 1));
+		} else if (arrow_down_slice.getModel().isPressed()) {
+			index_slice.setText("" + (getActualSlice() - 1));
+		} else if (arrow_up_echo.getModel().isPressed()) {
+			slice = false;
+			index_echo.setText("" + (getActualEcho() + 1));
+		} else if (arrow_down_echo.getModel().isPressed()) {
+			slice = false;
+			index_echo.setText("" + (getActualEcho() - 1));
+		}
+		if (slice) {
+			checkSlice();
+		} else {
+			checkEcho();
+		}
+		
+//		Runnable stillpressed = new Runnable() {
+//		    public void run() {
+//				whilePressed();
+//		    }
+//		}; 
+//		SwingUtilities.invokeLater(stillpressed);
+		new java.util.Timer().schedule( 
+		        new java.util.TimerTask() {
+		            @Override
+		            public void run() {
+		                whilePressed();
+		            }
+		        }, 
+		        100
+		);
+		displayImage();
+	}
+	
 	/**
 	 * This method is used by the GUI to find easily out, which Tab the user is
 	 * using right now.
@@ -1012,6 +1046,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			relativroi.draw(image.getGraphics());
 			showROI(true);
 		}
+		repaint();
 	}
 
 	private void drawIntoImage(BufferedImage target, BufferedImage source) {
@@ -1065,6 +1100,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		default:
 			return;
 		}
+
 		if (index_echo.hasFocus()) {
 			change_echo += change;
 		} else {
