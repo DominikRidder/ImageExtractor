@@ -19,7 +19,7 @@ public class ImageExtractorConfig {
 					continue;
 				}
 				if (line.startsWith("External")) {
-					customExternal = line.split("=")[1];//.replace("\"", "");
+					customExternal = line.split("=",2)[1];//.replace("\"", "");
 				} else if (line.replace("\n", "").replace(" ", "").length() == 0){
 					continue;
 				}else {

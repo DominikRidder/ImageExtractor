@@ -2,6 +2,7 @@ package gui.volumetab;
 
 import gui.GUI;
 import gui.MyTab;
+import ij.gui.OvalRoi;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
 import imagehandling.Image;
@@ -22,6 +23,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -279,7 +281,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		filter.addCaretListener(this);
 		GUI.setfinalSize(filter, new Dimension(500, 100));
 
-		String[] shapes = { "Point", "Sphere" };
+		String[] shapes = { "Point", "Circle" };
 		shape = new JComboBox<String>(shapes);
 		GUI.setfinalSize(shape, new Dimension(70, 30));
 
@@ -293,11 +295,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		imagelabel.addMouseWheelListener(this);
 		imagelabel.addKeyListener(this);
 		imagelabel.addMouseListener(this);
-
-		JLabel imagewithOptions = new JLabel();
-		imagewithOptions.add(shape);
-		imagewithOptions.add(imagelabel);
-		GUI.setfinalSize(imagewithOptions, new Dimension(443, 443));
 
 		// initialize the Buttons
 		open_imagej = new JButton("open in External");
@@ -504,17 +501,18 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		logtext.setBorder(null);
 		GUI.setfinalSize(logtext, new Dimension(200, 100));
 
-		// Calc zero echo
-		JButton zero_echo = new JButton("calc Zero Echo");
-		zero_echo.addActionListener(this);
-		GUI.setfinalSize(zero_echo, new Dimension(200, 50));
+//		// Calc zero echo
+//		JButton zero_echo = new JButton("calc Zero Echo");
+//		zero_echo.addActionListener(this);
+//		GUI.setfinalSize(zero_echo, new Dimension(200, 50));
 
 		// log Checkbox + text
 		JLabel loglabel = new JLabel();
 		loglabel.setLayout(new BoxLayout(loglabel, BoxLayout.LINE_AXIS));
 		loglabel.add(alsolog);
 		loglabel.add(logtext);
-		loglabel.add(zero_echo);
+		loglabel.add(shape);
+//		loglabel.add(zero_echo);
 		GUI.setfinalSize(loglabel, new Dimension(300, 100));
 
 		// Putting the roi Panel together
@@ -533,8 +531,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		toppanel.setLayout(new BoxLayout(toppanel, BoxLayout.LINE_AXIS));
 		GUI.setfinalSize(toppanel, new Dimension(1100, 450));
 		toppanel.add(leftSidePanel);
-//		toppanel.add(imagelabel);
-		 toppanel.add(imagewithOptions);
+		toppanel.add(imagelabel);
 		// toppanel.add(Box.createRigidArea(new Dimension(35, 0)));
 		// toppanel.add(leg_gray);
 		toppanel.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -753,8 +750,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			String customExternal = parent.imec.getCustomExternal();
 			ProcessBuilder pb;
 
-			String commands[] = customExternal.replace("$FILE", path.getText())
-					.split(" ");
+			String commands[] = splittCommand(customExternal.replace("$FILE", path.getText()));
 			pb = new ProcessBuilder(commands);
 
 			System.out.println("Try to execute:\n");
@@ -769,6 +765,31 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				e1.printStackTrace();
 			}
 		}
+	}
+	
+	public String[] splittCommand(String command){
+		ArrayList<String> commands = new ArrayList<String>();
+		String[] forreturn = new String[0];
+		
+		boolean ignore = false;
+		
+		StringBuilder next = new StringBuilder();
+		for (char c : command.toCharArray()){
+			if (c == '\''){
+				ignore = !ignore;
+			}else if (c == ' ' && !ignore){
+				commands.add(next.toString());
+				next.delete(0, next.length());
+			}else{
+				next.append(c);
+			}
+		}
+		
+		if (next.length() != 0){
+			commands.add(next.toString());
+		}
+		
+		return commands.toArray(forreturn);
 	}
 
 	private void checkSlice() {
@@ -793,9 +814,13 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				}
 				CaretListener[] listener = index_slice.getCaretListeners();
 				if (listener.length != 0) {
-					index_slice.removeCaretListener(listener[0]);
+					for (CaretListener l: listener){
+						index_slice.removeCaretListener(l);
+					}
 					index_slice.setText(act + "");
-					index_slice.addCaretListener(listener[0]);
+					for (CaretListener l: listener){
+						index_slice.addCaretListener(l);
+					}
 				}
 			}
 		};
@@ -825,9 +850,13 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				}
 				CaretListener[] listener = index_echo.getCaretListeners();
 				if (listener.length != 0) {
-					index_echo.removeCaretListener(listener[0]);
+					for (CaretListener l: listener){
+						index_echo.removeCaretListener(l);
+					}
 					index_echo.setText(act + "");
-					index_echo.addCaretListener(listener[0]);
+					for (CaretListener l: listener){
+						index_echo.addCaretListener(l);
+					}
 				}
 			}
 		};
@@ -1065,7 +1094,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				* orig.getWidth(), ((double) x) / this.image.getHeight()
 				* orig.getHeight());
 		}else{
-			
+			relativroi = new OvalRoi(x, y, 10, 10);
+			realroi = new OvalRoi(((double) y) / this.image.getWidth()
+					* orig.getWidth(), ((double) x) / this.image.getHeight()
+					* orig.getHeight(),10,10);
 		}
 		volume.setRoi(realroi);
 	}

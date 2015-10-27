@@ -129,7 +129,6 @@ public class VolumeFitter{
 		
 		ArrayList<BufferedImage>buffimg = new ArrayList<BufferedImage>(echo_numbers);
 		
-		
 		for (int e=0; e<echo_numbers; e++){
 			buffimg.add(data.get(slice+perEcho*e).getBufferedImage());
 		}
