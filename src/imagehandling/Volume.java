@@ -3,15 +3,19 @@ package imagehandling;
 import gui.volumetab.VolumeTab;
 import ij.ImagePlus;
 import ij.gui.Roi;
+import ij.plugin.Nifti_Reader;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Vector;
 
 /**
- * The Volume class is a class, to work with a single volume. A Volume contains multiple images. 
+ * The Volume class is a class, to work with a single volume. A Volume contains
+ * multiple images.
+ * 
  * @author dridder_local
  *
  */
@@ -52,7 +56,7 @@ public class Volume {
 	 * and what the getAttributes method should return.
 	 */
 	private TextOptions topt;
-
+	
 	/**
 	 * This default construktur should not be used. If you use this method, it
 	 * gonna print some information into the console and call System.exit(1).
@@ -88,7 +92,7 @@ public class Volume {
 		// adding the Images
 		for (File l : list) {
 			try {
-				if (Image.isDicom(l.toPath())){
+				if (Image.isDicom(l.toPath())) {
 					slices.add(new Image(l.getAbsolutePath()));
 				}
 			} catch (RuntimeException e) {
@@ -115,19 +119,29 @@ public class Volume {
 
 		// getting the files inhabited in the path
 		File file = new File(path);
-		File[] list = file.listFiles();
+		if (file.isDirectory()) {
+			File[] list = file.listFiles();
 
-		if (list == null) {
-			throw new RuntimeException(
-					"The given Volume path seems to be not correct. Please check the path.");
-		}
-
-		// adding the Images
-		for (File l : list) {
-			try {
-				slices.add(new Image(l.getAbsolutePath()));
-			} catch (RuntimeException e) {
+			if (list == null) {
+				throw new RuntimeException(
+						"The given Volume path seems to be not correct. Please check the path.");
 			}
+
+			// adding the Images
+			for (File l : list) {
+				try {
+					slices.add(new Image(l.getAbsolutePath()));
+				} catch (RuntimeException e) {
+				}
+			}
+		}else if (file.getName().endsWith(".nii")){
+			Nifti_Reader nr = new Nifti_Reader();
+//			nr.run(file.getAbsolutePath());
+			ImagePlus ip = nr.load(file.getAbsolutePath().replace(file.getName(), ""), file.getName());
+			
+			System.out.println(ip.getFileInfo());
+			slices.add(new Image(path, "nii"));
+			slices.get(0).setData(nr);
 		}
 
 		if (size() == 0) {
@@ -321,11 +335,13 @@ public class Volume {
 					.println("The given element is 'null'. Cant search without a String.");
 			return "<<no key given>>";
 		}
-		if (slice >= this.size()){
-			System.out.println("The given int value is to big. Returning instead of this, the Attribute of the last slice.");
-			slice = this.size()-1;
-		}else if(slice<0){
-			System.out.println("A negativ slice value dont make sense. Returning instead of this, the Attribute of slice 0.");
+		if (slice >= this.size()) {
+			System.out
+					.println("The given int value is to big. Returning instead of this, the Attribute of the last slice.");
+			slice = this.size() - 1;
+		} else if (slice < 0) {
+			System.out
+					.println("A negativ slice value dont make sense. Returning instead of this, the Attribute of slice 0.");
 			slice = 0;
 		}
 		return slices.get(slice).getAttribute(key, topt);
@@ -492,7 +508,7 @@ public class Volume {
 		} else if (i < 0) {
 			System.out
 					.println("You can not get the Image of a negative Index. The Index should be betweeen 0-"
-							+ (size-1)
+							+ (size - 1)
 							+ " in this case.\nReturning instead the first slice (0).");
 			return slices.get(0);
 		}
@@ -503,24 +519,24 @@ public class Volume {
 		return topt;
 	}
 
-	public void setRoi(Roi roi){
-		for (Image img : slices){
+	public void setRoi(Roi roi) {
+		for (Image img : slices) {
 			img.setROI(roi);
 		}
 	}
-	
-	public void setRoi(int roitype, int x, int y){
-		for (Image img : slices){
+
+	public void setRoi(int roitype, int x, int y) {
+		for (Image img : slices) {
 			img.setROI(roitype, x, y);
 		}
 	}
-	
-	public void setRoi(int roitype, int x, int y, int width, int height){
-		for (Image img : slices){
+
+	public void setRoi(int roitype, int x, int y, int width, int height) {
+		for (Image img : slices) {
 			img.setROI(roitype, x, y, width, height);
 		}
 	}
-	
+
 	/**
 	 * Setting the TextOptions to the Default setting.
 	 */
@@ -545,39 +561,39 @@ public class Volume {
 	public int size() {
 		return slices.size();
 	}
-	
-//	/**
-//	 * Returning the decay of Signal belonging to different Echoes.
-//	 */
-//	public ArrayList<BufferedImage> getDecayImages(){
-//		int size = size();
-//		ArrayList<BufferedImage> rightnow = getData();
-//		KeyMap[] info = {KeyMap.KEY_ECHO_NUMBERS_S};
-//		String[] att = getSlice(size-1).getAttributesDicom(info);
-//		int echoNumbers = Integer.parseInt(att[0]);
-//		int slices = size/echoNumbers;
-//		int width = rightnow.get(0).getWidth();
-//		int height = rightnow.get(0).getHeight();
-//		int rgbtype = rightnow.get(0).getType();
-//		
-//		ArrayList<BufferedImage> ret = new ArrayList<>(slices);
-//		int values[][][] = new int[slices][echoNumbers][width*height];
-//		int sum = 0;
-//		
-//		for (int s=0; s<slices; s++){
-//			BufferedImage next = new BufferedImage(width,height,rgbtype);
-//			for (int e=0; e<echoNumbers; e++){
-//				BufferedImage val = rightnow.get(s+e*slices);
-//				for (int x=0; x<height; x++){
-//					for (int y=0; y<width; y++){
-//						values[s][e][y+x*width] = val.getRGB(y, x);
-//					}
-//				}
-//			}
-//		}
-//		System.out.println("done");
-//		System.out.println(slices*echoNumbers*height*width+" Pixels");
-//		
-//		return null;
-//	}
+
+	// /**
+	// * Returning the decay of Signal belonging to different Echoes.
+	// */
+	// public ArrayList<BufferedImage> getDecayImages(){
+	// int size = size();
+	// ArrayList<BufferedImage> rightnow = getData();
+	// KeyMap[] info = {KeyMap.KEY_ECHO_NUMBERS_S};
+	// String[] att = getSlice(size-1).getAttributesDicom(info);
+	// int echoNumbers = Integer.parseInt(att[0]);
+	// int slices = size/echoNumbers;
+	// int width = rightnow.get(0).getWidth();
+	// int height = rightnow.get(0).getHeight();
+	// int rgbtype = rightnow.get(0).getType();
+	//
+	// ArrayList<BufferedImage> ret = new ArrayList<>(slices);
+	// int values[][][] = new int[slices][echoNumbers][width*height];
+	// int sum = 0;
+	//
+	// for (int s=0; s<slices; s++){
+	// BufferedImage next = new BufferedImage(width,height,rgbtype);
+	// for (int e=0; e<echoNumbers; e++){
+	// BufferedImage val = rightnow.get(s+e*slices);
+	// for (int x=0; x<height; x++){
+	// for (int y=0; y<width; y++){
+	// values[s][e][y+x*width] = val.getRGB(y, x);
+	// }
+	// }
+	// }
+	// }
+	// System.out.println("done");
+	// System.out.println(slices*echoNumbers*height*width+" Pixels");
+	//
+	// return null;
+	// }
 }

@@ -3,8 +3,12 @@ package tools;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.WindowManager;
+import ij.io.FileInfo;
 import ij.plugin.DICOM;
+import ij.plugin.Nifti_Reader;
 import ij.plugin.Nifti_Writer;
+import ij.process.ImageProcessor;
 import ij.util.DicomTools;
 import imagehandling.Image;
 import imagehandling.KeyMap;
@@ -442,6 +446,8 @@ public class SortAlgorithm {
 						}
 					}
 				});
+				ImagePlus ip = new ImagePlus();
+
 				for (String str : dicomtonifti.get(key)) {
 					DICOM dcm = new DICOM();
 					dcm.open(str.split("#")[1]);
@@ -450,14 +456,21 @@ public class SortAlgorithm {
 					}
 					is.addSlice(dcm.getProcessor());
 				}
-
-				ImagePlus ip = new ImagePlus();
 				ip.setStack(is);
 				if (echon != 1) {
 					ip.setDimensions(1, is.getSize() / echon, echon);
 					ip.setOpenAsHyperStack(true);
 				}
-				if (writer.save(ip, key, "data.nii")) {
+				WindowManager.setTempCurrentImage(ip);
+
+				// FileInfo fi = ip.getFileInfo();
+				// fi.pixelHeight = 2;
+				// fi.pixelWidth = 2;
+				// fi.pixelDepth = 2;
+				// ip.setFileInfo(fi);
+				File test = new File(key);
+				if (writer.save(ip, test.getParent(),
+						key.replace(test.getParent(), "") + ".nii")) {
 					numberofnii++;
 				}
 			}
@@ -481,8 +494,8 @@ public class SortAlgorithm {
 					/ 1000 + " seconds! I " + operation + " " + transfered
 					+ " of them to the Output directory.");
 		} else {
-			out.println("I found " + found + " Dicoms in " + start
-					/ 1000 + " seconds! I " + operation + " " + numberofnii
+			out.println("I found " + found + " Dicoms in " + start / 1000
+					+ " seconds! I " + operation + " " + numberofnii
 					+ " niftis in the Output directory.");
 		}
 		return true;
@@ -983,7 +996,9 @@ public class SortAlgorithm {
 		// check next protocol and creating it, if its not existant
 		path.append("/" + toProtocolDigits(seriesNumber + "") + "_"
 				+ protocolName);
-		existOrCreate(path);
+		if (!createNiftis) {
+			existOrCreate(path);
+		}
 
 		// next the dicom name
 		String name;

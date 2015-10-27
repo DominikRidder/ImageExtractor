@@ -3,6 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="libs/ij.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/PolyFitter"/>
+	<classpathentry kind="lib" path="libs/PolyFitter.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

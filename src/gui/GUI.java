@@ -10,6 +10,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -36,7 +38,7 @@ import tools.ImageExtractorConfig;
  *
  */
 public class GUI extends JFrame implements ActionListener, ChangeListener,
-		Runnable {
+		Runnable, WindowListener {
 
 	/**
 	 * Main method, to start the GUI.
@@ -95,6 +97,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 */
 	public GUI(boolean forceProgrammEndIfThereIsNoWindow) {
 		imec = new ImageExtractorConfig();
+		this.addWindowListener(this);
 		
 		filechooser = new ContextMenuFileChooser();
 		filechooser.setCurrentDirectory(new java.io.File("$HOME"));
@@ -142,7 +145,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		setfinalSize(this, new Dimension(1100, 550));
 		setResizable(false);
 		setVisible(true);
-
+		
 		new Thread(this).start();
 	}
 
@@ -151,12 +154,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 * Each ImageExtractor Window has his own Thread this way.
 	 */
 	public void run() {
-		windows++;
 		lifeupdate();
-		--windows;
-		if (!this.isAlive() && forceEnd) {
-			System.exit(1);
-		}
 	}
 
 	public boolean isAlive() {
@@ -255,15 +253,16 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		while (this.isVisible()) {
 			if (tabber.getTabCount() == 0) {
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(500);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 				continue;
 			}
-
+			if (tabber.getComponentAt(tabber.getSelectedIndex()) instanceof SorterTab){
 			((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
 					.lifeUpdate();
+			}
 		}
 	}
 
@@ -334,5 +333,46 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		}else{
 			return null;
 		}
+	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {
+		windows++;
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		windows--;
+		if (!this.isAlive() && forceEnd) {
+			System.exit(1);
+		}
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowActivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }

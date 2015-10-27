@@ -53,6 +53,10 @@ public class Image implements Comparable<Image> {
 	 */
 	private ImagePlus data;
 
+	public void setData(ImagePlus data){
+		this.data = data;
+	}
+	
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
 	 * of the image dont end with a known ending, the images handeld as a IMA
@@ -323,6 +327,8 @@ public class Image implements Comparable<Image> {
 		case "IMA":
 			he = new DicomHeaderExtractor();
 			break;
+		case "nii":
+			return data.getInfoProperty().toString();
 		default:
 			throw new RuntimeException("The Image Type can't be handeld.");
 		}
