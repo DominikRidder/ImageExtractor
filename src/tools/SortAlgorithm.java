@@ -453,6 +453,7 @@ public class SortAlgorithm {
 					dcm.open(str.split("#")[1]);
 					if (is == null) {
 						is = new ImageStack(dcm.getWidth(), dcm.getHeight());
+						ip.setCalibration(dcm.getCalibration());
 					}
 					is.addSlice(dcm.getProcessor());
 				}
@@ -463,14 +464,9 @@ public class SortAlgorithm {
 				}
 				WindowManager.setTempCurrentImage(ip);
 
-				// FileInfo fi = ip.getFileInfo();
-				// fi.pixelHeight = 2;
-				// fi.pixelWidth = 2;
-				// fi.pixelDepth = 2;
-				// ip.setFileInfo(fi);
 				File test = new File(key);
 				if (writer.save(ip, test.getParent(),
-						key.replace(test.getParent(), "") + ".nii")) {
+						key.substring(test.getParent().length(), key.length()) + ".nii")) {
 					numberofnii++;
 				}
 			}
@@ -896,7 +892,9 @@ public class SortAlgorithm {
 				}
 				for (File protocolfolder : newlist) {
 					String protocolName = protocolfolder.getName();
-
+					if (protocolfolder.listFiles() == null){
+						continue;
+					}
 					try {
 
 						// getting two informations, which are needed to compare

@@ -745,7 +745,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void actionOpenInExternal() {
-		if (volume != null) {
+//		if (volume != null) {
 			parent.imec = new ImageExtractorConfig();
 			String customExternal = parent.imec.getCustomExternal();
 			ProcessBuilder pb;
@@ -764,7 +764,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
-		}
+//		}
 	}
 	
 	public String[] splittCommand(String command){

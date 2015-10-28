@@ -161,6 +161,10 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		return windows != 0;
 	}
 
+	public void setCurrentTab(int i){
+		this.tabber.setSelectedIndex(i);
+	}
+	
 	/**
 	 * This Method is called by the JMenuBar and the Buttons inside of the
 	 * VolumeTab.
