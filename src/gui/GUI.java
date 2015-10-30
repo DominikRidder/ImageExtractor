@@ -98,7 +98,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	public GUI(boolean forceProgrammEndIfThereIsNoWindow) {
 		imec = new ImageExtractorConfig();
 		this.addWindowListener(this);
-		
+
 		filechooser = new ContextMenuFileChooser();
 		filechooser.setCurrentDirectory(new java.io.File("$HOME"));
 		filechooser.setDialogTitle("Search Directory");

@@ -1,6 +1,5 @@
 package tools;
 
-import fitterAlgorithm.LRDecomposition;
 import fitterAlgorithm.LowestSquare;
 import fitterAlgorithm.PolynomialLowestSquare;
 import functions.ExponentialFunction;
@@ -9,15 +8,14 @@ import ij.gui.Roi;
 import imagehandling.KeyMap;
 import imagehandling.Volume;
 
-import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
-import javax.swing.JComponent;
 import javax.swing.JFrame;
 
-import polyfitter.Point;
 import polyfitter.Point1D;
 import polyfitter.Polyfitter;
 
@@ -122,30 +120,43 @@ public class VolumeFitter{
 		}
 		fitter.removePoints();
 		
-		// Just the window, to display the fit
-		JFrame frame = new JFrame();
-		frame.getContentPane().setLayout(
-				new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
-		
 		ArrayList<BufferedImage>buffimg = new ArrayList<BufferedImage>(echo_numbers);
 		
 		for (int e=0; e<echo_numbers; e++){
 			buffimg.add(data.get(slice+perEcho*e).getBufferedImage());
 		}
 		
-		int iArray[] = new int[4];
-		int itest[] = new int[100];
+//		int igetValue[] = new int[4];
 		for (int i=0; i<buffimg.size(); i++){
 			BufferedImage img = buffimg.get(i);
-			iArray = img.getRaster().getPixel((int) roi.getBounds().getX(), (int) roi.getBounds().getY(), itest);
+			int val = getMin(img,roi);
+//			int val = img.getRaster().getPixel((int)roi.getXBase(), (int)roi.getXBase(), igetValue)[0];
 			if (logScale){
-				fitter.addPoint(i+1, Math.log10(iArray[0]));
+				fitter.addPoint(i+1, Math.log10(val));
 			}else{
-				fitter.addPoint(i+1, iArray[0]);
+				fitter.addPoint(i+1, val);
 			}
 		}
 		
 		return fitter.plotVolume(logScale);
+	}
+	
+	public int getMin(BufferedImage img, Roi roi){
+		int igetValue[] = new int[4];
+		int minvalue = 500;
+		WritableRaster r = img.getRaster();
+		Rectangle d = roi.getBounds();
+		for (int x=d.x; x<d.x+d.width; x++){
+			for (int y=d.y; y<d.y+d.height; y++){
+				if (roi.contains(x, y)){
+					int val = r.getPixel(x, y, igetValue)[0];
+					if (val < minvalue){
+						minvalue = val;
+					}
+				}
+			}
+		}
+		return minvalue;
 	}
 
 }

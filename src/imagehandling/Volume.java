@@ -1,10 +1,13 @@
 package imagehandling;
 
+import gui.volumetab.Roi3D;
 import gui.volumetab.VolumeTab;
 import ij.ImagePlus;
+import ij.gui.OvalRoi;
 import ij.gui.Roi;
 import ij.plugin.Nifti_Reader;
 
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -56,7 +59,7 @@ public class Volume {
 	 * and what the getAttributes method should return.
 	 */
 	private TextOptions topt;
-	
+
 	/**
 	 * This default construktur should not be used. If you use this method, it
 	 * gonna print some information into the console and call System.exit(1).
@@ -81,27 +84,42 @@ public class Volume {
 
 		// getting the files inhabited in the path
 		File file = new File(path);
-		File[] list = file.listFiles();
+		if (file.isDirectory()) {
+			File[] list = file.listFiles();
 
-		if (list == null) {
-			System.out
-					.println("The given Volume path seems to be not correct. Please check the path.");
-			System.exit(1);
-		}
+			if (list == null) {
+				System.out
+						.println("The given Volume path seems to be not correct. Please check the path.");
+				System.exit(1);
+			}
 
-		// adding the Images
-		for (File l : list) {
-			try {
-				if (Image.isDicom(l.toPath())) {
-					slices.add(new Image(l.getAbsolutePath()));
+			// adding the Images
+			for (File l : list) {
+				try {
+					if (Image.isDicom(l.toPath())) {
+						slices.add(new Image(l.getAbsolutePath()));
+					}
+				} catch (RuntimeException e) {
+					// This was not an Image
 				}
-			} catch (RuntimeException e) {
-				// This was not an Image
+			}
+
+			// sort images
+			Collections.sort(slices);
+		} else if (path.endsWith(".nii")) {
+			Nifti_Reader nr = new Nifti_Reader();
+			ImagePlus nifti = nr.load(file.getParent(), file.getName());
+			System.out.println(nifti.getT());
+			for (int i = 0; i < nifti.getImageStackSize(); i++) {
+				Image img = new Image(path, "nii");
+				ImagePlus data = new ImagePlus();
+				nifti.setSlice(i);
+				data.setImage(nifti.getBufferedImage());
+				img.setData(data);
+				slices.add(img);
 			}
 		}
 
-		// sort images
-		Collections.sort(slices);
 	}
 
 	/**
@@ -134,14 +152,18 @@ public class Volume {
 				} catch (RuntimeException e) {
 				}
 			}
-		}else if (file.getName().endsWith(".nii")){
+		} else if (file.getName().endsWith(".nii")) {
 			Nifti_Reader nr = new Nifti_Reader();
-//			nr.run(file.getAbsolutePath());
-			ImagePlus ip = nr.load(file.getAbsolutePath().replace(file.getName(), ""), file.getName());
-			
-			System.out.println(ip.getFileInfo());
-			slices.add(new Image(path, "nii"));
-			slices.get(0).setData(nr);
+			ImagePlus nifti = nr.load(file.getParent(), file.getName());
+			System.out.println(nifti.getNFrames());
+			for (int i = 0; i < nifti.getImageStackSize(); i++) {
+				Image img = new Image(path, "nii");
+				ImagePlus data = new ImagePlus();
+				nifti.setSlice(i);
+				data.setImage(nifti.getBufferedImage());
+				img.setData(data);
+				slices.add(img);
+			}
 		}
 
 		if (size() == 0) {
@@ -520,8 +542,23 @@ public class Volume {
 	}
 
 	public void setRoi(Roi roi) {
-		for (Image img : slices) {
-			img.setROI(roi);
+		if (roi instanceof Roi3D) {
+			int thickness = Integer.parseInt(slices.get(0).getAttribute(KeyMap.KEY_SLICE_THICKNESS));
+			Rectangle rec = roi.getBounds();
+			Roi3D roi3 = (Roi3D) roi;
+			double radius = roi.getBounds().getWidth()/2;
+			int z = roi3.getZ();
+			for (int i=0; i<size(); i++){
+				if (Math.abs(z-i)*thickness < radius){
+					double newr = Math.sqrt(Math.pow(radius, 2)-Math.pow(Math.abs(z-i)*thickness, 2));
+					OvalRoi next = new OvalRoi(rec.getX(), rec.getY(), newr,newr);
+					slices.get(i).setROI(next);
+				}
+			}
+		} else {
+			for (Image img : slices) {
+				img.setROI(roi);
+			}
 		}
 	}
 
