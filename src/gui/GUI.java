@@ -92,8 +92,9 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 * 
 	 */
 	public ImageExtractorConfig imec;
+	
 	/**
-	 * One and only Constructur.
+	 * One and only Constructor.
 	 */
 	public GUI(boolean forceProgrammEndIfThereIsNoWindow) {
 		imec = new ImageExtractorConfig();
@@ -122,8 +123,6 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		newGuiWindow.addActionListener(this);
 		menu = new JMenu("File");
 		menu.setMnemonic(KeyEvent.VK_N);
-		menu.getAccessibleContext().setAccessibleDescription(
-				"This menu does nothing");
 		menu.add(newGuiWindow);
 		menu.add(newVolumeTab);
 		menu.add(newSortTab);

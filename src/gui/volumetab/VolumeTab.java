@@ -23,6 +23,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 
 import javax.swing.Box;
@@ -50,6 +51,7 @@ import tools.ImageExtractorConfig;
 import tools.VolumeFitter;
 import tools.ZeroEcho;
 
+import com.sun.javafx.geom.Rectangle;
 import com.sun.javafx.geom.transform.SingularMatrixException;
 
 /**
@@ -67,6 +69,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * Default serialVersionUID
 	 */
 	private static final long serialVersionUID = 1L;
+
+	private long lastpressed;
 
 	/**
 	 * Volume, which is to get the header informations and the image.
@@ -344,6 +348,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		index_echo.setEditable(false);
 		index_echo.addMouseWheelListener(this);
 		index_echo.addKeyListener(this);
+		index_echo.addCaretListener(this);
 		GUI.setfinalSize(index_echo, new Dimension(75, 100));
 
 		JTextField slice = new JTextField("Slice:");
@@ -658,7 +663,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 							.getHeader();
 					// The Document, which is used by the output is very
 					// slow
-					outputArea.setText(header);
+					StringReader reader = new StringReader(header);
+					outputArea.read(reader, null);
 				} else {
 					// Simple: line for line - This line contains this
 					// string?
@@ -682,7 +688,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			}
 		} catch (NumberFormatException | NullPointerException e) {
 
+		} catch (IOException e) {
 		}
+
 	}
 
 	public void sleep(int milisec) {
@@ -731,6 +739,17 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			sizepanel.setVisible(false);
 		} else {
 			sizepanel.setVisible(true);
+		}
+
+		if (relativroi != null) {
+			if (relativroi instanceof PointRoi) {
+				setRoiPosition((int) relativroi.getXBase(),
+						(int) relativroi.getYBase());
+			} else {
+				java.awt.Rectangle bounds = relativroi.getBounds();
+				setRoiPosition(bounds.x + bounds.height / 2, bounds.y
+						+ bounds.height / 2);
+			}
 		}
 	}
 
@@ -846,6 +865,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 						index_slice.addCaretListener(l);
 					}
 				}
+				displayImage();
 			}
 		};
 
@@ -882,6 +902,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 						index_echo.addCaretListener(l);
 					}
 				}
+				displayImage();
 			}
 		};
 
@@ -971,9 +992,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				.getBufferedImage());
 
 		if (relativroi != null) {
-			if (relativroi instanceof Roi3D){
-				((Roi3D) relativroi).draw(volume, image, getActualSlice());
-			}else{
+			if (relativroi instanceof Roi3D) {
+				((Roi3D) relativroi).draw(volume, image, getActualSlice() - 1);
+			} else {
 				relativroi.draw(image.getGraphics());
 			}
 			showROI(true);
@@ -998,6 +1019,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void mouseWheelMoved(MouseWheelEvent e) {
+		if (System.currentTimeMillis() - lastpressed > 50) {
 		Object obj = e.getSource();
 		int change = -1 * e.getWheelRotation();
 
@@ -1041,28 +1063,33 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			}
 
 		}
-		displayImage();
+		lastpressed = System.currentTimeMillis();
+		}
 	}
 
 	public void keyPressed(KeyEvent e) {
-		int change = 0;
-		switch (e.getKeyCode()) {
-		case KeyEvent.VK_UP:
-			change = 1;
-			break;
-		case KeyEvent.VK_DOWN:
-			change = -1;
-			break;
-		default:
-			return;
-		}
+		if (System.currentTimeMillis() - lastpressed > 50) {
+			int change = 0;
+			switch (e.getKeyCode()) {
+			case KeyEvent.VK_UP:
+				change = 1;
+				break;
+			case KeyEvent.VK_DOWN:
+				change = -1;
+				break;
+			default:
+				return;
+			}
 
-		// TODO: implement key control
-		// if (index_echo.hasFocus()) {
-		// change_echo += change;
-		// } else {
-		// change_slice += change;
-		// }
+			if (index_echo.hasFocus()) {
+				index_echo.setText(""
+						+ (Integer.parseInt(index_echo.getText()) + change));
+			} else {
+				index_slice.setText(""
+						+ (Integer.parseInt(index_slice.getText()) + change));
+			}
+			lastpressed = System.currentTimeMillis();
+		}
 	}
 
 	public void keyReleased(KeyEvent e) {
@@ -1096,9 +1123,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				}
 			}
 			try {
-				drawIntoImage(roiimage, vf.getPlot(this.volume, this.volume
-						.getSlice(actualSliceIndex()).getRoi(),
-						getActualSlice() - 1, degree, alsolog.isSelected()));
+				drawIntoImage(roiimage, vf.getPlot(this.volume,
+						this.relativroi, getActualSlice() - 1, degree,
+						alsolog.isSelected()));
 				roiPanel.setVisible(true);
 				if (!ownExtended) {
 					parent.setExtendedWindow(true);
@@ -1106,7 +1133,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					GUI.setfinalSize(toppanel, new Dimension(1400, 450));
 					GUI.setfinalSize(parent, new Dimension(1450, 550));
 				}
-			} catch (SingularMatrixException | ArrayIndexOutOfBoundsException e) {
+			} catch (SingularMatrixException | ArrayIndexOutOfBoundsException
+					| NullPointerException e) {
 			}
 		} else {
 			relativroi = null;
@@ -1138,19 +1166,19 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			break;
 		case "Circle":
 			double radius = this.radius.getValue();
-			x -= radius / 2;
-			y -= radius / 2;
+			x -= radius;
+			y -= radius;
 			double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
 			double otherradius = Math.pow(orig.getWidth() / 2, 2)
 					+ Math.pow(orig.getHeight() / 2, 2);
 			double newr = radius * otherradius / thisradius;
-			relativroi = new OvalRoi(x, y, radius, radius);
+			relativroi = new OvalRoi(x, y, radius * 2, radius * 2);
 			realroi = new OvalRoi(((double) x) / this.image.getWidth()
 					* orig.getWidth(), ((double) y) / this.image.getHeight()
-					* orig.getHeight(), newr, newr);
+					* orig.getHeight(), newr * 2, newr * 2);
 			break;
 		case "Sphere":
-			setRoiPosition(x, y, getActualSlice());
+			setRoiPosition(x, y, getActualSlice() - 1);
 			return;
 		}
 
@@ -1170,19 +1198,20 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			return;
 		case "Sphere":
 			double radius = this.radius.getValue();
-			x -= radius / 2;
-			y -= radius / 2;
+			x -= radius;
+			y -= radius;
 			double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
 			double otherradius = Math.pow(orig.getWidth() / 2, 2)
 					+ Math.pow(orig.getHeight() / 2, 2);
 			double newr = radius * otherradius / thisradius;
 			relativroi = new SphereRoi(x, y, z, radius);
-			realroi = new SphereRoi(
-					x / this.image.getWidth() * orig.getWidth(), y
-							/ this.image.getHeight() * orig.getHeight(), z,
-					newr);
+			realroi = new SphereRoi(((double) x) / this.image.getWidth()
+					* orig.getWidth(), ((double) y) / this.image.getHeight()
+					* orig.getHeight(), z, newr);
 			break;
 		}
+		volume.setRoi(realroi);
+		this.displayImage();
 	}
 
 	public void updateROI() {
@@ -1190,7 +1219,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				.getBufferedImage();
 		Roi realroi = null;
 		if (shape.getSelectedItem().equals("Point")) {
-		} else {
+		} else if (shape.getSelectedItem().equals("Circle")) {
 			double x = relativroi.getXBase();
 			double y = relativroi.getYBase();
 			double calrad = relativroi.getBounds().getWidth() / 2;
@@ -1205,6 +1234,22 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			realroi = new OvalRoi(((double) y) / this.image.getWidth()
 					* orig.getWidth(), ((double) x) / this.image.getHeight()
 					* orig.getHeight(), newr, newr);
+		} else if (shape.getSelectedItem().equals("Sphere")) {
+			double x = relativroi.getXBase();
+			double y = relativroi.getYBase();
+			int z = ((Roi3D) relativroi).getZ();
+			double calrad = relativroi.getBounds().getHeight() / 2;
+			double radius = this.radius.getValue();
+			x += calrad - radius;
+			y += calrad - radius;
+			double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
+			double otherradius = Math.pow(orig.getWidth() / 2, 2)
+					+ Math.pow(orig.getHeight() / 2, 2);
+			double newr = radius * otherradius / thisradius;
+			relativroi = new SphereRoi((int) x, (int) y, z, radius);
+			realroi = new SphereRoi(((double) x) / this.image.getWidth()
+					* orig.getWidth(), ((double) y) / this.image.getHeight()
+					* orig.getHeight(), z, newr);
 		}
 		volume.setRoi(realroi);
 		this.displayImage();
@@ -1238,13 +1283,18 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		Object source = e.getSource();
 		if (source == index_slice) {
 			checkSlice();
+			// displayImage();
 		} else if (source == index_echo) {
 			checkEcho();
+			// displayImage();
 		} else if (source == filter) {
 			if (!filter.getText().equals(lastfilter)) {
 				lastfilter = filter.getText();
 				displayAttributes();
 			}
+		}
+		if (!filter.getText().equals("")) {
+			displayAttributes();
 		}
 	}
 

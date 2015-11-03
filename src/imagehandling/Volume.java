@@ -541,23 +541,35 @@ public class Volume {
 		return topt;
 	}
 
-	public void setRoi(Roi roi) {
-		if (roi instanceof Roi3D) {
-			int thickness = Integer.parseInt(slices.get(0).getAttribute(KeyMap.KEY_SLICE_THICKNESS));
-			Rectangle rec = roi.getBounds();
-			Roi3D roi3 = (Roi3D) roi;
-			double radius = roi.getBounds().getWidth()/2;
+	public void setRoi(Roi realroi) {
+		if (realroi instanceof Roi3D) {
+			double thickness = Double.parseDouble(slices.get(0).getAttribute(
+					KeyMap.KEY_SLICE_THICKNESS));
+			int per_echo = size()
+					/ Integer.parseInt(slices.get(size() - 1).getAttribute(
+							KeyMap.KEY_ECHO_NUMBERS_S));
+			Rectangle rec = realroi.getBounds();
+			Roi3D roi3 = (Roi3D) realroi;
+			double radius = realroi.getBounds().getHeight() / 2;
 			int z = roi3.getZ();
-			for (int i=0; i<size(); i++){
-				if (Math.abs(z-i)*thickness < radius){
-					double newr = Math.sqrt(Math.pow(radius, 2)-Math.pow(Math.abs(z-i)*thickness, 2));
-					OvalRoi next = new OvalRoi(rec.getX(), rec.getY(), newr,newr);
-					slices.get(i).setROI(next);
+			for (int i = 0; i < per_echo; i++) {
+				if (Math.abs(z - i) * thickness < radius) {
+					double newr = Math.sqrt(Math.pow(radius, 2)
+							- Math.pow(Math.abs(z - i) * thickness, 2));
+					OvalRoi next = new OvalRoi(rec.getX() + radius - newr,
+							rec.getY() + radius - newr, newr * 2, newr * 2);
+					for (int j = i; j < size(); j += per_echo) {
+						getSlice(j).setROI(next);
+					}
+				} else {
+					for (int j = i; j < size(); j += per_echo) {
+						getSlice(j).setROI(null);
+					}
 				}
 			}
 		} else {
 			for (Image img : slices) {
-				img.setROI(roi);
+				img.setROI(realroi);
 			}
 		}
 	}
@@ -599,6 +611,12 @@ public class Volume {
 		return slices.size();
 	}
 
+	
+	public void loadData(){
+		for (Image img : slices){
+			img.loadData();
+		}
+	}
 	// /**
 	// * Returning the decay of Signal belonging to different Echoes.
 	// */

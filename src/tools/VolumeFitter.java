@@ -3,8 +3,10 @@ package tools;
 import fitterAlgorithm.LowestSquare;
 import fitterAlgorithm.PolynomialLowestSquare;
 import functions.ExponentialFunction;
+import gui.volumetab.Roi3D;
 import ij.ImagePlus;
 import ij.gui.Roi;
+import imagehandling.Image;
 import imagehandling.KeyMap;
 import imagehandling.Volume;
 
@@ -19,143 +21,173 @@ import javax.swing.JFrame;
 import polyfitter.Point1D;
 import polyfitter.Polyfitter;
 
-public class VolumeFitter{
+public class VolumeFitter {
 
 	private Polyfitter fitter;
-	
+
 	private ArrayList<ImagePlus> data;
-	
-	private int width,height,echo_numbers,perEcho;
-	
+
+	private int width, height, echo_numbers, perEcho;
+
 	private int lastdegree;
-	
-	public double getZeroValue(Volume vol, int x, int y, int slice, int degree, boolean logScale){
+
+	public double getZeroValue(Volume vol, int x, int y, int slice, int degree,
+			boolean logScale) {
 		data = vol.getData();
-		String str_echo_numbers = vol.getSlice(vol.size() - 1).getAttribute(
-				KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
+		String str_echo_numbers = vol.getSlice(vol.size() - 1)
+				.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
 
 		echo_numbers = Integer.parseInt(str_echo_numbers);
 		perEcho = vol.size() / echo_numbers;
 
 		// the programm for the fitting
-		if (fitter == null){
+		if (fitter == null) {
 			fitter = new Polyfitter();
-			if (degree != -2){
+			if (degree != -2) {
 				fitter.setAlgorithm(new PolynomialLowestSquare(degree));
-			}else{
+			} else {
 				fitter.setAlgorithm(new LowestSquare(1));
 			}
 			lastdegree = degree;
 
-		}else if(lastdegree != degree){
+		} else if (lastdegree != degree) {
 			fitter.removeAlgorithm();
-			if (degree > -1){
+			if (degree > -1) {
 				fitter.setAlgorithm(new PolynomialLowestSquare(degree));
-			}else if (degree == -1){
-				fitter.setAlgorithm(new PolynomialLowestSquare(echo_numbers-1));
-			}else{
+			} else if (degree == -1) {
+				fitter.setAlgorithm(new PolynomialLowestSquare(echo_numbers - 1));
+			} else {
 				fitter.setAlgorithm(new LowestSquare(1));
 				fitter.setFunction(new ExponentialFunction());
 			}
 			lastdegree = degree;
 		}
 		fitter.removePoints();
-		
+
 		// Just the window, to display the fit
 		JFrame frame = new JFrame();
 		frame.getContentPane().setLayout(
 				new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
-		
-		ArrayList<BufferedImage>buffimg = new ArrayList<BufferedImage>(echo_numbers);
-		
-		for (int e=0; e<echo_numbers; e++){
-			buffimg.add(data.get(slice+perEcho*e).getBufferedImage());
+
+		ArrayList<BufferedImage> buffimg = new ArrayList<BufferedImage>(
+				echo_numbers);
+
+		for (int e = 0; e < echo_numbers; e++) {
+			buffimg.add(data.get(slice + perEcho * e).getBufferedImage());
 		}
-		
+
 		int iArray[] = new int[4];
 		int itest[] = new int[100];
-		for (int i=0; i<buffimg.size(); i++){
+		for (int i = 0; i < buffimg.size(); i++) {
 			BufferedImage img = buffimg.get(i);
-			iArray = img.getRaster().getPixel( x, y, itest);
-			if (logScale){
-				fitter.addPoint(i+1, Math.log10(iArray[0]));
-			}else{
-				fitter.addPoint(i+1, iArray[0]);
+			iArray = img.getRaster().getPixel(x, y, itest);
+			if (logScale) {
+				fitter.addPoint(i + 1, Math.log10(iArray[0]));
+			} else {
+				fitter.addPoint(i + 1, iArray[0]);
 			}
 		}
-		
+
 		fitter.fit();
 		return fitter.getValue(new Point1D(0));
 	}
-	
-	public BufferedImage getPlot(Volume vol, Roi roi, int slice, int degree, boolean logScale){
+
+	public BufferedImage getPlot(Volume vol, Roi relativroi, int slice, int degree,
+			boolean logScale) {
 		data = vol.getData();
-		String str_echo_numbers = vol.getSlice(vol.size() - 1).getAttribute(
-				KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
+		Roi roi = data.get(slice).getRoi();
+		String str_echo_numbers = vol.getSlice(vol.size() - 1)
+				.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
 
 		echo_numbers = Integer.parseInt(str_echo_numbers);
 		perEcho = vol.size() / echo_numbers;
 
 		// the programm for the fitting
-		if (fitter == null){
+		if (fitter == null) {
 			fitter = new Polyfitter();
-			if (degree != -2){
+			if (degree != -2) {
 				fitter.setAlgorithm(new PolynomialLowestSquare(degree));
-			}else{
+			} else {
 				fitter.setAlgorithm(new LowestSquare(1));
 			}
 			lastdegree = degree;
 
-		}else if(lastdegree != degree){
+		} else if (lastdegree != degree) {
 			fitter.removeAlgorithm();
-			if (degree > -1){
+			if (degree > -1) {
 				fitter.setAlgorithm(new PolynomialLowestSquare(degree));
-			}else if (degree == -1){
-				fitter.setAlgorithm(new PolynomialLowestSquare(echo_numbers-1));
-			}else{
+			} else if (degree == -1) {
+				fitter.setAlgorithm(new PolynomialLowestSquare(echo_numbers - 1));
+			} else {
 				fitter.setAlgorithm(new LowestSquare(1));
 				fitter.setFunction(new ExponentialFunction());
 			}
 			lastdegree = degree;
 		}
 		fitter.removePoints();
-		
-		ArrayList<BufferedImage>buffimg = new ArrayList<BufferedImage>(echo_numbers);
-		
-		for (int e=0; e<echo_numbers; e++){
-			buffimg.add(data.get(slice+perEcho*e).getBufferedImage());
+
+		ArrayList<BufferedImage> buffimg = new ArrayList<BufferedImage>(
+				echo_numbers);
+
+		for (int e = 0; e < echo_numbers; e++) {
+			buffimg.add(data.get(slice + perEcho * e).getBufferedImage());
 		}
-		
-//		int igetValue[] = new int[4];
-		for (int i=0; i<buffimg.size(); i++){
+
+		// int igetValue[] = new int[4];
+		for (int i = 0; i < buffimg.size(); i++) {
 			BufferedImage img = buffimg.get(i);
-			int val = getMin(img,roi);
-//			int val = img.getRaster().getPixel((int)roi.getXBase(), (int)roi.getXBase(), igetValue)[0];
-			if (logScale){
-				fitter.addPoint(i+1, Math.log10(val));
-			}else{
-				fitter.addPoint(i+1, val);
+			int val = 0;
+
+			if (relativroi instanceof Roi3D) {
+				val = getMin(vol, i);
+			} else {
+				val = getMin(img, roi);
+			}
+
+			if (logScale) {
+				fitter.addPoint(i + 1, Math.log10(val));
+			} else {
+				fitter.addPoint(i + 1, val);
 			}
 		}
-		
 		return fitter.plotVolume(logScale);
 	}
-	
-	public int getMin(BufferedImage img, Roi roi){
+
+	public int getMin(BufferedImage img, Roi roi) {
 		int igetValue[] = new int[4];
 		int minvalue = 500;
 		WritableRaster r = img.getRaster();
 		Rectangle d = roi.getBounds();
-		for (int x=d.x; x<d.x+d.width; x++){
-			for (int y=d.y; y<d.y+d.height; y++){
-				if (roi.contains(x, y)){
+		for (int x = d.x; x < d.x + d.width; x++) {
+			for (int y = d.y; y < d.y + d.height; y++) {
+				if (roi.contains(x, y)) {
 					int val = r.getPixel(x, y, igetValue)[0];
-					if (val < minvalue){
+					if (val < minvalue) {
 						minvalue = val;
 					}
 				}
 			}
 		}
+		return minvalue;
+	}
+
+	public int getMin(Volume vol, int echon) {
+		int minvalue = 500;
+		int nextmin = 0;
+		Image img = null;
+		ImagePlus data = null;
+
+		for (int i = echon * perEcho; i < (echon + 1) * perEcho; i++) {
+			img = vol.getSlice(i);
+			data = img.getData();
+			if (data.getRoi() != null) {
+				nextmin = getMin(data.getBufferedImage(), data.getRoi());
+				if (nextmin < minvalue) {
+					minvalue = nextmin;
+				}
+			}
+		}
+
 		return minvalue;
 	}
 

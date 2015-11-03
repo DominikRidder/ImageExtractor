@@ -66,7 +66,7 @@ public class Debug {
 			while(voltab.isCreatingVolume()){
 				sleep(100);
 			}
-			voltab.setShape("Circle");
+			voltab.setShape("Sphere");
 //			voltab.setRoiPosition(100, 100);
 			voltab.setRoiPosition(100, 100);
 //			voltab.setShape("Circle");

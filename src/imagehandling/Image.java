@@ -321,6 +321,9 @@ public class Image implements Comparable<Image> {
 	 * Returns the Header of the Image, given by the path.
 	 */
 	public String getHeader() {
+		if (data != null){
+			return data.getInfoProperty().toString();
+		}
 		HeaderExtractor he = null;
 		switch (type) {
 		case "dcm":
