@@ -28,7 +28,7 @@ public class SphereRoi extends Roi implements Roi3D {
 
 	public void draw(Volume vol, BufferedImage bigimg, int slice) {
 		BufferedImage orig = vol.getSlice(0).getData().getBufferedImage();
-		int thickness = Integer.parseInt(vol.getSlice(0).getAttribute(
+		double thickness = Integer.parseInt(vol.getSlice(0).getAttribute(
 				KeyMap.KEY_SLICE_THICKNESS));
 		Rectangle rec = this.getBounds();
 		Roi3D roi3 = (Roi3D) this;
