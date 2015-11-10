@@ -1,7 +1,5 @@
 package gui.volumetab;
 
-import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
@@ -12,6 +10,10 @@ import imagehandling.Volume;
 
 public class SphereRoi extends Roi implements Roi3D {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int z;
 
 	public SphereRoi(double x, double y, int z, double radius) {
@@ -46,21 +48,6 @@ public class SphereRoi extends Roi implements Roi3D {
 		} else {
 			return;
 		}
-
-		// BufferedImage orig = vol.getSlice(0).getData().getBufferedImage();
-		// Roi realroi = vol.getSlice(slice).getRoi();
-		//
-		// if (realroi == null){
-		// return;
-		// }
-		//
-		// Rectangle rect = realroi.getBounds();
-		// double Widthscaling = bigimg.getWidth()/orig.getWidth();
-		// double Heightscaling = bigimg.getHeight()/orig.getHeight();
-		//
-		// Roi todraw = new OvalRoi(rect.x*Widthscaling, rect.y*Heightscaling,
-		// realroi.getFloatWidth()*Widthscaling,realroi.getFloatHeight()*Heightscaling);
-		// todraw.draw(bigimg.getGraphics());
 	}
 
 }

@@ -46,12 +46,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicArrowButton;
 
-import sun.java2d.pipe.DrawImage;
 import tools.ImageExtractorConfig;
 import tools.VolumeFitter;
 import tools.ZeroEcho;
 
-import com.sun.javafx.geom.Rectangle;
 import com.sun.javafx.geom.transform.SingularMatrixException;
 
 /**
@@ -435,27 +433,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				path, volumePanel, index_Panel, attributeConfig, outputScroller };
 		GUI.addComponents(leftSidePanel, panelstuff);
 
-		// Graph legend
-		// JTextField leg_echo = new JTextField("Echo Nr.");
-		// leg_echo.setEditable(false);
-		// leg_echo.setBackground(null);
-		// leg_echo.setBorder(null);
-		// GUI.setfinalSize(leg_echo, new Dimension(100, 50));
-
-		// // Graph legend
-		// leg_gray = new RotatePanel("Grayscale");
-		// leg_gray.setBorder(null);
-		// leg_gray.setBackground(null);
-		// GUI.setfinalSize(leg_gray, new Dimension(20, 100));
-		// leg_gray.setVisible(false);
-
-		// // log Checkbox + text
-		// JLabel legWrapper = new JLabel();
-		// legWrapper.setLayout(new BoxLayout(legWrapper, BoxLayout.LINE_AXIS));
-		// legWrapper.add(Box.createRigidArea(new Dimension(120, 0)));
-		// legWrapper.add(leg_echo);
-		// GUI.setfinalSize(legWrapper, new Dimension(300, 100));
-
 		JTextField text_dim = new JTextField("Fitting: ");
 		text_dim.setEditable(false);
 		text_dim.setBackground(null);
@@ -507,10 +484,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// GUI.setfinalSize(zero_echo, new Dimension(200, 50));
 
 		radius = new JSlider();
+		radius.setMaximum(10);
 		radius.addChangeListener(this);
 		GUI.setfinalSize(radius, new Dimension(200, 50));
 
-		radiustext = new JLabel("Radius: " + radius.getValue() / 2);
+		radiustext = new JLabel("Radius: " + radius.getValue() +" mm");
 		// radiustext.setEditable(false);
 		GUI.setfinalSize(radiustext, new Dimension(100, 30));
 
@@ -533,10 +511,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		roiPanel.setLayout(new BoxLayout(roiPanel, BoxLayout.Y_AXIS));
 		GUI.setfinalSize(roiPanel, new Dimension(300, 1100));
 		Component[] roistuff = { Box.createRigidArea(new Dimension(0, 5)),
-				dimselection, Box.createRigidArea(new Dimension(0, 5)), roiimg, /*
-																				 * legWrapper
-																				 * ,
-																				 */
+				dimselection, Box.createRigidArea(new Dimension(0, 5)), roiimg,
 				logpanel, sizepanel };
 		GUI.addComponents(roiPanel, roistuff);
 		roiPanel.setVisible(false);
@@ -927,7 +902,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		} else if (e.getSource() == alsolog) {
 			showROI(true);
 		} else if (e.getSource() == radius) {
-			radiustext.setText("Radius:" + radius.getValue() / 2);
+			radiustext.setText("Radius:" + radius.getValue() + " mm");
 			updateROI();
 		}
 	}
@@ -1166,16 +1141,16 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			break;
 		case "Circle":
 			double radius = this.radius.getValue();
-			x -= radius;
-			y -= radius;
 			double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
 			double otherradius = Math.pow(orig.getWidth() / 2, 2)
 					+ Math.pow(orig.getHeight() / 2, 2);
-			double newr = radius * otherradius / thisradius;
-			relativroi = new OvalRoi(x, y, radius * 2, radius * 2);
+			double newr = (int)(radius * thisradius / otherradius);
+			x -= newr;
+			y -= newr;
+			relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
 			realroi = new OvalRoi(((double) x) / this.image.getWidth()
 					* orig.getWidth(), ((double) y) / this.image.getHeight()
-					* orig.getHeight(), newr * 2, newr * 2);
+					* orig.getHeight(), radius * 2, radius * 2);
 			break;
 		case "Sphere":
 			setRoiPosition(x, y, getActualSlice() - 1);
@@ -1198,16 +1173,16 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			return;
 		case "Sphere":
 			double radius = this.radius.getValue();
-			x -= radius;
-			y -= radius;
 			double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
 			double otherradius = Math.pow(orig.getWidth() / 2, 2)
 					+ Math.pow(orig.getHeight() / 2, 2);
-			double newr = radius * otherradius / thisradius;
-			relativroi = new SphereRoi(x, y, z, radius);
+			double newr = (int)(radius * thisradius / otherradius);
+			x -= newr;
+			y -= newr;
+			relativroi = new SphereRoi(x, y, z, newr);
 			realroi = new SphereRoi(((double) x) / this.image.getWidth()
 					* orig.getWidth(), ((double) y) / this.image.getHeight()
-					* orig.getHeight(), z, newr);
+					* orig.getHeight(), z, radius);
 			break;
 		}
 		volume.setRoi(realroi);
@@ -1224,32 +1199,32 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			double y = relativroi.getYBase();
 			double calrad = relativroi.getBounds().getWidth() / 2;
 			double radius = this.radius.getValue();
-			x += calrad - radius / 2;
-			y += calrad - radius / 2;
 			double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
 			double otherradius = Math.pow(orig.getWidth() / 2, 2)
 					+ Math.pow(orig.getHeight() / 2, 2);
-			double newr = radius * otherradius / thisradius;
-			relativroi = new OvalRoi(x, y, radius, radius);
+			double newr = (int)(radius * thisradius / otherradius);
+			x += calrad - newr / 2;
+			y += calrad - newr / 2;
+			relativroi = new OvalRoi(x, y, newr, newr);
 			realroi = new OvalRoi(((double) y) / this.image.getWidth()
 					* orig.getWidth(), ((double) x) / this.image.getHeight()
-					* orig.getHeight(), newr, newr);
+					* orig.getHeight(), radius, radius);
 		} else if (shape.getSelectedItem().equals("Sphere")) {
 			double x = relativroi.getXBase();
 			double y = relativroi.getYBase();
 			int z = ((Roi3D) relativroi).getZ();
 			double calrad = relativroi.getBounds().getHeight() / 2;
 			double radius = this.radius.getValue();
-			x += calrad - radius;
-			y += calrad - radius;
 			double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
 			double otherradius = Math.pow(orig.getWidth() / 2, 2)
 					+ Math.pow(orig.getHeight() / 2, 2);
-			double newr = radius * otherradius / thisradius;
-			relativroi = new SphereRoi((int) x, (int) y, z, radius);
+			double newr = (int)(radius * thisradius / otherradius);
+			x += calrad - newr;
+			y += calrad - newr;
+			relativroi = new SphereRoi((int) x, (int) y, z, newr);
 			realroi = new SphereRoi(((double) x) / this.image.getWidth()
 					* orig.getWidth(), ((double) y) / this.image.getHeight()
-					* orig.getHeight(), z, newr);
+					* orig.getHeight(), z, radius);
 		}
 		volume.setRoi(realroi);
 		this.displayImage();
