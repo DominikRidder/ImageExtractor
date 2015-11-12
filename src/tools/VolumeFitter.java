@@ -27,7 +27,7 @@ public class VolumeFitter {
 
 	private ArrayList<ImagePlus> data;
 
-	private int width, height, echo_numbers, perEcho;
+	private int echo_numbers, perEcho;
 
 	private int lastdegree;
 

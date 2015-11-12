@@ -488,7 +488,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		radius.addChangeListener(this);
 		GUI.setfinalSize(radius, new Dimension(200, 50));
 
-		radiustext = new JLabel("Radius: " + radius.getValue() +" mm");
+		radiustext = new JLabel("Radius: " + radius.getValue() + " mm");
 		// radiustext.setEditable(false);
 		GUI.setfinalSize(radiustext, new Dimension(100, 30));
 
@@ -884,12 +884,22 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		SwingUtilities.invokeLater(handlechange);
 	}
 
-	public int getActualSlice() {
-		return Integer.parseInt(index_slice.getText());
+	public int getActualSlice() throws IOException {
+		try {
+			return Integer.parseInt(index_slice.getText());
+		} catch (NumberFormatException e) {
+			throw new IOException(e.getMessage()); // Forcing myself, to catch
+													// Exceptions
+		}
 	}
 
-	public int getActualEcho() {
-		return Integer.parseInt(index_echo.getText());
+	public int getActualEcho() throws IOException {
+		try {
+			return Integer.parseInt(index_echo.getText());
+		} catch (NumberFormatException e) {
+			throw new IOException(e.getMessage()); // Forcing myself, to catch
+													// Exceptions
+		}
 	}
 
 	public void stateChanged(ChangeEvent e) {
@@ -908,35 +918,47 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void whilePressed() {
-		boolean slice = true;
-		boolean pressed = true;
-		if (arrow_up_slice.getModel().isPressed()) {
-			index_slice.setText("" + (getActualSlice() + 1));
-		} else if (arrow_down_slice.getModel().isPressed()) {
-			index_slice.setText("" + (getActualSlice() - 1));
-		} else if (arrow_up_echo.getModel().isPressed()) {
-			slice = false;
-			index_echo.setText("" + (getActualEcho() + 1));
-		} else if (arrow_down_echo.getModel().isPressed()) {
-			slice = false;
-			index_echo.setText("" + (getActualEcho() - 1));
-		} else {
-			pressed = false;
-		}
-
-		if (slice) {
-			checkSlice();
-		} else {
-			checkEcho();
-		}
-
-		if (pressed) {
-			new java.util.Timer().schedule(new java.util.TimerTask() {
-				public void run() {
-					whilePressed();
+		try {
+			boolean slice = true;
+			boolean pressed = true;
+			if (arrow_up_slice.getModel().isPressed()) {
+				if (getActualSlice() != perEcho) {
+					index_slice.setText("" + (getActualSlice() + 1));
 				}
-			}, 100);
-			displayImage();
+			} else if (arrow_down_slice.getModel().isPressed()) {
+				if (getActualSlice() != 1) {
+					index_slice.setText("" + (getActualSlice() - 1));
+				}
+			} else if (arrow_up_echo.getModel().isPressed()) {
+				slice = false;
+				if (getActualEcho() != echoNumbers) {
+					index_echo.setText("" + (getActualEcho() + 1));
+				}
+			} else if (arrow_down_echo.getModel().isPressed()) {
+				slice = false;
+				if (getActualEcho() != 1) {
+					index_echo.setText("" + (getActualEcho() - 1));
+				}
+			} else {
+				pressed = false;
+			}
+
+			if (slice) {
+				checkSlice();
+			} else {
+				checkEcho();
+			}
+
+			if (pressed) {
+				new java.util.Timer().schedule(new java.util.TimerTask() {
+					public void run() {
+						whilePressed();
+					}
+				}, 100);
+				displayImage();
+			}
+		} catch (IOException e) {
+			// couldn't read actual slice/echo
 		}
 	}
 
@@ -952,30 +974,36 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	public void lifeUpdate() {
 	}
 
-	private int actualSliceIndex() {
+	private int actualSliceIndex() throws IOException {
 		return getActualSlice() - 1 + perEcho * (getActualEcho() - 1);
 	}
 
 	private boolean displayImage() {
-		if (volume == null || actualSliceIndex() < 0
-				|| actualSliceIndex() >= volume.size()) {
-			return false;
-		}
-
-		Image curimg = this.volume.getSlice(actualSliceIndex());
-		drawIntoImage(image, this.volume.getSlice(actualSliceIndex()).getData()
-				.getBufferedImage());
-
-		if (relativroi != null) {
-			if (relativroi instanceof Roi3D) {
-				((Roi3D) relativroi).draw(volume, image, getActualSlice() - 1);
-			} else {
-				relativroi.draw(image.getGraphics());
+		try {
+			if (volume == null || actualSliceIndex() < 0
+					|| actualSliceIndex() >= volume.size()) {
+				return false;
 			}
-			showROI(true);
+
+			Image curimg = this.volume.getSlice(actualSliceIndex());
+			drawIntoImage(image, this.volume.getSlice(actualSliceIndex())
+					.getData().getBufferedImage());
+
+			if (relativroi != null) {
+				if (relativroi instanceof Roi3D) {
+					((Roi3D) relativroi).draw(volume, image,
+							getActualSlice() - 1);
+				} else {
+					relativroi.draw(image.getGraphics());
+				}
+				showROI(true);
+			}
+			repaint();
+			return true;
+		} catch (IOException e) {
+			return false; // couldnt read the info from the gui elements (slice
+							// or echo)
 		}
-		repaint();
-		return true;
 	}
 
 	private void drawIntoImage(BufferedImage target, BufferedImage source) {
@@ -995,25 +1023,43 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		if (System.currentTimeMillis() - lastpressed > 50) {
-		Object obj = e.getSource();
-		int change = -1 * e.getWheelRotation();
+			Object obj = e.getSource();
+			int change = -1 * e.getWheelRotation();
 
-		if (obj instanceof JTextField) {
-			JTextField index = (JTextField) obj;
-			if (index.equals(index_slice) || index.equals(max_slice)
-					|| index.getText().equals("Slice:")) {
-				index_slice.setText(""
-						+ (Integer.parseInt(index_slice.getText()) + change));
-				checkSlice();
-			} else {
-				index_echo.setText(""
-						+ (Integer.parseInt(index_echo.getText()) + change));
-				checkEcho();
-			}
-		} else if (obj instanceof JLabel) {
-			JLabel img = (JLabel) obj;
-			if (img.equals(imagelabel)) {
-				if (index_echo.hasFocus()) {
+			if (obj instanceof JTextField) {
+				JTextField index = (JTextField) obj;
+				if (index.equals(index_slice) || index.equals(max_slice)
+						|| index.getText().equals("Slice:")) {
+					index_slice
+							.setText(""
+									+ (Integer.parseInt(index_slice.getText()) + change));
+					checkSlice();
+				} else {
+					index_echo
+							.setText(""
+									+ (Integer.parseInt(index_echo.getText()) + change));
+					checkEcho();
+				}
+			} else if (obj instanceof JLabel) {
+				JLabel img = (JLabel) obj;
+				if (img.equals(imagelabel)) {
+					if (index_echo.hasFocus()) {
+						index_echo
+								.setText(""
+										+ (Integer.parseInt(index_echo
+												.getText()) + change));
+						checkEcho();
+					} else {
+						index_slice
+								.setText(""
+										+ (Integer.parseInt(index_slice
+												.getText()) + change));
+						checkSlice();
+					}
+				}
+			} else if (obj instanceof JPanel) {
+				JPanel arrow = (JPanel) obj;
+				if (!arrow.equals(arrows_slice)) {
 					index_echo
 							.setText(""
 									+ (Integer.parseInt(index_echo.getText()) + change));
@@ -1024,21 +1070,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 									+ (Integer.parseInt(index_slice.getText()) + change));
 					checkSlice();
 				}
-			}
-		} else if (obj instanceof JPanel) {
-			JPanel arrow = (JPanel) obj;
-			if (!arrow.equals(arrows_slice)) {
-				index_echo.setText(""
-						+ (Integer.parseInt(index_echo.getText()) + change));
-				checkEcho();
-			} else {
-				index_slice.setText(""
-						+ (Integer.parseInt(index_slice.getText()) + change));
-				checkSlice();
-			}
 
-		}
-		lastpressed = System.currentTimeMillis();
+			}
+			lastpressed = System.currentTimeMillis();
 		}
 	}
 
@@ -1108,8 +1142,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					GUI.setfinalSize(toppanel, new Dimension(1400, 450));
 					GUI.setfinalSize(parent, new Dimension(1450, 550));
 				}
-			} catch (SingularMatrixException | ArrayIndexOutOfBoundsException
-					| NullPointerException e) {
+			} catch (Exception e) {
+				// a lot of exception can ocure here
+				// (IOException, SingularMatrixException,
+				// ArrayIndexOutOfBoundsException, ...)
 			}
 		} else {
 			relativroi = null;
@@ -1127,107 +1163,121 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void setRoiPosition(int x, int y) {
-		BufferedImage orig = this.volume.getSlice(actualSliceIndex()).getData()
-				.getBufferedImage();
-		Roi realroi = null;
+		try {
+			BufferedImage orig = this.volume.getSlice(actualSliceIndex())
+					.getData().getBufferedImage();
+			Roi realroi = null;
 
-		switch ((String) shape.getSelectedItem()) {
-		case "Point":
-			relativroi = new PointRoi(x, y);
+			switch ((String) shape.getSelectedItem()) {
+			case "Point":
+				relativroi = new PointRoi(x, y);
 
-			realroi = new PointRoi(((double) y) / this.image.getWidth()
-					* orig.getWidth(), ((double) x) / this.image.getHeight()
-					* orig.getHeight());
-			break;
-		case "Circle":
-			double radius = this.radius.getValue();
-			double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
-			double otherradius = Math.pow(orig.getWidth() / 2, 2)
-					+ Math.pow(orig.getHeight() / 2, 2);
-			double newr = (int)(radius * thisradius / otherradius);
-			x -= newr;
-			y -= newr;
-			relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
-			realroi = new OvalRoi(((double) x) / this.image.getWidth()
-					* orig.getWidth(), ((double) y) / this.image.getHeight()
-					* orig.getHeight(), radius * 2, radius * 2);
-			break;
-		case "Sphere":
-			setRoiPosition(x, y, getActualSlice() - 1);
-			return;
+				realroi = new PointRoi(((double) y) / this.image.getWidth()
+						* orig.getWidth(), ((double) x)
+						/ this.image.getHeight() * orig.getHeight());
+				break;
+			case "Circle":
+				double radius = this.radius.getValue();
+				double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
+				double otherradius = Math.pow(orig.getWidth() / 2, 2)
+						+ Math.pow(orig.getHeight() / 2, 2);
+				double newr = (int) (radius * thisradius / otherradius);
+				x -= newr;
+				y -= newr;
+				relativroi = new OvalRoi(x, y, newr*2, newr*2);
+				realroi = new OvalRoi(((double) x) / this.image.getWidth()
+						* orig.getWidth(), ((double) y)
+						/ this.image.getHeight() * orig.getHeight(),
+						newr*2, newr*2);
+				break;
+			case "Sphere":
+				setRoiPosition(x, y, getActualSlice() - 1);
+				return;
+			}
+
+			volume.setRoi(realroi);
+			this.displayImage();
+		} catch (IOException e) {
+			// couldnt read actual slice/echo
 		}
-
-		volume.setRoi(realroi);
-		this.displayImage();
 	}
 
 	public void setRoiPosition(int x, int y, int z) {
-		BufferedImage orig = this.volume.getSlice(actualSliceIndex()).getData()
-				.getBufferedImage();
-		Roi realroi = null;
+		try {
+			BufferedImage orig = this.volume.getSlice(actualSliceIndex())
+					.getData().getBufferedImage();
+			Roi realroi = null;
 
-		switch ((String) shape.getSelectedItem()) {
-		case "Point":
-		case "Circle":
-			setRoiPosition(x, y);
-			return;
-		case "Sphere":
-			double radius = this.radius.getValue();
-			double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
-			double otherradius = Math.pow(orig.getWidth() / 2, 2)
-					+ Math.pow(orig.getHeight() / 2, 2);
-			double newr = (int)(radius * thisradius / otherradius);
-			x -= newr;
-			y -= newr;
-			relativroi = new SphereRoi(x, y, z, newr);
-			realroi = new SphereRoi(((double) x) / this.image.getWidth()
-					* orig.getWidth(), ((double) y) / this.image.getHeight()
-					* orig.getHeight(), z, radius);
-			break;
+			switch ((String) shape.getSelectedItem()) {
+			case "Point":
+			case "Circle":
+				setRoiPosition(x, y);
+				return;
+			case "Sphere":
+				double radius = this.radius.getValue();
+				double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
+				double otherradius = Math.pow(orig.getWidth() / 2, 2)
+						+ Math.pow(orig.getHeight() / 2, 2);
+				double newr = (int) (radius * thisradius / otherradius);
+				x -= newr;
+				y -= newr;
+				relativroi = new SphereRoi(x, y, z, newr);
+				realroi = new SphereRoi(((double) x) / this.image.getWidth()
+						* orig.getWidth(), ((double) y)
+						/ this.image.getHeight() * orig.getHeight(), z, radius);
+				break;
+			}
+			volume.setRoi(realroi);
+			this.displayImage();
+		} catch (IOException e) {
+			// couldn't read actual slice/echo
 		}
-		volume.setRoi(realroi);
-		this.displayImage();
 	}
 
 	public void updateROI() {
-		BufferedImage orig = this.volume.getSlice(actualSliceIndex()).getData()
-				.getBufferedImage();
-		Roi realroi = null;
-		if (shape.getSelectedItem().equals("Point")) {
-		} else if (shape.getSelectedItem().equals("Circle")) {
-			double x = relativroi.getXBase();
-			double y = relativroi.getYBase();
-			double calrad = relativroi.getBounds().getWidth() / 2;
-			double radius = this.radius.getValue();
-			double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
-			double otherradius = Math.pow(orig.getWidth() / 2, 2)
-					+ Math.pow(orig.getHeight() / 2, 2);
-			double newr = (int)(radius * thisradius / otherradius);
-			x += calrad - newr / 2;
-			y += calrad - newr / 2;
-			relativroi = new OvalRoi(x, y, newr, newr);
-			realroi = new OvalRoi(((double) y) / this.image.getWidth()
-					* orig.getWidth(), ((double) x) / this.image.getHeight()
-					* orig.getHeight(), radius, radius);
-		} else if (shape.getSelectedItem().equals("Sphere")) {
-			double x = relativroi.getXBase();
-			double y = relativroi.getYBase();
-			int z = ((Roi3D) relativroi).getZ();
-			double calrad = relativroi.getBounds().getHeight() / 2;
-			double radius = this.radius.getValue();
-			double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
-			double otherradius = Math.pow(orig.getWidth() / 2, 2)
-					+ Math.pow(orig.getHeight() / 2, 2);
-			double newr = (int)(radius * thisradius / otherradius);
-			x += calrad - newr;
-			y += calrad - newr;
-			relativroi = new SphereRoi((int) x, (int) y, z, newr);
-			realroi = new SphereRoi(((double) x) / this.image.getWidth()
-					* orig.getWidth(), ((double) y) / this.image.getHeight()
-					* orig.getHeight(), z, radius);
+		try {
+			BufferedImage orig = this.volume.getSlice(actualSliceIndex())
+					.getData().getBufferedImage();
+			Roi realroi = null;
+			if (shape.getSelectedItem().equals("Point")) {
+			} else if (shape.getSelectedItem().equals("Circle")) {
+				double x = relativroi.getXBase();
+				double y = relativroi.getYBase();
+				double calrad = relativroi.getBounds().getWidth() / 2;
+				double radius = this.radius.getValue();
+				double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
+				double otherradius = Math.pow(orig.getWidth() / 2, 2)
+						+ Math.pow(orig.getHeight() / 2, 2);
+				double newr = (int) (radius * thisradius / otherradius);
+				x += calrad - newr;
+				y += calrad - newr;
+				relativroi = new OvalRoi(x, y, newr*2, newr*2);
+				realroi = new OvalRoi(((double) y) / this.image.getWidth()
+						* orig.getWidth(), ((double) x)
+						/ this.image.getHeight() * orig.getHeight(), radius*2,
+						radius*2);
+			} else if (shape.getSelectedItem().equals("Sphere")) {
+				double x = relativroi.getXBase();
+				double y = relativroi.getYBase();
+				int z = ((Roi3D) relativroi).getZ();
+				double calrad = relativroi.getBounds().getHeight() / 2;
+				double radius = this.radius.getValue();
+				double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
+				double otherradius = Math.pow(orig.getWidth() / 2, 2)
+						+ Math.pow(orig.getHeight() / 2, 2);
+				double newr = (int) (radius * thisradius / otherradius);
+				x += calrad - newr;
+				y += calrad - newr;
+				relativroi = new SphereRoi((int) x, (int) y, z, newr);
+				realroi = new SphereRoi(((double) x) / this.image.getWidth()
+						* orig.getWidth(), ((double) y)
+						/ this.image.getHeight() * orig.getHeight(), z, radius);
+			}
+			volume.setRoi(realroi);
+			this.displayImage();
+		} catch (IOException e) {
+			// couldn't read the actual slice/echo
 		}
-		volume.setRoi(realroi);
-		this.displayImage();
 	}
 
 	public void mouseClicked(MouseEvent e) {
@@ -1258,10 +1308,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		Object source = e.getSource();
 		if (source == index_slice) {
 			checkSlice();
-			// displayImage();
 		} else if (source == index_echo) {
 			checkEcho();
-			// displayImage();
 		} else if (source == filter) {
 			if (!filter.getText().equals(lastfilter)) {
 				lastfilter = filter.getText();
