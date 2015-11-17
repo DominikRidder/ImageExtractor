@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.File;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -101,7 +102,14 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		this.addWindowListener(this);
 
 		filechooser = new ContextMenuFileChooser();
-		filechooser.setCurrentDirectory(new java.io.File("$HOME"));
+		String startbrowse = imec.getOption("StartBrowse");
+		if (startbrowse == null){
+			startbrowse = imec.getOption("LastBrowse");
+		}
+		if (startbrowse == null){
+			startbrowse = new java.io.File("$HOME").getAbsolutePath();
+		}
+		filechooser.setCurrentDirectory(new File(startbrowse));
 		filechooser.setDialogTitle("Search Directory");
 		filechooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 //		filechooser.setAcceptAllFileFilterUsed(false);

@@ -33,15 +33,13 @@ public class VolumeFitter {
 
 	public double getZeroValue(Volume vol, int x, int y, int slice, int degree,
 			boolean logScale) {
-		data = vol.getData();
+		if (data == null) {
 		String str_echo_numbers = vol.getSlice(vol.size() - 1)
 				.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
+			echo_numbers = Integer.parseInt(str_echo_numbers);
+			perEcho = vol.size() / echo_numbers;
 
-		echo_numbers = Integer.parseInt(str_echo_numbers);
-		perEcho = vol.size() / echo_numbers;
-
-		// the programm for the fitting
-		if (fitter == null) {
+			
 			fitter = new Polyfitter();
 			if (degree != -2) {
 				fitter.setAlgorithm(new PolynomialLowestSquare(degree));
@@ -64,20 +62,15 @@ public class VolumeFitter {
 		}
 		fitter.removePoints();
 
-		// Just the window, to display the fit
-		JFrame frame = new JFrame();
-		frame.getContentPane().setLayout(
-				new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
-
 		ArrayList<BufferedImage> buffimg = new ArrayList<BufferedImage>(
 				echo_numbers);
 
 		for (int e = 0; e < echo_numbers; e++) {
-			buffimg.add(data.get(slice + perEcho * e).getBufferedImage());
+			buffimg.add(vol.getSlice(slice + perEcho * e).getData().getBufferedImage());
 		}
 
 		int iArray[] = new int[4];
-		int itest[] = new int[100];
+		int itest[] = new int[4];
 		for (int i = 0; i < buffimg.size(); i++) {
 			BufferedImage img = buffimg.get(i);
 			iArray = img.getRaster().getPixel(x, y, itest);
@@ -96,11 +89,13 @@ public class VolumeFitter {
 			boolean logScale) {
 		data = vol.getData();
 		Roi roi = data.get(slice).getRoi();
-		String str_echo_numbers = vol.getSlice(vol.size() - 1)
-				.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
+		String str_echo_numbers = vol.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S, vol.size() - 1).replace(" ", "");
 
 		echo_numbers = Integer.parseInt(str_echo_numbers);
 		perEcho = vol.size() / echo_numbers;
+		if (echo_numbers == 1){
+			degree = 0;
+		}
 
 		// the programm for the fitting
 		if (fitter == null) {
@@ -154,14 +149,19 @@ public class VolumeFitter {
 	}
 
 	public int getMin(BufferedImage img, Roi roi) {
-		int igetValue[] = new int[4];
+		int igetValue[] = null;
+		int values[] = null;
 		int minvalue = 500;
 		WritableRaster r = img.getRaster();
-		Rectangle d = roi.getBounds();
+		Rectangle d = r.getBounds();
 		for (int x = d.x; x < d.x + d.width; x++) {
 			for (int y = d.y; y < d.y + d.height; y++) {
-				if (roi.contains(x, y)) {
-					int val = r.getPixel(x, y, igetValue)[0];
+				if (roi.contains(x, y) && d.contains(x, y)) {
+					values = r.getPixel(x, y, igetValue);
+					if (values == null){
+						continue;
+					}
+					int val = values[0];
 					if (val < minvalue) {
 						minvalue = val;
 					}

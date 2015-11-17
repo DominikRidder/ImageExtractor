@@ -544,7 +544,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			// speciall Constructur which throws an Exception if new Volume
 			// fails, instead of calling System.exit(1)
 			creatingText();
-			volume = new Volume(path.getText(), this);
+			volume = Volume.createVolume(path.getText());
+			if (volume == null) {
+				throw new RuntimeException();
+			}
 			volume.getTextOptions().setReturnExpression(
 					TextOptions.ATTRIBUTE_VALUE + "");
 
@@ -746,14 +749,17 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			} else if (chooser.getSelectedFile().isFile()) {
 				if (!chooser.getSelectedFile().getAbsolutePath()
 						.endsWith("nii")) {
-					System.out.println(chooser.getSelectedFile()
-							.getAbsolutePath());
 					path.setText(chooser.getSelectedFile().getParent()
 							.toString());
+				} else {
+					path.setText(chooser.getSelectedFile().getAbsolutePath());
 				}
 			}
 			new Thread(this).start();
 		}
+		parent.imec.setOption("LastBrowse", chooser.getCurrentDirectory()
+				.getAbsolutePath());
+		parent.imec.save();
 	}
 
 	public void actionDisplayAttributes() {
@@ -764,7 +770,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	public void actionOpenInExternal() {
 		// if (volume != null) {
 		parent.imec = new ImageExtractorConfig();
-		String customExternal = parent.imec.getCustomExternal();
+		String customExternal = parent.imec.getOption("External");
 		ProcessBuilder pb;
 
 		String commands[] = splittCommand(customExternal.replace("$FILE",
@@ -782,7 +788,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		// }
 	}
 
 	public String[] splittCommand(String command) {
@@ -985,7 +990,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				return false;
 			}
 
-			Image curimg = this.volume.getSlice(actualSliceIndex());
 			drawIntoImage(image, this.volume.getSlice(actualSliceIndex())
 					.getData().getBufferedImage());
 
@@ -1184,11 +1188,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				double newr = (int) (radius * thisradius / otherradius);
 				x -= newr;
 				y -= newr;
-				relativroi = new OvalRoi(x, y, newr*2, newr*2);
+				relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
 				realroi = new OvalRoi(((double) x) / this.image.getWidth()
 						* orig.getWidth(), ((double) y)
-						/ this.image.getHeight() * orig.getHeight(),
-						newr*2, newr*2);
+						/ this.image.getHeight() * orig.getHeight(), radius * 2,
+						radius * 2);
 				break;
 			case "Sphere":
 				setRoiPosition(x, y, getActualSlice() - 1);
@@ -1251,11 +1255,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				double newr = (int) (radius * thisradius / otherradius);
 				x += calrad - newr;
 				y += calrad - newr;
-				relativroi = new OvalRoi(x, y, newr*2, newr*2);
+				relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
 				realroi = new OvalRoi(((double) y) / this.image.getWidth()
 						* orig.getWidth(), ((double) x)
-						/ this.image.getHeight() * orig.getHeight(), radius*2,
-						radius*2);
+						/ this.image.getHeight() * orig.getHeight(),
+						radius * 2, radius * 2);
 			} else if (shape.getSelectedItem().equals("Sphere")) {
 				double x = relativroi.getXBase();
 				double y = relativroi.getYBase();

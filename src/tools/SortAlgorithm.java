@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -25,6 +26,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Stack;
+import java.util.function.IntConsumer;
+
+import com.sun.org.apache.xerces.internal.util.EncodingMap;
 
 /**
  * This class is used to sort Dicoms.
@@ -450,12 +454,19 @@ public class SortAlgorithm {
 
 				for (String str : dicomtonifti.get(key)) {
 					DICOM dcm = new DICOM();
-					dcm.open(str.split("#")[1]);
+					String imagepath = str.split("#")[1];
+					dcm.open(imagepath);
 					if (is == null) {
 						is = new ImageStack(dcm.getWidth(), dcm.getHeight());
 						ip.setCalibration(dcm.getCalibration());
 					}
-					is.addSlice(dcm.getProcessor());
+					try {
+						is.addSlice(dcm.getProcessor());
+					} catch (IllegalArgumentException e) {
+						out.println("Dimension missmatched. Image: "
+								+ imagepath + " do not match.");
+						continue;
+					}
 				}
 				ip.setStack(is);
 				if (echon != 1) {
@@ -465,8 +476,11 @@ public class SortAlgorithm {
 				WindowManager.setTempCurrentImage(ip);
 
 				File test = new File(key);
-				if (writer.save(ip, test.getParent(),
-						key.substring(test.getParent().length(), key.length()) + ".nii")) {
+				String name = key.substring(test.getParent().length(),
+						key.length())
+						+ ".nii";
+
+				if (writer.save(ip, test.getParent(), name)) {
 					numberofnii++;
 				}
 			}
@@ -761,7 +775,6 @@ public class SortAlgorithm {
 									+ " millis.)");
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
 						continue;
 					}
 				} else {
@@ -840,7 +853,18 @@ public class SortAlgorithm {
 		path.append("/"
 				+ protocolInfo.get(patientID + protocolName + instanceUID
 						+ birthDate));
-		existOrCreate(path);
+
+		String pathname = path.toString();
+		try {
+			byte[] latin1 = pathname.getBytes("ISO-8859-1");
+			pathname = new String(
+					new String(latin1, "ISO-8859-1").getBytes("UTF-8"), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+		}
+
+		if (!createNiftis) {
+			existOrCreate(new StringBuilder(pathname));
+		}
 
 		// Whether I change the dicom name to imageNumber.dcm or I just keep the
 		// Name.
@@ -855,11 +879,18 @@ public class SortAlgorithm {
 			}
 		}
 
+		try {
+			byte[] latin1 = name.getBytes("ISO-8859-1");
+			name = new String(
+					new String(latin1, "ISO-8859-1").getBytes("UTF-8"), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+		}
+
 		// Copy/Move the data
 		if (createNiftis) {
-			prepareNiftis(input, path.toString(), echoNumbers, imageNumber);
+			prepareNiftis(input, pathname, echoNumbers, imageNumber);
 		} else {
-			moveDicom(input, path.toString(), name);
+			moveDicom(input, pathname, name);
 		}
 	}
 
@@ -892,7 +923,7 @@ public class SortAlgorithm {
 				}
 				for (File protocolfolder : newlist) {
 					String protocolName = protocolfolder.getName();
-					if (protocolfolder.listFiles() == null){
+					if (protocolfolder.listFiles() == null) {
 						continue;
 					}
 					try {
@@ -994,8 +1025,17 @@ public class SortAlgorithm {
 		// check next protocol and creating it, if its not existant
 		path.append("/" + toProtocolDigits(seriesNumber + "") + "_"
 				+ protocolName);
+
+		String pathname = path.toString();
+		try {
+			byte[] latin1 = pathname.getBytes("ISO-8859-1");
+			pathname = new String(
+					new String(latin1, "ISO-8859-1").getBytes("UTF-8"), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+		}
+
 		if (!createNiftis) {
-			existOrCreate(path);
+			existOrCreate(new StringBuilder(pathname));
 		}
 
 		// next the dicom name
@@ -1010,11 +1050,18 @@ public class SortAlgorithm {
 			}
 		}
 
+		try {
+			byte[] latin1 = name.getBytes("ISO-8859-1");
+			name = new String(
+					new String(latin1, "ISO-8859-1").getBytes("UTF-8"), "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+		}
+
 		// Copy/Move the data
 		if (createNiftis) {
-			prepareNiftis(input, path.toString(), echoNumbers, imageNumber);
+			prepareNiftis(input, pathname, echoNumbers, imageNumber);
 		} else {
-			moveDicom(input, path.toString(), name);
+			moveDicom(input, pathname, name);
 		}
 	}
 

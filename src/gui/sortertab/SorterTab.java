@@ -370,21 +370,18 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 				t.start();
 				currentSortThread = t;
 				startOrCancelSort.setText("Cancel");
+				updateTextArea();
 			}
 			break;
 		case "...":
-			 if (fileChooser.showOpenDialog(this) ==
-			 JFileChooser.APPROVE_OPTION) {
+			if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
 				boolean found = false;
 				int i = 0;
-				 File f = new File(fileChooser.getSelectedFile()
-				 .getAbsolutePath());
+				File f = new File(fileChooser.getSelectedFile()
+						.getAbsolutePath());
 				String path = f.isDirectory() ? f.getAbsolutePath() : f
 						.getParent();
 				for (i = 0; i < 5; i++) {
-					if (tablerows_left[i].getComponent(3) instanceof JButton){
-						GUI.setfinalSize(((JButton)tablerows_left[i].getComponent(3)),new Dimension(29, 27));
-					}
 					if (e.getSource().equals(tablerows_left[i].getComponent(4))) {
 						found = true;
 						break;
@@ -396,9 +393,6 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 					targetIn.setText(path);
 				} else {
 					for (i = 0; i < 5; i++) {
-						if (tablerows_right[i].getComponent(3) instanceof JButton){
-							GUI.setfinalSize(((JButton)tablerows_right[i].getComponent(3)),new Dimension(29, 27));
-						}
 						if (e.getSource().equals(
 								tablerows_right[i].getComponent(3))) {
 							found = true;
@@ -412,6 +406,20 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 					targetOut.setText(path);
 				}
 			}
+			
+			for (int i = 0; i < 5; i++) {
+				if (tablerows_left[i].getComponent(4) instanceof JButton) {
+					GUI.setfinalSize(
+							((JButton) tablerows_left[i].getComponent(4)),
+							new Dimension(29, 27));
+				}
+				if (tablerows_right[i].getComponent(3) instanceof JButton) {
+					GUI.setfinalSize(((JButton) tablerows_right[i]
+							.getComponent(3)), new Dimension(29, 27));
+				}
+			}
+			parent.imec.setOption("LastBrowse", fileChooser.getCurrentDirectory().getAbsolutePath());
+			parent.imec.save();
 			break;
 		default:
 			if (e.getSource() instanceof JCheckBox) {
@@ -431,6 +439,21 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 				}
 			}
 			break;
+		}
+	}
+
+	public void updateTextArea() {
+		this.outputArea.setText(this.sortListener.toString());
+		int i = this.outputScroller.getVerticalScrollBar().getMaximum();
+		this.outputScroller.getVerticalScrollBar().setValue(i);
+		this.repaint();
+
+		if (currentSortThread != null) {
+			new java.util.Timer().schedule(new java.util.TimerTask() {
+				public void run() {
+					updateTextArea();
+				}
+			}, 200);
 		}
 	}
 
@@ -462,34 +485,6 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		}
 	}
 
-	public void lifeUpdate() {
-		while (this.isVisible() && parent.isVisible()) {
-			try {
-				if (this.currentSortThread != null) {
-					if (this.currentSortThread == null) {
-						try {
-							Thread.sleep(100);
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						}
-					}
-					this.outputArea.setText(this.sortListener.toString());
-					int i = this.outputScroller.getVerticalScrollBar()
-							.getMaximum();
-					this.outputScroller.getVerticalScrollBar().setValue(i);
-				}
-			} catch (NullPointerException e) {
-
-			} finally {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	
 	/**
 	 * This method is called by a Thread, to start the sorting.
 	 */
@@ -650,6 +645,11 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		// things that have to be done, so the next sort can be called
 		currentSortThread = null;
 		startOrCancelSort.setText("Start Sort");
+	}
+
+	public void lifeUpdate() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
