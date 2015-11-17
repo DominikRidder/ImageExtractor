@@ -912,7 +912,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			JButton b = (JButton) e.getSource();
 			String name = b.getText();
 			if (name.contains("arrow")) {
-				whilePressed();
+				whilePressed(300);
 			}
 		} else if (e.getSource() == alsolog) {
 			showROI(true);
@@ -922,45 +922,50 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		}
 	}
 
-	public void whilePressed() {
+	public void whilePressed(int time) {
 		try {
 			boolean slice = true;
 			boolean pressed = true;
-			if (arrow_up_slice.getModel().isPressed()) {
-				if (getActualSlice() != perEcho) {
-					index_slice.setText("" + (getActualSlice() + 1));
+			if (System.currentTimeMillis() - lastpressed > 50) {
+				lastpressed = System.currentTimeMillis();
+				if (arrow_up_slice.getModel().isPressed()) {
+					if (getActualSlice() != perEcho) {
+						index_slice.setText("" + (getActualSlice() + 1));
+					}
+				} else if (arrow_down_slice.getModel().isPressed()) {
+					if (getActualSlice() != 1) {
+						index_slice.setText("" + (getActualSlice() - 1));
+					}
+				} else if (arrow_up_echo.getModel().isPressed()) {
+					slice = false;
+					if (getActualEcho() != echoNumbers) {
+						index_echo.setText("" + (getActualEcho() + 1));
+					}
+				} else if (arrow_down_echo.getModel().isPressed()) {
+					slice = false;
+					if (getActualEcho() != 1) {
+						index_echo.setText("" + (getActualEcho() - 1));
+					}
+				} else {
+					pressed = false;
+					lastpressed = 0;
 				}
-			} else if (arrow_down_slice.getModel().isPressed()) {
-				if (getActualSlice() != 1) {
-					index_slice.setText("" + (getActualSlice() - 1));
-				}
-			} else if (arrow_up_echo.getModel().isPressed()) {
-				slice = false;
-				if (getActualEcho() != echoNumbers) {
-					index_echo.setText("" + (getActualEcho() + 1));
-				}
-			} else if (arrow_down_echo.getModel().isPressed()) {
-				slice = false;
-				if (getActualEcho() != 1) {
-					index_echo.setText("" + (getActualEcho() - 1));
-				}
-			} else {
-				pressed = false;
-			}
 
-			if (slice) {
-				checkSlice();
-			} else {
-				checkEcho();
+				if (slice) {
+					checkSlice();
+				} else {
+					checkEcho();
+				}
+				
+				displayImage();
 			}
 
 			if (pressed) {
 				new java.util.Timer().schedule(new java.util.TimerTask() {
 					public void run() {
-						whilePressed();
+						whilePressed(50 + time / 2);
 					}
-				}, 100);
-				displayImage();
+				}, time);
 			}
 		} catch (IOException e) {
 			// couldn't read actual slice/echo
@@ -1191,8 +1196,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
 				realroi = new OvalRoi(((double) x) / this.image.getWidth()
 						* orig.getWidth(), ((double) y)
-						/ this.image.getHeight() * orig.getHeight(), radius * 2,
-						radius * 2);
+						/ this.image.getHeight() * orig.getHeight(),
+						radius * 2, radius * 2);
 				break;
 			case "Sphere":
 				setRoiPosition(x, y, getActualSlice() - 1);
