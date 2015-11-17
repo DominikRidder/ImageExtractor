@@ -922,7 +922,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		}
 	}
 
-	public void whilePressed(int time) {
+	public void whilePressed(final int time) {
 		try {
 			boolean slice = true;
 			boolean pressed = true;
