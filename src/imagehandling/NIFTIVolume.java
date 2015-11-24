@@ -6,6 +6,7 @@ import ij.gui.OvalRoi;
 import ij.gui.Roi;
 import ij.io.FileInfo;
 import ij.plugin.Nifti_Reader;
+import ij.plugin.filter.Info;
 
 import java.awt.Rectangle;
 import java.io.File;
@@ -26,17 +27,46 @@ public class NIFTIVolume extends Volume {
 		File file = new File(path);
 		Nifti_Reader nr = new Nifti_Reader();
 		nifti = nr.load(file.getParent(), file.getName());
+		this.path = path;
 
+		setUpInfo();
+		
 		for (int i = 0; i < nifti.getNSlices(); i++) {
 			Image img = new Image(path, "nii");
 			nifti.setSlice(i);
-			ImagePlus data = new ImagePlus("image " + i,
-					nifti.getBufferedImage());
-			data.setCalibration(nifti.getCalibration());
-			data.setFileInfo(nifti.getFileInfo());
-			img.setData(data);
+			
+			img.setData(createImageData(i));
+			
 			slices.add(img);
 		}
+	}
+	
+	private void setUpInfo(){
+		File file = new File(path);
+		FileInfo fi = nifti.getOriginalFileInfo();
+		
+		fi.fileName = file.getName();
+		
+		nifti.setFileInfo(fi);
+		System.out.println(fi.fileName);
+		System.out.println(nifti.getFileInfo().fileName);
+	}
+	
+	private ImagePlus createImageData(int imagenumber){
+		nifti.setSlice(imagenumber);
+		FileInfo origfi = nifti.getFileInfo();
+		
+		ImagePlus data = new ImagePlus("image " + imagenumber,
+				nifti.getBufferedImage());
+		data.setCalibration(nifti.getCalibration());
+		data.setFileInfo(origfi);
+		
+		FileInfo fi = data.getFileInfo();
+		fi.fileName = origfi.fileName;
+		
+		data.setFileInfo(fi);
+		
+		return data;
 	}
 
 	@Override
@@ -153,6 +183,7 @@ public class NIFTIVolume extends Volume {
 		for (int i = 0; i < size(); i++) {
 			header.add(head);
 		}
+
 		return header;
 	}
 
@@ -254,31 +285,11 @@ public class NIFTIVolume extends Volume {
 	}
 
 	public static String createHeader(ImagePlus data) {
-		FileInfo fi = data.getFileInfo();
-		StringBuilder header = new StringBuilder();
-		header.append("Title: " + fi.fileName + "\n");
-		header.append("Width: " + fi.width * fi.pixelWidth + "(" + fi.width
-				+ ")\n");
-		header.append("Height: " + fi.height * fi.pixelHeight + "(" + fi.height
-				+ ")\n");
-		header.append("Height: " + fi.nImages * fi.pixelDepth + "("
-				+ fi.nImages + ")\n");
-		header.append("\n");
-		header.append("Resolution: " + fi.pixelDepth + "\n");
-		header.append("\n");
-		header.append("Bits per Pixel: " + fi.samplesPerPixel + "\n");
-		double[] range = fi.displayRanges;
-		if (range != null && range.length > 1) {
-			header.append("Display Range: " + fi.displayRanges[0] + "-"
-					+ fi.displayRanges[1] + "\n");
-		}
-		header.append("\n");
-		header.append("Calibration function: " + fi.calibrationFunction + "\n");
-		String unit = fi.unit == null ? "" : fi.unit;
-		header.append("Unit: " + unit + "\n");
-
-		header.append("Path: \n");
-		return header.toString();
+		NIFTIHeaderWriter nhw = new NIFTIHeaderWriter();
+		
+		Info info = new Info();
+		return info.getImageInfo(data, null);
+		//return nhw.writeHeader(data);
 	}
 
 }

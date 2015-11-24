@@ -32,8 +32,8 @@ import javax.swing.event.ChangeListener;
 import tools.ImageExtractorConfig;
 
 /**
- * This GUI is used, to look the Header and Images of Dicoms and to Search and
- * Sort Dicoms.
+ * This GUI is used, to look the Header and Images of Dicoms, to Search and
+ * Sort Dicoms and to convert Dicoms to Niftis.
  * 
  * @author dridder_local
  *

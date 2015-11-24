@@ -26,7 +26,7 @@ public class SphereRoi extends Roi implements Roi3D {
 		return z;
 	}
 
-	public void draw(Volume vol, BufferedImage bigimg, int slice) {
+	public void draw(Volume vol, BufferedImage bigimg, int slice, double scaling) {
 		BufferedImage orig = vol.getSlice(0).getData().getBufferedImage();
 		double thickness = Integer.parseInt(vol.getSlice(0).getAttribute(
 				KeyMap.KEY_SLICE_THICKNESS));
@@ -35,11 +35,7 @@ public class SphereRoi extends Roi implements Roi3D {
 		double radius = this.getBounds().getHeight() / 2;
 		int z = roi3.getZ();
 		
-		double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
-		double otherradius = Math.pow(orig.getWidth() / 2, 2)
-				+ Math.pow(orig.getHeight() / 2, 2);
-		
-		thickness *= thisradius/otherradius;
+		thickness *= scaling;
 		
 		if (Math.abs(z - slice) * thickness < radius) {
 			double newr = Math.sqrt(Math.pow(radius, 2) - Math.pow(Math.abs(z - slice) * thickness, 2));

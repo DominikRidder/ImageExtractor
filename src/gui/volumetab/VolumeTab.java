@@ -64,11 +64,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		Runnable, CaretListener {
 
 	/**
-	 * Default serialVersionUID
+	 * The parent is the actual window, that created this VolumeTab.
 	 */
-	private static final long serialVersionUID = 1L;
-
-	private long lastpressed;
+	private GUI parent;
 
 	/**
 	 * Volume, which is to get the header informations and the image.
@@ -87,15 +85,33 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private JPanel leftSidePanel;
 
 	/**
-	 * This TextField is used to create a Volume.
-	 */
-	private JTextField path;
-
-	/**
 	 * The JPanel dir is a row, which contains two JButtons (browse_path and
 	 * apply_path).
 	 */
 	private JPanel volumePanel;
+
+	/**
+	 * The JPanel img is a row, which contains a JTextfield with the Text
+	 * "Slice:", the current slice and the maximum chooseable slice.
+	 */
+	private JPanel index_Panel;
+
+	/**
+	 * JPanel, that contains two arrows for the index_slice/index_echo field.
+	 */
+	private JPanel arrows_slice, arrows_echo;
+
+	/**
+	 * This JPanel contains a JTextField search with the text "Search:" and a
+	 * textfield to search for Attributes.
+	 */
+	private JPanel attributeConfig;
+
+	private JPanel sizepanel;
+
+	private JPanel roiPanel;
+
+	private JScrollPane outputScroller;
 
 	/**
 	 * JButton to show the hole header of a Volume.
@@ -113,25 +129,29 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private JButton open_imagej;
 
 	/**
+	 * Arrow, for changing the index.
+	 */
+	private JButton arrow_up_slice, arrow_down_slice;
+
+	/**
+	 * Arrows, for changing the index.
+	 */
+	private JButton arrow_up_echo, arrow_down_echo;
+
+	/**
 	 * JFileChooser is used to search a Volume (dir).
 	 */
 	private JFileChooser chooser;
 
 	/**
-	 * The JPanel img is a row, which contains a JTextfield with the Text
-	 * "Slice:", the current slice and the maximum chooseable slice.
+	 * This TextField is used to create a Volume.
 	 */
-	private JPanel index_Panel;
+	private JTextField path;
 
 	/**
-	 * JPanel, that contains two arrows for the index_slice/index_echo field.
+	 * This field shows the maximum echo.
 	 */
-	private JPanel arrows_slice, arrows_echo;
-
-	/**
-	 * Arrow, for changing the index.
-	 */
-	private JButton arrow_up_slice, arrow_down_slice;
+	private JTextField max_echo;
 
 	/**
 	 * The index field shows the current selected Volume slice.
@@ -144,41 +164,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private JTextField max_slice;
 
 	/**
-	 * Arrows, for changing the index.
-	 */
-	private JButton arrow_up_echo, arrow_down_echo;
-
-	/**
 	 * This field is the current choosen echo.
 	 */
 	private JTextField index_echo;
-
-	/**
-	 * This field shows the maximum echo.
-	 */
-	private JTextField max_echo;
-
-	/**
-	 * Number of echos.
-	 */
-	private int echoNumbers;
-
-	/**
-	 * Number of slices per echo.
-	 */
-	private int perEcho;
-
-	/**
-	 * This JPanel contains a JTextField search with the text "Search:" and a
-	 * textfield to search for Attributes.
-	 */
-	private JPanel attributeConfig;
-
-	/**
-	 * Value, which decides, whether the hole header of a dicom is shown or if
-	 * only a searched part in shown.
-	 */
-	private boolean displayAll;
 
 	/**
 	 * The filter is used to search for Attributes in the header of an image.
@@ -190,20 +178,67 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private JTextArea outputArea;
 
+	private JCheckBox alsolog;
+
+	private JComboBox<String> dimension;
+
+	private JComboBox<String> shape;
+
+	private JSlider radius;
+
+	/**
+	 * The imagepanel is the container, which contains the ImageIcon ic.
+	 */
+	private JLabel imagelabel;
+
+	private JLabel radiustext;
+
 	/**
 	 * Image which is on the right side of the Tab.
 	 */
 	private BufferedImage image;
+
+	private BufferedImage roiimage;
+
+	private ImageIcon roiimgicon;
 
 	/**
 	 * The ImageIcon ic wrapping the image.
 	 */
 	private ImageIcon imgicon;
 
+	private Roi relativroi;
+
+	private VolumeFitter vf;
+
+	private String lastfilter = "";
+
 	/**
-	 * The imagepanel is the container, which contains the ImageIcon ic.
+	 * Default serialVersionUID
 	 */
-	private JLabel imagelabel;
+	private static final long serialVersionUID = 1L;
+
+	private long lastpressed;
+
+	/**
+	 * Number of echos.
+	 */
+	private int echoNumbers;
+
+	private double scaling;
+
+	/**
+	 * Number of slices per echo.
+	 */
+	private int perEcho;
+
+	private int creatingTextStatus = 0;
+
+	/**
+	 * Value, which decides, whether the hole header of a dicom is shown or if
+	 * only a searched part in shown.
+	 */
+	private boolean displayAll;
 
 	/**
 	 * True if a Thread creates a volume.
@@ -211,47 +246,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private boolean creatingVolume;
 
 	/**
-	 * The parent is the actual window, that created this VolumeTab.
-	 */
-	private GUI parent;
-
-	/**
 	 * This boolean is important to know, if this tab was in an extended state
 	 * or not.
 	 */
-	private Boolean ownExtended = false;
-
-	private JPanel roiPanel;
-
-	private BufferedImage roiimage;
-
-	private ImageIcon roiimgicon;
-
-	private JLabel roilabel;
-
-	private Roi relativroi;
-
-	private JCheckBox alsolog;
-
-	private RotatePanel leg_gray;
-
-	private VolumeFitter vf;
-
-	private JComboBox<String> dimension;
-
-	private JScrollPane outputScroller;
-
-	private String lastfilter = "";
-
-	private int creatingTextStatus = 0;
-
-	private JComboBox<String> shape;
-
-	private JSlider radius;
-
-	private JLabel radiustext;
-
-	private JPanel sizepanel;
+	private boolean ownExtended = false;
 
 	/**
 	 * Standard Constructur.
@@ -462,7 +460,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// The ImageIcon is kinda a wrapper for the image
 		roiimgicon = new ImageIcon(roiimage);
 		// imagepanel wrapps the ImageIcon
-		roilabel = new JLabel(roiimgicon);
+		JLabel roilabel = new JLabel(roiimgicon);
 		JPanel roiimg = new JPanel();
 		roiimg.add(roilabel);
 		GUI.setfinalSize(roiimg, new Dimension(300, 300));
@@ -956,7 +954,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				} else {
 					checkEcho();
 				}
-				
+
 				displayImage();
 			}
 
@@ -995,13 +993,27 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				return false;
 			}
 
-			drawIntoImage(image, this.volume.getSlice(actualSliceIndex())
-					.getData().getBufferedImage());
+			BufferedImage buff = this.volume.getSlice(actualSliceIndex())
+					.getData().getBufferedImage();
+
+			int max = buff.getHeight() > buff.getWidth() ? buff.getHeight()
+					: buff.getWidth();
+			scaling = 443. / max;
+
+			image = new BufferedImage((int) (buff.getWidth() * scaling),
+					(int) (buff.getHeight() * scaling),
+					BufferedImage.TYPE_3BYTE_BGR);
+			drawIntoImage(image, buff);
+
+			GUI.setfinalSize(imagelabel,
+					new Dimension(image.getWidth(), image.getHeight()));
+			imgicon.setImage(image);
+			imagelabel.setIcon(imgicon);
 
 			if (relativroi != null) {
 				if (relativroi instanceof Roi3D) {
 					((Roi3D) relativroi).draw(volume, image,
-							getActualSlice() - 1);
+							getActualSlice() - 1, scaling);
 				} else {
 					relativroi.draw(image.getGraphics());
 				}
@@ -1162,7 +1174,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			if (ownExtended) {
 				parent.setExtendedWindow(false);
 				ownExtended = false;
-				leg_gray.setVisible(false);
 				GUI.setfinalSize(toppanel, new Dimension(1100, 450));
 				GUI.setfinalSize(parent, new Dimension(1100, 550));
 			}
@@ -1181,23 +1192,17 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			case "Point":
 				relativroi = new PointRoi(x, y);
 
-				realroi = new PointRoi(((double) y) / this.image.getWidth()
-						* orig.getWidth(), ((double) x)
-						/ this.image.getHeight() * orig.getHeight());
+				realroi = new PointRoi(((double) x) / scaling, ((double) y)
+						/ scaling);
 				break;
 			case "Circle":
 				double radius = this.radius.getValue();
-				double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
-				double otherradius = Math.pow(orig.getWidth() / 2, 2)
-						+ Math.pow(orig.getHeight() / 2, 2);
-				double newr = (int) (radius * thisradius / otherradius);
+				double newr = (int) (radius * scaling);
 				x -= newr;
 				y -= newr;
 				relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
-				realroi = new OvalRoi(((double) x) / this.image.getWidth()
-						* orig.getWidth(), ((double) y)
-						/ this.image.getHeight() * orig.getHeight(),
-						radius * 2, radius * 2);
+				realroi = new OvalRoi(((double) x) / scaling, ((double) y)
+						/ scaling, radius * 2, radius * 2);
 				break;
 			case "Sphere":
 				setRoiPosition(x, y, getActualSlice() - 1);
@@ -1224,16 +1229,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				return;
 			case "Sphere":
 				double radius = this.radius.getValue();
-				double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
-				double otherradius = Math.pow(orig.getWidth() / 2, 2)
-						+ Math.pow(orig.getHeight() / 2, 2);
-				double newr = (int) (radius * thisradius / otherradius);
+				double newr = (int) (radius * scaling);
 				x -= newr;
 				y -= newr;
 				relativroi = new SphereRoi(x, y, z, newr);
-				realroi = new SphereRoi(((double) x) / this.image.getWidth()
-						* orig.getWidth(), ((double) y)
-						/ this.image.getHeight() * orig.getHeight(), z, radius);
+				realroi = new SphereRoi(((double) x) / scaling, ((double) y)
+						/ scaling, z, radius);
 				break;
 			}
 			volume.setRoi(realroi);
@@ -1254,33 +1255,24 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				double y = relativroi.getYBase();
 				double calrad = relativroi.getBounds().getWidth() / 2;
 				double radius = this.radius.getValue();
-				double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
-				double otherradius = Math.pow(orig.getWidth() / 2, 2)
-						+ Math.pow(orig.getHeight() / 2, 2);
-				double newr = (int) (radius * thisradius / otherradius);
+				double newr = (int) (radius * scaling);
 				x += calrad - newr;
 				y += calrad - newr;
 				relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
-				realroi = new OvalRoi(((double) y) / this.image.getWidth()
-						* orig.getWidth(), ((double) x)
-						/ this.image.getHeight() * orig.getHeight(),
-						radius * 2, radius * 2);
+				realroi = new OvalRoi(((double) x) / scaling, ((double) y)
+						/ scaling, radius * 2, radius * 2);
 			} else if (shape.getSelectedItem().equals("Sphere")) {
 				double x = relativroi.getXBase();
 				double y = relativroi.getYBase();
 				int z = ((Roi3D) relativroi).getZ();
 				double calrad = relativroi.getBounds().getHeight() / 2;
 				double radius = this.radius.getValue();
-				double thisradius = Math.pow(443 / 2, 2) + Math.pow(443 / 2, 2);
-				double otherradius = Math.pow(orig.getWidth() / 2, 2)
-						+ Math.pow(orig.getHeight() / 2, 2);
-				double newr = (int) (radius * thisradius / otherradius);
+				double newr = (int) (radius * scaling);
 				x += calrad - newr;
 				y += calrad - newr;
 				relativroi = new SphereRoi((int) x, (int) y, z, newr);
-				realroi = new SphereRoi(((double) x) / this.image.getWidth()
-						* orig.getWidth(), ((double) y)
-						/ this.image.getHeight() * orig.getHeight(), z, radius);
+				realroi = new SphereRoi(((double) x) / scaling, ((double) y)
+						/ scaling, z, radius);
 			}
 			volume.setRoi(realroi);
 			this.displayImage();

@@ -154,8 +154,10 @@ public class VolumeFitter {
 		int minvalue = 500;
 		WritableRaster r = img.getRaster();
 		Rectangle d = r.getBounds();
-		for (int x = d.x; x < d.x + d.width; x++) {
-			for (int y = d.y; y < d.y + d.height; y++) {
+		Rectangle roib = roi.getBounds();
+		
+		for (int x = roib.x; x < roib.x+roib.getWidth()+1; x++) {
+			for (int y = roib.y; y < roib.y+roib.getHeight()+1; y++) {
 				if (roi.contains(x, y) && d.contains(x, y)) {
 					values = r.getPixel(x, y, igetValue);
 					if (values == null){
@@ -168,6 +170,7 @@ public class VolumeFitter {
 				}
 			}
 		}
+
 		return minvalue;
 	}
 
