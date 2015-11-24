@@ -8,8 +8,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Text;
-
 public class ImageExtractorConfig {
 
 	private HashMap<String, String> options = new HashMap<String, String>();
