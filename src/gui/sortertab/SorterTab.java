@@ -118,18 +118,21 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private GUI parent;
 
+	private int rowheight;
+	
 	/**
 	 * Default Constructur.
 	 */
 	public SorterTab(JFileChooser filechooser, GUI gui) {
 		parent = gui;
-
+		rowheight = parent.height/18;
+		
 		// Tool tip text's
 		image_digits_tooltip = new String(
 				"Set the Image Digits to 0, to not change the DICOM names.");
 
 		// Adding tool tip's
-		JTextField img_digits = createText("Image Digits", 100, 30, false);
+		JTextField img_digits = createText("Image Digits",  parent.width/11, rowheight, false);
 		img_digits.setToolTipText(image_digits_tooltip);
 
 		// Setting up the sortalgorithm with some default stuff
@@ -143,7 +146,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 
 		// upperleft rectangle
 		JTextField upperleft_header = new JTextField("Search in and Sort to:");
-		GUI.setfinalSize(upperleft_header, new Dimension(150, 30));
+		GUI.setfinalSize(upperleft_header, new Dimension(parent.width/7, rowheight));
 		upperleft_header.setEditable(false);
 		upperleft_header.setBackground(null);
 		upperleft_header.setBorder(null);
@@ -154,26 +157,28 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		header_shifter_left.setLayout(new BoxLayout(header_shifter_left,
 				BoxLayout.LINE_AXIS));
 		header_shifter_left.add(upperleft_header);
-		header_shifter_left.add(Box.createRigidArea(new Dimension(1000, 0)));
+		header_shifter_left.add(Box.createRigidArea(new Dimension((int) (parent.width/1.1), 0)));
 
 		// Setting the headline of the table, which should be as long as the
 		// rows below it
 		JPanel table_header_left = new JPanel();
 		table_header_left.setLayout(new BoxLayout(table_header_left,
 				BoxLayout.LINE_AXIS));
-		table_header_left.add(createText("Status", 100, 30, false));
-		table_header_left.add(createText("Input Dir", 200, 30, false));
-		table_header_left.add(createText("Option", 80, 30, false));
-		table_header_left.add(createText("To Output Nr.", 100, 30, false));
-		table_header_left.add(Box.createRigidArea(new Dimension(30, 30)));
-		table_header_left.add(createText("Nifti", 50, 30, false));
+		table_header_left.add(createText("Status", parent.width/11, rowheight, false));
+		table_header_left.add(createText("Input Dir",(int) (parent.width/5.5), rowheight, false));
+		table_header_left.add(createText("Option", (int) (parent.width/13.75), rowheight, false));
+		table_header_left.add(createText("To Output Nr.", parent.width/11, rowheight, false));
+		table_header_left.add(Box.createRigidArea(new Dimension(rowheight, rowheight)));
+		table_header_left.add(createText("Nifti", 2*rowheight, rowheight, false));
 
+		GUI.setfinalSize(table_header_left, new Dimension((int)(parent.width/1.93), rowheight));
+		
 		// Panel that contains the upper left rectangle
 		JPanel upperleft = new JPanel();
 		upperleft.setLayout(new BoxLayout(upperleft, BoxLayout.PAGE_AXIS));
-		GUI.setfinalSize(upperleft, new Dimension(600, 250));
+		GUI.setfinalSize(upperleft, new Dimension((int)(parent.width/1.93), (int)(parent.height/2.16)));
 		upperleft.add(header_shifter_left);
-		upperleft.add(Box.createRigidArea(new Dimension(0, 10)));
+		upperleft.add(Box.createRigidArea(new Dimension(0, parent.width/54)));
 		upperleft.add(table_header_left);
 
 		tablerows_left = new JPanel[5];
@@ -181,12 +186,12 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 			tablerows_left[i] = createInputRow(i + 1);
 			upperleft.add(tablerows_left[i]);
 		}
-		upperleft.add(Box.createRigidArea(new Dimension(0, 50)));
+		upperleft.add(Box.createRigidArea(new Dimension(0, (int) (rowheight))));
 		// -- upperleft end
 
 		// upperright rectangle
 		JTextField upperright_header = new JTextField("Target Folder:");
-		GUI.setfinalSize(upperright_header, new Dimension(175, 30));
+		GUI.setfinalSize(upperright_header, new Dimension((int)(parent.width/6.29), rowheight));
 		upperright_header.setEditable(false);
 		upperright_header.setBackground(null);
 		upperright_header.setBorder(null);
@@ -201,24 +206,25 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		header_shifter_right.setLayout(new BoxLayout(header_shifter_right,
 				BoxLayout.LINE_AXIS));
 		header_shifter_right.add(upperright_header);
-		header_shifter_right.add(Box.createRigidArea(new Dimension(1000, 0)));
+		header_shifter_right.add(Box.createRigidArea(new Dimension((int)(parent.width/1.1), 0)));
 
 		// Setting the headline of the table, which should be as long as the
 		// rows below it
 		JPanel table_header_right = new JPanel();
 		table_header_right.setLayout(new BoxLayout(table_header_right,
 				BoxLayout.LINE_AXIS));
-		table_header_right.add(createText("Nr.", 50, 30, false));
-		table_header_right.add(createText("Output Dir", 200, 30, false));
+		table_header_right.add(createText("Nr.", parent.width/22, rowheight, false));
+		table_header_right.add(createText("Output Dir", (int)(parent.width/5.5), rowheight, false));
 		table_header_right.add(img_digits);
-		table_header_right.add(Box.createRigidArea(new Dimension(29, 30)));
+		table_header_right.add(Box.createRigidArea(new Dimension(rowheight, rowheight)));
+		
 
 		// Panel that contains the upper right rectangle
 		JPanel upperright = new JPanel();
 		upperright.setLayout(new BoxLayout(upperright, BoxLayout.PAGE_AXIS));
-		GUI.setfinalSize(upperright, new Dimension(500, 250));
+		GUI.setfinalSize(upperright, new Dimension((int)(parent.width/2.2),(int)(parent.height/2.16)));
 		upperright.add(header_shifter_right);
-		upperright.add(Box.createRigidArea(new Dimension(0, 10)));
+		upperright.add(Box.createRigidArea(new Dimension(0, parent.height/54)));
 		upperright.add(table_header_right);
 		tablerows_right = new JPanel[5];
 		for (int i = 0; i < tablerows_left.length; i++) {
@@ -232,16 +238,16 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		outputArea = new JTextArea();
 		outputArea.setEditable(false);
 		outputArea.setMargin(new Insets(0, 0, 0, 0));
-		GUI.setfinalSize(outputArea, new Dimension(1050, 200));
+		GUI.setfinalSize(outputArea, new Dimension((int)(parent.width/1.04762), (int)(parent.height/2.7)));
 		outputScroller = new JScrollPane(outputArea);
-		GUI.setfinalSize(outputScroller, new Dimension(1100, 225));
+		GUI.setfinalSize(outputScroller, new Dimension(parent.width, parent.height/2));
 		outputScroller
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		outputScroller.setPreferredSize(new Dimension(1100, 225));
+		outputScroller.setPreferredSize(new Dimension(parent.width, parent.height/2));
 
 		// Seperates the left upper side from the right upper side
 		JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
-		GUI.setfinalSize(separator, new Dimension(1, 250));
+		GUI.setfinalSize(separator, new Dimension(1, (int)(parent.height/2.16)));
 
 		// The panel over the output
 		JPanel upper = new JPanel();
@@ -271,36 +277,39 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		// directory have to be set. The ":" is important for the splitt. At
 		// the end you will just the a "..." in the button.
 		browseButton.setText("...");
-		browseButton.setMaximumSize(new Dimension(29, 27));
-		browseButton.setPreferredSize(new Dimension(29, 27));
+		browseButton.setMaximumSize(new Dimension(rowheight, rowheight));
+		browseButton.setPreferredSize(new Dimension(rowheight, rowheight));
 		browseButton.setMargin(new Insets(0, 0, 0, 0));
 		browseButton.addActionListener(this);
 
 		JCheckBox tonifti = new JCheckBox();
-		tonifti.setSize(29, 27);
+		tonifti.setSize(rowheight, rowheight);
 		tonifti.addActionListener(this);
 
 		// File transfer options
 		String[] options = { "Copy", "Move" };
 		JComboBox<String> jc = new JComboBox<String>(options);
-		GUI.setfinalSize(jc, new Dimension(80, 28));
+		GUI.setfinalSize(jc, new Dimension((int)(parent.width/13.75), rowheight));
 
 		JPanel rowPanel = new JPanel();
 		rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.LINE_AXIS));
 		// Status
-		rowPanel.add(createText("Undefined", 100, 30, false));
+		rowPanel.add(createText("Undefined", parent.width/11, rowheight, false));
 		// Input dir
-		rowPanel.add(createText("", 200, 30, true));
+		rowPanel.add(createText("", (int) (parent.width/5.5), rowheight, true));
 		// File transfer option
 		rowPanel.add(jc);
 		// Output Nr field
-		rowPanel.add(createText("" + 1, 100, 30, true));
+		rowPanel.add(createText("" + 1, parent.width/11, rowheight, true));
 		// browse dir button
 		rowPanel.add(browseButton);
 		// to make it fit
-		rowPanel.add(Box.createRigidArea(new Dimension(30, 30)));
+		rowPanel.add(Box.createRigidArea(new Dimension(rowheight, 0)));
 		// option for niftis
 		rowPanel.add(tonifti);
+		
+		GUI.setfinalSize(rowPanel, new Dimension((int)(parent.width/1.93), rowheight));
+		
 		return rowPanel;
 	}
 
@@ -312,19 +321,19 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		JButton browseButton = new JButton();
 		// at the end you will just the a "..." in the button.
 		browseButton.setText("...");
-		browseButton.setMaximumSize(new Dimension(29, 27));
-		browseButton.setPreferredSize(new Dimension(29, 27));
+		browseButton.setMaximumSize(new Dimension(rowheight, rowheight));
+		browseButton.setPreferredSize(new Dimension(rowheight, rowheight));
 		browseButton.setMargin(new Insets(0, 0, 0, 0));
 		browseButton.addActionListener(this);
 
 		JPanel rowPanel = new JPanel();
 		rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.LINE_AXIS));
 		// index field
-		rowPanel.add(createText("" + index, 50, 30, false));
+		rowPanel.add(createText("" + index, parent.width/22, rowheight, false));
 		// output dir field
-		rowPanel.add(createText("", 200, 30, true));
+		rowPanel.add(createText("", (int) (parent.width/5.5), rowheight, true));
 		// image digits field
-		JTextField imgdigits = createText("0", 100, 30, true);
+		JTextField imgdigits = createText("0", parent.width/11, rowheight, true);
 		imgdigits.setToolTipText(image_digits_tooltip);
 		rowPanel.add(imgdigits);
 		// browse dir button
@@ -411,11 +420,11 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 				if (tablerows_left[i].getComponent(4) instanceof JButton) {
 					GUI.setfinalSize(
 							((JButton) tablerows_left[i].getComponent(4)),
-							new Dimension(29, 27));
+							new Dimension(rowheight, rowheight));
 				}
 				if (tablerows_right[i].getComponent(3) instanceof JButton) {
 					GUI.setfinalSize(((JButton) tablerows_right[i]
-							.getComponent(3)), new Dimension(29, 27));
+							.getComponent(3)), new Dimension(rowheight, rowheight));
 				}
 			}
 			parent.imec.setOption("LastBrowse", fileChooser.getCurrentDirectory().getAbsolutePath());
@@ -648,8 +657,12 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void lifeUpdate() {
-		// TODO Auto-generated method stub
-		
+		parent.requestWidth(preferedWidth(), this);
+	}
+
+	@Override
+	public int preferedWidth() {
+		return parent.width;
 	}
 
 }

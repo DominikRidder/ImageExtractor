@@ -10,4 +10,6 @@ public interface MyTab {
 	public String getClassName();
 
 	public void lifeUpdate();
+	
+	public int preferedWidth();
 }

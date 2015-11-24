@@ -7,6 +7,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -32,8 +33,8 @@ import javax.swing.event.ChangeListener;
 import tools.ImageExtractorConfig;
 
 /**
- * This GUI is used, to look the Header and Images of Dicoms, to Search and
- * Sort Dicoms and to convert Dicoms to Niftis.
+ * This GUI is used, to look the Header and Images of Dicoms, to Search and Sort
+ * Dicoms and to convert Dicoms to Niftis.
  * 
  * @author dridder_local
  *
@@ -93,7 +94,11 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 * 
 	 */
 	public ImageExtractorConfig imec;
-	
+
+	public int width;
+
+	public int height;
+
 	/**
 	 * One and only Constructor.
 	 */
@@ -101,19 +106,29 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		imec = new ImageExtractorConfig();
 		this.addWindowListener(this);
 
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		Dimension d = tk.getScreenSize();
+		width = (int) (((double) d.width) / 2.5);
+		height = d.height / 2;
+
+		width = width < 1100 ? width : 1100;
+		height = height < 550 ? height : 550;
+
+		setfinalSize(this, new Dimension(width, height));
+
 		filechooser = new ContextMenuFileChooser();
 		String startbrowse = imec.getOption("StartBrowse");
-		if (startbrowse == null){
+		if (startbrowse == null) {
 			startbrowse = imec.getOption("LastBrowse");
 		}
-		if (startbrowse == null){
+		if (startbrowse == null) {
 			startbrowse = new java.io.File("$HOME").getAbsolutePath();
 		}
 		filechooser.setCurrentDirectory(new File(startbrowse));
 		filechooser.setDialogTitle("Search Directory");
 		filechooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-//		filechooser.setAcceptAllFileFilterUsed(false);
-		
+		// filechooser.setAcceptAllFileFilterUsed(false);
+
 		forceEnd = forceProgrammEndIfThereIsNoWindow;
 		JMenuBar menuBar;
 		JMenu menu;
@@ -149,10 +164,12 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		add(tabber);
 		setLocationRelativeTo(null);
 		setTitle("ImageExtractor");
-		setfinalSize(this, new Dimension(1100, 550));
 		setResizable(false);
 		setVisible(true);
-		
+
+		System.out.println("Gui width = " + width);
+		System.out.println("Gui height = " + height);
+
 		new Thread(this).start();
 	}
 
@@ -168,10 +185,10 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		return windows != 0;
 	}
 
-	public void setCurrentTab(int i){
+	public void setCurrentTab(int i) {
 		this.tabber.setSelectedIndex(i);
 	}
-	
+
 	/**
 	 * This Method is called by the JMenuBar and the Buttons inside of the
 	 * VolumeTab.
@@ -250,11 +267,11 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		}
 		extendedWindow = bool;
 
-		if (extendedWindow) {
-			setfinalSize(this, new Dimension(1400, 550));
-		} else {
-			setfinalSize(this, new Dimension(1100, 550));
-		}
+		// if (extendedWindow) {
+		// setfinalSize(this, new Dimension(1400, 550));
+		// } else {
+		// setfinalSize(this, new Dimension(1100, 550));
+		// }
 	}
 
 	/**
@@ -270,9 +287,13 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 				}
 				continue;
 			}
-			if (tabber.getComponentAt(tabber.getSelectedIndex()) instanceof SorterTab){
-			((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-					.lifeUpdate();
+		}
+	}
+
+	public void requestWidth(int width, MyTab requester) {
+		if (tabber.getComponentAt(tabber.getSelectedIndex()).equals(requester)) {
+			if (width != this.getWidth()) {
+				setfinalSize(this, new Dimension(width, height));
 			}
 		}
 	}
@@ -333,15 +354,19 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() == tabber) {
-			this.setExtendedWindow(false);
+			// this.setExtendedWindow(false);
+			if (tabber.getComponentAt(tabber.getSelectedIndex()) instanceof MyTab) {
+				((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
+						.lifeUpdate();
+			}
 		}
 	}
-	
-	public MyTab getCurrentTab(){
+
+	public MyTab getCurrentTab() {
 		Component current = tabber.getSelectedComponent();
-		if (current!= null){
+		if (current != null) {
 			return (MyTab) current;
-		}else{
+		} else {
 			return null;
 		}
 	}
@@ -366,24 +391,24 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	@Override
 	public void windowIconified(WindowEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void windowDeiconified(WindowEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void windowActivated(WindowEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void windowDeactivated(WindowEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }
