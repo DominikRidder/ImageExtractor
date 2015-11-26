@@ -223,7 +223,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 		// Title of the Tab: tabint + type of Tab
 		String title = (tabint) + "";
-		if (((MyTab) comp).getClassName() == "VolumeTab") {
+		if (comp instanceof VolumeTab) {
 			title += ": Volume";
 		} else {
 			title += ": Sorter";
@@ -355,9 +355,11 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() == tabber) {
 			// this.setExtendedWindow(false);
-			if (tabber.getComponentAt(tabber.getSelectedIndex()) instanceof MyTab) {
-				((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-						.lifeUpdate();
+			if (tabber.getSelectedIndex() != -1) {
+				if (tabber.getComponentAt(tabber.getSelectedIndex()) instanceof MyTab) {
+					((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
+							.neededSize();
+				}
 			}
 		}
 	}
@@ -390,25 +392,21 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 	@Override
 	public void windowIconified(WindowEvent e) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void windowDeiconified(WindowEvent e) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void windowActivated(WindowEvent e) {
-		// TODO Auto-generated method stub
 
 	}
 
 	@Override
 	public void windowDeactivated(WindowEvent e) {
-		// TODO Auto-generated method stub
 
 	}
 }

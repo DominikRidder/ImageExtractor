@@ -14,7 +14,7 @@ public class ImageExtractorConfig {
 
 	public ImageExtractorConfig() {
 		File file = new File("ImageExtractor.config");
-		System.out.println(file.getAbsolutePath());
+		System.out.println("Config: "+file.getAbsolutePath());
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 			String line;
 			while ((line = br.readLine()) != null) {

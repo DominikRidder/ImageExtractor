@@ -9,7 +9,7 @@ package gui;
 public interface MyTab {
 	public String getClassName();
 
-	public void lifeUpdate();
+	public void neededSize();
 	
 	public int preferedWidth();
 }

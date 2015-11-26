@@ -656,7 +656,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		startOrCancelSort.setText("Start Sort");
 	}
 
-	public void lifeUpdate() {
+	public void neededSize() {
 		parent.requestWidth(preferedWidth(), this);
 	}
 

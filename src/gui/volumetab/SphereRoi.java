@@ -27,22 +27,43 @@ public class SphereRoi extends Roi implements Roi3D {
 	}
 
 	public void draw(Volume vol, BufferedImage bigimg, int slice, double scaling) {
-		BufferedImage orig = vol.getSlice(0).getData().getBufferedImage();
-		double thickness = Integer.parseInt(vol.getSlice(0).getAttribute(
-				KeyMap.KEY_SLICE_THICKNESS));
-		Rectangle rec = this.getBounds();
-		Roi3D roi3 = (Roi3D) this;
-		double radius = this.getBounds().getHeight() / 2;
-		int z = roi3.getZ();
-		
-		thickness *= scaling;
-		
-		if (Math.abs(z - slice) * thickness < radius) {
-			double newr = Math.sqrt(Math.pow(radius, 2) - Math.pow(Math.abs(z - slice) * thickness, 2));
-			OvalRoi next = new OvalRoi(rec.getX()+radius-newr, rec.getY()+radius-newr, newr * 2, newr * 2);
-			next.draw(bigimg.getGraphics());
+		if (this.getProperty("unit").equals("mm")) {
+			BufferedImage orig = vol.getSlice(0).getData().getBufferedImage();
+			double thickness = Integer.parseInt(vol.getSlice(0).getAttribute(
+					KeyMap.KEY_SLICE_THICKNESS));
+			Rectangle rec = this.getBounds();
+			Roi3D roi3 = (Roi3D) this;
+			double radius = this.getBounds().getHeight() / 2;
+			int z = roi3.getZ();
+
+			thickness *= scaling;
+
+			if (Math.abs(z - slice) * thickness < radius) {
+				double newr = Math.sqrt(Math.pow(radius, 2)
+						- Math.pow(Math.abs(z - slice) * thickness, 2));
+				OvalRoi next = new OvalRoi(rec.getX() + radius - newr,
+						rec.getY() + radius - newr, newr * 2, newr * 2);
+				next.draw(bigimg.getGraphics());
+			} else {
+				return;
+			}
 		} else {
-			return;
+			BufferedImage orig = vol.getSlice(0).getData().getBufferedImage();
+			Rectangle rec = this.getBounds();
+			Roi3D roi3 = (Roi3D) this;
+			double radius = this.getBounds().getHeight() / 2;
+			int z = roi3.getZ();
+
+			if (Math.abs(z - slice) < radius) {
+				double newr = Math.sqrt(Math.pow(radius, 2)
+						- Math.pow(Math.abs(z - slice), 2));
+				OvalRoi next = new OvalRoi(rec.getX() + radius - newr,
+						rec.getY() + radius - newr, newr * 2, newr * 2);
+				next.draw(bigimg.getGraphics());
+			} else {
+				System.out.println("nope");
+				return;
+			}
 		}
 	}
 
