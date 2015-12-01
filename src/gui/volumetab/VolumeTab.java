@@ -588,8 +588,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	public void createVolume() {
 		creatingVolume = true;
 		try {
-			// speciall Constructur which throws an Exception if new Volume
-			// fails, instead of calling System.exit(1)
 			creatingText();
 			volume = Volume.createVolume(path.getText());
 			if (volume == null) {
