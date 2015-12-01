@@ -21,8 +21,6 @@ public class NIFTIVolume extends Volume {
 
 	private TextOptions to = new TextOptions();
 
-	private String path;
-
 	public NIFTIVolume(String path) {
 		File file = new File(path);
 		Nifti_Reader nr = new Nifti_Reader();
@@ -48,8 +46,6 @@ public class NIFTIVolume extends Volume {
 		fi.fileName = file.getName();
 		
 		nifti.setFileInfo(fi);
-		System.out.println(fi.fileName);
-		System.out.println(nifti.getFileInfo().fileName);
 	}
 	
 	private ImagePlus createImageData(int imagenumber){
@@ -65,7 +61,7 @@ public class NIFTIVolume extends Volume {
 		fi.fileName = origfi.fileName;
 		
 		data.setFileInfo(fi);
-		
+		data.setProperty("nifti", nifti.getProperty("nifti"));
 		return data;
 	}
 
@@ -102,7 +98,7 @@ public class NIFTIVolume extends Volume {
 	@Override
 	public String getAttribute(KeyMap en, int slice) {
 		if (en == KeyMap.KEY_ECHO_NUMBERS_S) {
-			return nifti.getNFrames() + "";
+			return nifti.getNDimensions()+"";//getNFrames() + "";
 		}
 		return null;
 	}
@@ -287,8 +283,7 @@ public class NIFTIVolume extends Volume {
 	public static String createHeader(ImagePlus data) {
 		NIFTIHeaderWriter nhw = new NIFTIHeaderWriter();
 		
-		Info info = new Info();
-		return info.getImageInfo(data, null);
+		return nhw.writeHeader(data);
 		//return nhw.writeHeader(data);
 	}
 

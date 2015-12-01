@@ -24,6 +24,8 @@ import java.util.Vector;
  */
 public abstract class Volume {
 
+	protected String path;
+	
 	/**
 	 * This method calls the Image.getKeyWords() method. Take a look at the
 	 * Java-doc of Image.getKeyWords() for more informations.
@@ -185,6 +187,19 @@ public abstract class Volume {
 				return new DICOMVolume(path);
 			}
 		} catch (RuntimeException e) {
+			File f = new File(path);
+			ArrayList<String> possibilitys = new ArrayList<String>();
+			for (File niftitest : f.listFiles()) {
+				if (niftitest.getName().endsWith(".nii")) {
+					possibilitys.add(niftitest.getAbsolutePath());
+				}
+			}
+			try {
+				if (possibilitys.size() == 1) {
+					return new NIFTIVolume(possibilitys.get(0));
+				}
+			} catch (RuntimeException e2) {
+			}
 		}
 		return null;
 	}
@@ -331,6 +346,10 @@ public abstract class Volume {
 	 */
 	public abstract ArrayList<String> getHeader();
 
+	public String getPath() {
+		return path;
+	}
+	
 	/**
 	 * Returning the type of the first image in the slice. This type should be
 	 * the same type of the other i

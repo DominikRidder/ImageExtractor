@@ -590,6 +590,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			if (volume == null) {
 				throw new RuntimeException();
 			}
+			path.setText(volume.getPath());
+			
 			volume.getTextOptions().setReturnExpression(
 					TextOptions.ATTRIBUTE_VALUE + "");
 
@@ -628,6 +630,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private void creatingText() {
 		new java.util.Timer().schedule(new java.util.TimerTask() {
 			public void run() {
+				if (creatingVolume){
 				switch (creatingTextStatus) {
 				case 0:
 					outputArea.setText("Creating");
@@ -644,9 +647,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				}
 				creatingTextStatus += 1;
 				creatingTextStatus %= 4;
-				repaint();
-				if (creatingVolume) {
-					creatingText();
+				creatingText();
 				} else if (volume != null) {
 					displayAttributes();
 				} else {
@@ -812,14 +813,19 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	public void actionOpenInExternal() {
 		// if (volume != null) {
 		parent.imec = new ImageExtractorConfig();
-		String customExternal = parent.imec.getOption("External");
+		String customExternal = null;
+		if (path.getText().endsWith(".nii")){
+			customExternal = parent.imec.getOption("External_NITFI");
+		}else{
+			customExternal = parent.imec.getOption("External_DICOM");
+		}
 		ProcessBuilder pb;
 
 		String commands[] = splittCommand(customExternal.replace("$FILE",
 				path.getText()));
 		pb = new ProcessBuilder(commands);
 
-		System.out.println("Try to execute:\n");
+		System.out.println("\nTry to execute:");
 		for (String command : commands) {
 			System.out.print(command + " ");
 		}
@@ -1068,6 +1074,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				parent.requestWidth(neededwidth, this);
 				GUI.setfinalSize(toppanel, new Dimension(neededwidth,
 						parent.height));
+				System.out.println("Roi Panel width = "+parent.width*0.318);
 			}
 
 			if (relativroi != null) {
@@ -1237,11 +1244,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				if (!ownExtended) {
 					parent.setExtendedWindow(true);
 					ownExtended = true;
-					// GUI.setfinalSize(toppanel, new Dimension(
-					// (int) (parent.width * 1.27),
-					// (int) (parent.height / 1.2)));
-					// GUI.setfinalSize(parent, new Dimension(
-					// (int) (parent.width * 1.318), parent.height));
 				}
 			} catch (Exception e) {
 				// a lot of exception can ocure here
@@ -1254,10 +1256,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			if (ownExtended) {
 				parent.setExtendedWindow(false);
 				ownExtended = false;
-				// GUI.setfinalSize(toppanel, new Dimension(parent.width,
-				// (int) (parent.height / 1.2)));
-				// GUI.setfinalSize(parent, new Dimension(parent.width,
-				// parent.height));
 			}
 		}
 

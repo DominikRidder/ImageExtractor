@@ -35,11 +35,6 @@ public class DICOMVolume extends Volume{
 	}
 
 	/**
-	 * Path to the folder, that contains the Images of the Volume.
-	 */
-	private String path;
-
-	/**
 	 * This ArrayList contains all Images, which are in the Volume.
 	 */
 	private ArrayList<Image> slices;

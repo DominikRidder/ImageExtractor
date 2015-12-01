@@ -108,6 +108,8 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension d = tk.getScreenSize();
+		System.out.println("Screen width "+d.width);
+		System.out.println("Screen height "+d.height);
 		width = (int) (((double) d.width) / 2.5);
 		height = d.height / 2;
 
