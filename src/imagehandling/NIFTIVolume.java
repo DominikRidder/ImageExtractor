@@ -28,38 +28,38 @@ public class NIFTIVolume extends Volume {
 		this.path = path;
 
 		setUpInfo();
-		
+
 		for (int i = 0; i < nifti.getNSlices(); i++) {
 			Image img = new Image(path, "nii");
 			nifti.setSlice(i);
-			
+
 			img.setData(createImageData(i));
-			
+
 			slices.add(img);
 		}
 	}
-	
-	private void setUpInfo(){
+
+	private void setUpInfo() {
 		File file = new File(path);
 		FileInfo fi = nifti.getOriginalFileInfo();
-		
+
 		fi.fileName = file.getName();
-		
+
 		nifti.setFileInfo(fi);
 	}
-	
-	private ImagePlus createImageData(int imagenumber){
+
+	private ImagePlus createImageData(int imagenumber) {
 		nifti.setSlice(imagenumber);
 		FileInfo origfi = nifti.getFileInfo();
-		
+
 		ImagePlus data = new ImagePlus("image " + imagenumber,
 				nifti.getBufferedImage());
 		data.setCalibration(nifti.getCalibration());
 		data.setFileInfo(origfi);
-		
+
 		FileInfo fi = data.getFileInfo();
 		fi.fileName = origfi.fileName;
-		
+
 		data.setFileInfo(fi);
 		data.setProperty("nifti", nifti.getProperty("nifti"));
 		return data;
@@ -98,7 +98,7 @@ public class NIFTIVolume extends Volume {
 	@Override
 	public String getAttribute(KeyMap en, int slice) {
 		if (en == KeyMap.KEY_ECHO_NUMBERS_S) {
-			return nifti.getNDimensions()+"";//getNFrames() + "";
+			return nifti.getNDimensions() + "";// getNFrames() + "";
 		}
 		return null;
 	}
@@ -166,7 +166,7 @@ public class NIFTIVolume extends Volume {
 	@Override
 	public ArrayList<ImagePlus> getData() {
 		ArrayList<ImagePlus> data = new ArrayList<ImagePlus>();
-		for (int i=0; i<size(); i++){
+		for (int i = 0; i < size(); i++) {
 			data.add(slices.get(i).getData());
 		}
 		return data;
@@ -214,11 +214,21 @@ public class NIFTIVolume extends Volume {
 
 	public void setRoi(Roi realroi) {
 		if (realroi instanceof Roi3D) {
-			double thickness = Double.parseDouble(slices.get(0).getAttribute(
-					KeyMap.KEY_SLICE_THICKNESS));
-			int per_echo = size()
-					/ Integer.parseInt(slices.get(size() - 1).getAttribute(
-							KeyMap.KEY_ECHO_NUMBERS_S));
+			double thickness = 2;
+			try {
+				thickness = Double.parseDouble(slices.get(0).getAttribute(
+						KeyMap.KEY_SLICE_THICKNESS));
+			} catch (NumberFormatException | NullPointerException e) {
+
+			}
+			int per_echo = 1;
+			try{
+			per_echo = size()
+					/ Integer.parseInt(getAttribute(KeyMap.KEY_ECHO_NUMBERS_S,
+							0));
+			}catch (NumberFormatException | NullPointerException e) {
+				
+			}
 			Rectangle rec = realroi.getBounds();
 			Roi3D roi3 = (Roi3D) realroi;
 			double radius = realroi.getBounds().getHeight() / 2;
@@ -282,9 +292,9 @@ public class NIFTIVolume extends Volume {
 
 	public static String createHeader(ImagePlus data) {
 		NIFTIHeaderWriter nhw = new NIFTIHeaderWriter();
-		
+
 		return nhw.writeHeader(data);
-		//return nhw.writeHeader(data);
+		// return nhw.writeHeader(data);
 	}
 
 }
