@@ -253,6 +253,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private boolean ownExtended = false;
 
+	private double roitabwidth = 0.35;
+	
 	/**
 	 * Standard Constructur.
 	 */
@@ -278,6 +280,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 		String[] shapes = { "Point", "Circle", "Sphere" };
 		shape = new JComboBox<String>(shapes);
+		shape.setSelectedIndex(1);
 		shape.addActionListener(this);
 		GUI.setfinalSize(shape, new Dimension((int) (parent.width / 15.714),
 				(int) (parent.height / 21.6)));
@@ -477,7 +480,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		dimension.setSelectedIndex(1);
 		dimension.addActionListener(this);
 		GUI.setfinalSize(dimension, new Dimension((int) (parent.width / 5.5),
-				(int) (parent.height / 10.8)));
+				(int) (parent.height / 15)));
 
 		JPanel dimselection = new JPanel();
 		dimselection
@@ -485,18 +488,20 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		dimselection.add(text_dim);
 		dimselection.add(dimension);
 		GUI.setfinalSize(dimselection, new Dimension(
-				(int) (parent.width / 3.67), (int) (parent.height / 10.8)));
+				(int) (parent.width * roitabwidth), (int) (parent.height / 10.8)));
 
 		// image
-		roiimage = new BufferedImage((int) (parent.width / 3.67),
+		roiimage = new BufferedImage((int) (parent.width *roitabwidth*7./10),
 				(int) (parent.height / 1.8), BufferedImage.TYPE_4BYTE_ABGR);
 		// The ImageIcon is kinda a wrapper for the image
 		roiimgicon = new ImageIcon(roiimage);
 		// imagepanel wrapps the ImageIcon
 		JLabel roilabel = new JLabel(roiimgicon);
+		GUI.setfinalSize(roilabel, new Dimension((int) (parent.width *roitabwidth),
+				(int) (parent.height / 1.8)));
 		JPanel roiimg = new JPanel();
 		roiimg.add(roilabel);
-		GUI.setfinalSize(roiimg, new Dimension((int) (parent.width / 3.67),
+		GUI.setfinalSize(roiimg, new Dimension((int) (parent.width *roitabwidth),
 				(int) (parent.height / 1.8)));
 
 		// Checkbox for showing the log evaluation
@@ -535,7 +540,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		logpanel.add(alsolog);
 		logpanel.add(logtext);
 		logpanel.add(shape);
-		GUI.setfinalSize(logpanel, new Dimension((int) (parent.width / 3.67),
+		GUI.setfinalSize(logpanel, new Dimension((int) (parent.width *roitabwidth),
 				(int) (parent.height / 5.4)));
 
 		sizepanel = new JPanel();
@@ -543,13 +548,13 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		sizepanel.add(radius);
 		sizepanel.add(radiustext);
 		sizepanel.add(unit);
-		GUI.setfinalSize(sizepanel, new Dimension((int) (parent.width / 3.67),
+		GUI.setfinalSize(sizepanel, new Dimension((int) (parent.width *roitabwidth),
 				(int) (parent.height / 5.4)));
 
 		// Putting the roi Panel together
 		roiPanel = new JPanel();
 		roiPanel.setLayout(new BoxLayout(roiPanel, BoxLayout.Y_AXIS));
-		GUI.setfinalSize(roiPanel, new Dimension((int) (parent.width / 3.67),
+		GUI.setfinalSize(roiPanel, new Dimension((int) (parent.width * roitabwidth),
 				parent.height));
 		Component[] roistuff = { Box.createRigidArea(new Dimension(0, 5)),
 				dimselection, Box.createRigidArea(new Dimension(0, 5)), roiimg,
@@ -1045,7 +1050,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					|| actualSliceIndex() >= volume.size()) {
 				return false;
 			}
-
+			
 			BufferedImage buff = this.volume.getSlice(actualSliceIndex())
 					.getData().getBufferedImage();
 
@@ -1067,14 +1072,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 			int neededwidth = image.getWidth() + (int) (parent.width / 1.6923);
 			if (relativroi != null) {
-				neededwidth += (int) (parent.width * 0.318);
+				neededwidth += (int) (parent.width * roitabwidth);
 			}
 
 			if (parent.getWidth() != neededwidth) {
 				parent.requestWidth(neededwidth, this);
 				GUI.setfinalSize(toppanel, new Dimension(neededwidth,
 						parent.height));
-				System.out.println("Roi Panel width = "+parent.width*0.318);
+				System.out.println("Roi Panel width = "+parent.width*roitabwidth);
 			}
 
 			if (relativroi != null) {
@@ -1240,11 +1245,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				drawIntoImage(roiimage, vf.getPlot(this.volume,
 						this.relativroi, getActualSlice() - 1, degree,
 						alsolog.isSelected()));
-				roiPanel.setVisible(true);
 				if (!ownExtended) {
 					parent.setExtendedWindow(true);
 					ownExtended = true;
 				}
+				roiPanel.setVisible(true);
 			} catch (Exception e) {
 				// a lot of exception can ocure here
 				// (IOException, SingularMatrixException,
@@ -1429,7 +1434,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		} else {
 			int neededwidth = image.getWidth() + (int) (parent.width / 1.6923);
 			if (relativroi != null) {
-				neededwidth += (int) (parent.width * 0.318);
+				neededwidth += (int) (parent.width * roitabwidth);
 			}
 			return neededwidth;
 		}

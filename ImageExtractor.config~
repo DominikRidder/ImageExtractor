@@ -1,7 +1,0 @@
-#ImageExtractor.config
-#This Textfile is used to configer, which External programm is called by the GUI of
-#the ImageExtractor
-
-#standard:
-#External=java -jar libs/ij.jar $FILE
-External=java -jar libs/ij.jar $FILE
