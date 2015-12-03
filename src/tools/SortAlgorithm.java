@@ -1,15 +1,10 @@
 package tools;
 
-import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.WindowManager;
-import ij.io.FileInfo;
 import ij.plugin.DICOM;
-import ij.plugin.Nifti_Reader;
 import ij.plugin.Nifti_Writer;
-import ij.process.ImageProcessor;
-import ij.util.DicomTools;
 import imagehandling.Image;
 import imagehandling.KeyMap;
 
@@ -26,9 +21,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.Stack;
-import java.util.function.IntConsumer;
-
-import com.sun.org.apache.xerces.internal.util.EncodingMap;
 
 /**
  * This class is used to sort Dicoms.
@@ -432,6 +424,7 @@ public class SortAlgorithm {
 			out.println("Creating Niftis..");
 			Set<String> keys = dicomtonifti.keySet();
 			Nifti_Writer writer = new Nifti_Writer();
+			writer.dicom_to_nifti = true;
 
 			for (String key : keys) {
 				int echon = numbOfEchos.get(key);
@@ -444,14 +437,14 @@ public class SortAlgorithm {
 						if (nr1 > nr2) {
 							return 1;
 						} else if (nr1 < nr2) {
-							return -2;
+							return -1;
 						} else {
 							return 0;
 						}
 					}
 				});
 				ImagePlus ip = new ImagePlus();
-
+				int needlast = 0;
 				for (String str : dicomtonifti.get(key)) {
 					DICOM dcm = new DICOM();
 					String imagepath = str.split("#")[1];
@@ -460,6 +453,10 @@ public class SortAlgorithm {
 						is = new ImageStack(dcm.getWidth(), dcm.getHeight());
 						ip.setCalibration(dcm.getCalibration());
 					}
+					if (++needlast == dicomtonifti.get(key).size()){
+						ip.setProperty("Filepath", imagepath);
+					}
+					
 					try {
 						is.addSlice(dcm.getProcessor());
 					} catch (IllegalArgumentException e) {

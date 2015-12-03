@@ -100,6 +100,15 @@ public class NIFTIHeaderWriter {
 		header.append("magic: "+"(Not supported by Imagej)"+"\n");
 		/***************************/
 		
+		/*** DICOM ***/
+		
+		if (info.dicom_extension != null){
+			header.append("\n\nDICOM Extension:\n\n");
+			header.append(info.dicom_extension);
+		}
+		
+		/*************/
+		
 		return header.toString();
 	}
 	
