@@ -14,17 +14,17 @@ public class NIFTIHeaderWriter {
 		header = new StringBuilder();
 		NiftiHeader info = (NiftiHeader) data.getProperty("nifti");
 		/*** HEADER STRUCTUR ********/
-		header.append("int sizeof_hdr: 348\n");
-		header.append("char data_type[10]: (*Unused)\n");
-		header.append("char ddb_name[10]: (*Unused)\n");
-		header.append("int extents: (*Unused)\n");
-		header.append("short session_error: (*Unused)\n");
-		header.append("char regular: (*Unused)\n");
-		header.append("int glmax: (*Unused)\n");
-		header.append("int glmin: (*Unused)\n");
-		header.append("*Unused: These Fields are not used in the NIFTI-1 format.\n");
-		
-		header.append("\n");
+//		header.append("int sizeof_hdr: 348\n");
+//		header.append("char data_type[10]: (*Unused)\n");
+//		header.append("char ddb_name[10]: (*Unused)\n");
+//		header.append("int extents: (*Unused)\n");
+//		header.append("short session_error: (*Unused)\n");
+//		header.append("char regular: (*Unused)\n");
+//		header.append("int glmax: (*Unused)\n");
+//		header.append("int glmin: (*Unused)\n");
+//		header.append("*Unused: These Fields are not used in the NIFTI-1 format.\n");
+//		
+//		header.append("\n");
 		
 		header.append("dim_info: "+(char)info.dim_info+"\n");
 		header.append("dim[8]: {");
@@ -97,7 +97,6 @@ public class NIFTIHeaderWriter {
 		header.append("}\n\n");
 		
 		header.append("intent_name: "+info.intent_name+"\n");
-		header.append("magic: "+"(Not supported by Imagej)"+"\n");
 		/***************************/
 		
 		/*** DICOM ***/

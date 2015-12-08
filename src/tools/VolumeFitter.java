@@ -86,7 +86,7 @@ public class VolumeFitter {
 	}
 
 	public BufferedImage getPlot(Volume vol, Roi relativroi, int slice, int degree,
-			boolean logScale) {
+			boolean logScale, int wwidth, int wheight) {
 		data = vol.getData();
 		Roi roi = data.get(slice).getRoi();
 		String str_echo_numbers = vol.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S, vol.size() - 1).replace(" ", "");
@@ -145,7 +145,7 @@ public class VolumeFitter {
 				fitter.addPoint(i + 1, val);
 			}
 		}
-		return fitter.plotVolume(logScale);
+		return fitter.plotVolume(logScale, wwidth, wheight);
 	}
 
 	public int getMin(BufferedImage img, Roi roi) {

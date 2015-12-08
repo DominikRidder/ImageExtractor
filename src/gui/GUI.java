@@ -306,6 +306,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	public static void setfinalSize(Component p, Dimension d) {
 		p.setMinimumSize(d);
 		p.setMaximumSize(d);
+		p.setPreferredSize(d);
 		p.setSize(d);
 	}
 
