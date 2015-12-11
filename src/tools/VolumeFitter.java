@@ -5,7 +5,12 @@ import fitterAlgorithm.PolynomialLowestSquare;
 import functions.ExponentialFunction;
 import gui.volumetab.Roi3D;
 import ij.ImagePlus;
+import ij.gui.PointRoi;
 import ij.gui.Roi;
+import ij.process.ByteProcessor;
+import ij.process.ColorProcessor;
+import ij.process.ImageProcessor;
+import ij.process.ShortProcessor;
 import imagehandling.Image;
 import imagehandling.KeyMap;
 import imagehandling.Volume;
@@ -34,12 +39,11 @@ public class VolumeFitter {
 	public double getZeroValue(Volume vol, int x, int y, int slice, int degree,
 			boolean logScale) {
 		if (data == null) {
-		String str_echo_numbers = vol.getSlice(vol.size() - 1)
-				.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
+			String str_echo_numbers = vol.getSlice(vol.size() - 1)
+					.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
 			echo_numbers = Integer.parseInt(str_echo_numbers);
 			perEcho = vol.size() / echo_numbers;
 
-			
 			fitter = new Polyfitter();
 			if (degree != -2) {
 				fitter.setAlgorithm(new PolynomialLowestSquare(degree));
@@ -66,18 +70,26 @@ public class VolumeFitter {
 				echo_numbers);
 
 		for (int e = 0; e < echo_numbers; e++) {
-			buffimg.add(vol.getSlice(slice + perEcho * e).getData().getBufferedImage());
+			buffimg.add(vol.getSlice(slice + perEcho * e).getData()
+					.getBufferedImage());
 		}
 
-		int iArray[] = new int[4];
-		int itest[] = new int[4];
-		for (int i = 0; i < buffimg.size(); i++) {
-			BufferedImage img = buffimg.get(i);
-			iArray = img.getRaster().getPixel(x, y, itest);
+		int iArray;
+		if (buffimg.size() != 1) {
+			for (int i = 0; i < buffimg.size(); i++) {
+				iArray = getMin(vol.getData().get(slice + perEcho * i), new PointRoi(x, y));
+				if (logScale) {
+					fitter.addPoint(i + 1, Math.log10(iArray));
+				} else {
+					fitter.addPoint(i + 1, iArray);
+				}
+			}
+		} else {
+			iArray = getMin(vol.getData().get(slice), new PointRoi(x, y));
 			if (logScale) {
-				fitter.addPoint(i + 1, Math.log10(iArray[0]));
+				return Math.log10(iArray);
 			} else {
-				fitter.addPoint(i + 1, iArray[0]);
+				return iArray;
 			}
 		}
 
@@ -85,15 +97,17 @@ public class VolumeFitter {
 		return fitter.getValue(new Point1D(0));
 	}
 
-	public BufferedImage getPlot(Volume vol, Roi relativroi, int slice, int degree,
-			boolean logScale, int wwidth, int wheight) {
+	public BufferedImage getPlot(Volume vol, Roi relativroi, int slice,
+			int degree, boolean logScale, int wwidth, int wheight) {
 		data = vol.getData();
+
 		Roi roi = data.get(slice).getRoi();
-		String str_echo_numbers = vol.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S, vol.size() - 1).replace(" ", "");
+		String str_echo_numbers = vol.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S,
+				vol.size() - 1).replace(" ", "");
 
 		echo_numbers = Integer.parseInt(str_echo_numbers);
 		perEcho = vol.size() / echo_numbers;
-		if (echo_numbers == 1){
+		if (echo_numbers == 1) {
 			degree = 0;
 		}
 
@@ -121,16 +135,16 @@ public class VolumeFitter {
 		}
 		fitter.removePoints();
 
-		ArrayList<BufferedImage> buffimg = new ArrayList<BufferedImage>(
+		ArrayList<ImagePlus> buffimg = new ArrayList<ImagePlus>(
 				echo_numbers);
 
 		for (int e = 0; e < echo_numbers; e++) {
-			buffimg.add(data.get(slice + perEcho * e).getBufferedImage());
+			buffimg.add(data.get(slice + perEcho * e));
 		}
 
 		// int igetValue[] = new int[4];
 		for (int i = 0; i < buffimg.size(); i++) {
-			BufferedImage img = buffimg.get(i);
+			ImagePlus img = buffimg.get(i);
 			int val = 0;
 
 			if (relativroi instanceof Roi3D) {
@@ -148,24 +162,22 @@ public class VolumeFitter {
 		return fitter.plotVolume(logScale, wwidth, wheight);
 	}
 
-	public int getMin(BufferedImage img, Roi roi) {
-		int igetValue[] = null;
-		int values[] = null;
-		int minvalue = 500;
-		WritableRaster r = img.getRaster();
-		Rectangle d = r.getBounds();
+	public int getMin(ImagePlus imp, Roi roi) {
+		int value = 0;
+		int minvalue = Integer.MAX_VALUE;
+
+		Rectangle d = new Rectangle(0,0,imp.getWidth(), imp.getHeight());
 		Rectangle roib = roi.getBounds();
+		ImageProcessor ip = imp.getProcessor();
 		
-		for (int x = roib.x; x < roib.x+roib.getWidth()+1; x++) {
-			for (int y = roib.y; y < roib.y+roib.getHeight()+1; y++) {
+		for (int x = roib.x; x < roib.x + roib.getWidth() + 1; x++) {
+			for (int y = roib.y; y < roib.y + roib.getHeight() + 1; y++) {
 				if (roi.contains(x, y) && d.contains(x, y)) {
-					values = r.getPixel(x, y, igetValue);
-					if (values == null){
-						continue;
-					}
-					int val = values[0];
-					if (val < minvalue) {
-						minvalue = val;
+//					value = ip.getPixel(x, y);
+					value = imp.getBufferedImage().getRGB(x, y);
+
+					if (value < minvalue) {
+						minvalue = value;
 					}
 				}
 			}
@@ -184,7 +196,7 @@ public class VolumeFitter {
 			img = vol.getSlice(i);
 			data = img.getData();
 			if (data.getRoi() != null) {
-				nextmin = getMin(data.getBufferedImage(), data.getRoi());
+				nextmin = getMin(data, data.getRoi());
 				if (nextmin < minvalue) {
 					minvalue = nextmin;
 				}
