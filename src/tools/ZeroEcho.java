@@ -51,7 +51,7 @@ public class ZeroEcho implements Runnable {
 		}
 		
 		
-		int todo = slice_perEcho / threads.length;
+		final int todo = slice_perEcho / threads.length;
 		final int[] offset = new int[threads.length];
 		for (int i = 0; i < threads.length; i++) {
 			offset[i] = todo*i;
@@ -65,11 +65,12 @@ public class ZeroEcho implements Runnable {
 		for (int i = 0; i < threads.length; i++) {
 			final int next = todo*i;
 			if (i == threads.length-1) {
+                                final int tocalc = todo + slice_perEcho - todo * threads.length;
 				threads[i] = new Thread(new Runnable(){
 
 					@Override
 					public void run() {
-						CalculateZeroEcho(todo + slice_perEcho - todo * threads.length, next);
+						CalculateZeroEcho(tocalc, next);
 						
 					}});
 			} else {
