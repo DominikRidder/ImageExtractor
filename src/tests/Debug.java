@@ -50,7 +50,7 @@ public class Debug {
 //		
 //		
 //		
-		gui = new GUI(true);
+		gui = new GUI(true, true);
 		MyTab curtab = gui.getCurrentTab();
 //		
 ////		if (curtab instanceof SorterTab){

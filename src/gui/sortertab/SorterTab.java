@@ -170,14 +170,14 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		table_header_left.add(createText("Status", parent.width / 11,
 				rowheight, false));
 		table_header_left.add(createText("Input Dir",
-				(int) (parent.width / 5.5), rowheight, false));
+				(int) (parent.width / 7), rowheight, false));
 		table_header_left.add(createText("Option",
 				(int) (parent.width / 13.75), rowheight, false));
-		table_header_left.add(createText("To Output Nr.", parent.width / 11,
+		table_header_left.add(createText("To Output Nr.", 3*rowheight,
 				rowheight, false));
 		table_header_left.add(Box.createRigidArea(new Dimension(rowheight,
 				rowheight)));
-		table_header_left.add(createText("Nifti", 2 * rowheight, rowheight,
+		table_header_left.add(createText("Nifti", rowheight, rowheight,
 				false));
 
 		GUI.setfinalSize(table_header_left, new Dimension(
@@ -186,8 +186,6 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		// Panel that contains the upper left rectangle
 		JPanel upperleft = new JPanel();
 		upperleft.setLayout(new BoxLayout(upperleft, BoxLayout.PAGE_AXIS));
-		GUI.setfinalSize(upperleft, new Dimension((int) (parent.width / 1.93),
-				(int) (parent.height / 2.16)));
 		upperleft.add(header_shifter_left);
 		upperleft.add(Box.createRigidArea(new Dimension(0, parent.width / 54)));
 		upperleft.add(table_header_left);
@@ -197,6 +195,8 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 			tablerows_left[i] = createInputRow(i + 1);
 			upperleft.add(tablerows_left[i]);
 		}
+		GUI.setfinalSize(upperleft, new Dimension(tablerows_left[0].getWidth(),
+				(int) (parent.height / 2.16)));
 		upperleft.add(Box.createRigidArea(new Dimension(0, (int) (rowheight))));
 		// -- upperleft end
 
@@ -255,15 +255,11 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		outputArea = new JTextArea();
 		outputArea.setEditable(false);
 		outputArea.setMargin(new Insets(0, 0, 0, 0));
-		GUI.setfinalSize(outputArea, new Dimension(
-				(int) (parent.width / 1.04762), (int) (parent.height / 2.7)));
 		outputScroller = new JScrollPane(outputArea);
 		GUI.setfinalSize(outputScroller, new Dimension(parent.width,
 				parent.height / 2));
 		outputScroller
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-		outputScroller.setPreferredSize(new Dimension(parent.width,
-				parent.height / 2));
 
 		// Seperates the left upper side from the right upper side
 		JSeparator separator = new JSeparator(SwingConstants.VERTICAL);
@@ -274,6 +270,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		JPanel upper = new JPanel();
 		upper.setLayout(new BoxLayout(upper, BoxLayout.LINE_AXIS));
 		upper.add(upperleft);
+		upper.add(Box.createRigidArea(new Dimension(rowheight,rowheight)));
 		upper.add(separator);
 		upper.add(upperright);
 
@@ -318,21 +315,23 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		rowPanel.add(createText("Undefined", parent.width / 11, rowheight,
 				false));
 		// Input dir
-		rowPanel.add(createText("", (int) (parent.width / 5.5), rowheight, true));
+		rowPanel.add(createText("", (int) (parent.width / 7), rowheight, true));
 		// File transfer option
 		rowPanel.add(jc);
 		// Output Nr field
-		rowPanel.add(createText("" + 1, parent.width / 11, rowheight, true));
+		rowPanel.add(createText("" + 1, 3*rowheight, rowheight, true));
 		// browse dir button
 		rowPanel.add(browseButton);
 		// to make it fit
-		Component box = Box.createRigidArea(new Dimension(rowheight, rowheight));
-		GUI.setfinalSize(box, new Dimension(rowheight, rowheight));
-		rowPanel.add(box);
 		// option for niftis
 		rowPanel.add(tonifti);
 
-		GUI.setfinalSize(rowPanel, new Dimension(rowheight+rowheight+(int)(parent.width/11)+ (int) (parent.width/5.5) + (int) (parent.width/11)+(int) (parent.width / 13.75)+rowheight, rowheight));
+		int neededwidth = 0;
+		for (Component c: rowPanel.getComponents()){
+			neededwidth += c.getWidth();
+		}
+		
+		GUI.setfinalSize(rowPanel, new Dimension(neededwidth, rowheight));
 		
 		return rowPanel;
 	}

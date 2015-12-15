@@ -1,5 +1,6 @@
 package tools;
 
+import fitterAlgorithm.LRDecomposition;
 import fitterAlgorithm.LowestSquare;
 import fitterAlgorithm.PolynomialLowestSquare;
 import functions.ExponentialFunction;
@@ -36,9 +37,12 @@ public class VolumeFitter {
 
 	private int lastdegree;
 
+	private boolean useproccessor;
+
 	public double getZeroValue(Volume vol, int x, int y, int slice, int degree,
 			boolean logScale) {
-		if (data == null) {
+		if (fitter == null) {
+			useproccessor = false;
 			String str_echo_numbers = vol.getSlice(vol.size() - 1)
 					.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S).replace(" ", "");
 			echo_numbers = Integer.parseInt(str_echo_numbers);
@@ -47,8 +51,10 @@ public class VolumeFitter {
 			fitter = new Polyfitter();
 			if (degree != -2) {
 				fitter.setAlgorithm(new PolynomialLowestSquare(degree));
+//				 fitter.setAlgorithm(new LRDecomposition(degree));
 			} else {
 				fitter.setAlgorithm(new LowestSquare(1));
+				fitter.setFunction(new ExponentialFunction());
 			}
 			lastdegree = degree;
 
@@ -77,7 +83,8 @@ public class VolumeFitter {
 		int iArray;
 		if (buffimg.size() != 1) {
 			for (int i = 0; i < buffimg.size(); i++) {
-				iArray = getMin(vol.getData().get(slice + perEcho * i), new PointRoi(x, y));
+				iArray = getMin(vol.getData().get(slice + perEcho * i),
+						new PointRoi(x, y));
 				if (logScale) {
 					fitter.addPoint(i + 1, Math.log10(iArray));
 				} else {
@@ -113,11 +120,13 @@ public class VolumeFitter {
 
 		// the programm for the fitting
 		if (fitter == null) {
+			useproccessor = true;
 			fitter = new Polyfitter();
 			if (degree != -2) {
 				fitter.setAlgorithm(new PolynomialLowestSquare(degree));
 			} else {
 				fitter.setAlgorithm(new LowestSquare(1));
+				fitter.setFunction(new ExponentialFunction());
 			}
 			lastdegree = degree;
 
@@ -133,10 +142,10 @@ public class VolumeFitter {
 			}
 			lastdegree = degree;
 		}
+
 		fitter.removePoints();
 
-		ArrayList<ImagePlus> buffimg = new ArrayList<ImagePlus>(
-				echo_numbers);
+		ArrayList<ImagePlus> buffimg = new ArrayList<ImagePlus>(echo_numbers);
 
 		for (int e = 0; e < echo_numbers; e++) {
 			buffimg.add(data.get(slice + perEcho * e));
@@ -166,16 +175,19 @@ public class VolumeFitter {
 		int value = 0;
 		int minvalue = Integer.MAX_VALUE;
 
-		Rectangle d = new Rectangle(0,0,imp.getWidth(), imp.getHeight());
+		Rectangle d = new Rectangle(0, 0, imp.getWidth(), imp.getHeight());
 		Rectangle roib = roi.getBounds();
 		ImageProcessor ip = imp.getProcessor();
-		
+		BufferedImage img = imp.getBufferedImage();
+
 		for (int x = roib.x; x < roib.x + roib.getWidth() + 1; x++) {
 			for (int y = roib.y; y < roib.y + roib.getHeight() + 1; y++) {
 				if (roi.contains(x, y) && d.contains(x, y)) {
-//					value = ip.getPixel(x, y);
-					value = imp.getBufferedImage().getRGB(x, y);
-
+					if (useproccessor) {
+						value = ip.getPixel(x, y);
+					} else {
+						value = img.getRGB(x, y);
+					}
 					if (value < minvalue) {
 						minvalue = value;
 					}

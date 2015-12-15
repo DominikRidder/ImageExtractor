@@ -48,7 +48,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 * @param agrs
 	 */
 	public static void main(String[] agrs) {
-		new GUI(true);
+		new GUI(true, true);
 	}
 
 	/**
@@ -102,7 +102,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	/**
 	 * One and only Constructor.
 	 */
-	public GUI(boolean forceProgrammEndIfThereIsNoWindow) {
+	public GUI(boolean forceProgrammEndIfThereIsNoWindow, boolean visible) {
 		imec = new ImageExtractorConfig();
 		this.addWindowListener(this);
 
@@ -167,7 +167,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		setLocationRelativeTo(null);
 		setTitle("ImageExtractor");
 		setResizable(false);
-		setVisible(true);
+		setVisible(visible);
 
 		System.out.println("Gui width = " + width);
 		System.out.println("Gui height = " + height);
@@ -204,7 +204,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 			newTab(new SorterTab(filechooser, this));
 			break;
 		case "new Window":
-			new GUI(forceEnd);
+			new GUI(forceEnd, this.isVisible());
 			break;
 		default:
 			break;

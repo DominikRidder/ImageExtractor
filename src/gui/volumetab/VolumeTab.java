@@ -490,21 +490,30 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				(int) (parent.height / 15)));
 
 		// Calc zero echo
-		JButton zero_echo = new JButton("calc Zero Echo");
+		JButton zero_echo = new JButton("Calculate Zero Echo");
 		zero_echo.addActionListener(this);
-		GUI.setfinalSize(zero_echo, new Dimension(parent.width / 15,
-				parent.height / 15));
+		GUI.setfinalSize(zero_echo, new Dimension((int)(parent.width / 5.5),
+				parent.height / 25));
 
 		JPanel dimselection = new JPanel();
 		dimselection
 				.setLayout(new BoxLayout(dimselection, BoxLayout.LINE_AXIS));
 		dimselection.add(text_dim);
 		dimselection.add(dimension);
-		dimselection.add(zero_echo);
+//		dimselection.add(zero_echo);
 		GUI.setfinalSize(dimselection, new Dimension(
 				(int) (parent.width * roitabwidth),
-				(int) (parent.height / 10.8)));
+				(int) (parent.height / 20)));
 
+		JPanel zeropanel = new JPanel();
+		zeropanel
+				.setLayout(new BoxLayout(zeropanel, BoxLayout.LINE_AXIS));
+		zeropanel.add(Box.createRigidArea(new Dimension((int) (parent.width / 15.7143), 1)));
+		zeropanel.add(zero_echo);
+		GUI.setfinalSize(zeropanel, new Dimension(
+				(int) (parent.width * roitabwidth),
+				(int) (parent.height / 25)));
+		
 		// image
 		roiimage = new BufferedImage(
 				(int) (parent.width * roitabwidth * 7. / 10),
@@ -552,7 +561,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		logpanel.add(shape);
 		GUI.setfinalSize(logpanel,
 				new Dimension((int) (parent.width * roitabwidth),
-						(int) (parent.height / 5.4)));
+						(int) (parent.height / 10)));
 
 		sizepanel = new JPanel();
 		sizepanel.setLayout(new BoxLayout(sizepanel, BoxLayout.LINE_AXIS));
@@ -561,8 +570,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		sizepanel.add(unit);
 		GUI.setfinalSize(sizepanel,
 				new Dimension((int) (parent.width * roitabwidth),
-						(int) (parent.height / 5.4)));
-
+						(int) (parent.height / 15)));
+		
 		// Putting the roi Panel together
 		roiPanel = new JPanel();
 		roiPanel.setLayout(new BoxLayout(roiPanel, BoxLayout.Y_AXIS));
@@ -570,7 +579,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				new Dimension((int) (parent.width * roitabwidth),
 						(int) (parent.height / 1.2)));
 		Component[] roistuff = { Box.createRigidArea(new Dimension(0, 5)),
-				dimselection, Box.createRigidArea(new Dimension(0, 5)), roiimg,
+				dimselection,Box.createRigidArea(new Dimension(0, 3)),zeropanel, Box.createRigidArea(new Dimension(0, 5)), roiimg,
 				logpanel, sizepanel };
 		GUI.addComponents(roiPanel, roistuff);
 		roiPanel.setVisible(false);
@@ -746,7 +755,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			return;
 		}
 		switch (e.getActionCommand()) {
-		case "calc Zero Echo":
+		case "Calculate Zero Echo":
 			actionCalculateZeroEcho();
 			break;
 		case "open in External":
@@ -791,15 +800,20 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void actionCalculateZeroEcho() {
-		ZeroEcho ze = new ZeroEcho(volume, this);
+		int degree = -1;
+		if (((String) dimension.getSelectedItem()).contains("Exponential")) {
+			degree = -2;
+		} else {
+			for (int i = 0; i < 5; i++) {
+				if (((String) dimension.getSelectedItem()).contains("" + i)) {
+					degree = i;
+				}
+			}
+		}
+		
+		ZeroEcho ze = new ZeroEcho(volume, this, degree, alsolog.isSelected());
 		new Thread(ze).start();
 	}
-
-	//
-	// public void zeroEchoCall(BufferedImage img){
-	// max_echo.setForeground(new java.awt.Color(255, 215, 0));
-	// max_echo.setText(max_echo.getText()+"+ 0");
-	// }
 
 	/***
 	 * This Method checks if a ZeroEcho slice is calculated already to a given

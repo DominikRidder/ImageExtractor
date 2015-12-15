@@ -431,8 +431,7 @@ public class Image implements Comparable<Image> {
 		KeyMap testdata[] = { KeyMap.KEY_PROTOCOL_NAME, KeyMap.KEY_PATIENT_ID,
 				KeyMap.KEY_IMAGE_NUMBER };
 
-		PrintStream stdout = System.out;
-
+//		PrintStream stdout = System.out;
 		// try {
 		// System.setOut(new PrintStream(new
 		// File("/opt/dridder_local/Test/Syntaxfehler")){
@@ -448,7 +447,7 @@ public class Image implements Comparable<Image> {
 		for (KeyMap test : testdata) {
 			String k = DicomTools.getTag(imp, test.getValue("IMA"));
 			if (k == null) {
-				System.setOut(stdout);
+//				System.setOut(stdout);
 				return false;
 			}
 		}
