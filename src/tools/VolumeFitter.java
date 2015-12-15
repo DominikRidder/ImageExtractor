@@ -83,8 +83,7 @@ public class VolumeFitter {
 		int iArray;
 		if (buffimg.size() != 1) {
 			for (int i = 0; i < buffimg.size(); i++) {
-				iArray = getMin(vol.getData().get(slice + perEcho * i),
-						new PointRoi(x, y));
+				iArray = buffimg.get(i).getRGB(x, y);
 				if (logScale) {
 					fitter.addPoint(i + 1, Math.log10(iArray));
 				} else {
