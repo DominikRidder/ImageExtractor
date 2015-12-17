@@ -269,7 +269,7 @@ public class SortAlgorithm {
 	 * This method calls toNDigits(protocol_digits, given number String).
 	 * 
 	 * @param image_number
-	 * @return
+	 * @return A String representation filled with leading zeros
 	 */
 	private String toProtocolDigits(String image_number) {
 		return toNDigits(protocol_digits, image_number);
@@ -279,7 +279,7 @@ public class SortAlgorithm {
 	 * This method calls toNDigits(img_digits, given number String).
 	 * 
 	 * @param image_number
-	 * @return
+	 * @return A String representation of a number filled with leading zeros
 	 */
 	private String toImgDigits(String image_number) {
 		return toNDigits(img_digits, image_number);
@@ -293,7 +293,7 @@ public class SortAlgorithm {
 	 * 
 	 * @param n
 	 * @param number
-	 * @return
+	 * @return A String representation of a number filled with leading zeros
 	 */
 	private String toNDigits(int n, String number) {
 		StringBuilder digits = new StringBuilder(n);
@@ -329,7 +329,7 @@ public class SortAlgorithm {
 	/**
 	 * Returns the information, if there was a problem with the permission.
 	 * 
-	 * @return
+	 * @return true, if there was a Problem to transfer/copy the Files; false else
 	 */
 	public boolean getPermissionProblem() {
 		return permissionProblem;
@@ -1111,7 +1111,7 @@ public class SortAlgorithm {
 	 * have to set the start value of this class some time before, to get a
 	 * usefull value.
 	 * 
-	 * @return
+	 * @return The Time, that elapsed since the last call of deltaTime
 	 */
 	private double deltaTime() {
 		// atm -> at the moment (current time)

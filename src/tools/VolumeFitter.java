@@ -39,7 +39,7 @@ public class VolumeFitter {
 
 	private boolean useproccessor;
 
-	public double getZeroValue(Volume vol, int x, int y, int slice, int degree,
+	public int[] getZeroValues(Volume vol, int slice, int degree,
 			boolean logScale) {
 		if (fitter == null) {
 			useproccessor = false;
@@ -51,7 +51,6 @@ public class VolumeFitter {
 			fitter = new Polyfitter();
 			if (degree != -2) {
 				fitter.setAlgorithm(new PolynomialLowestSquare(degree));
-//				 fitter.setAlgorithm(new LRDecomposition(degree));
 			} else {
 				fitter.setAlgorithm(new LowestSquare(1));
 				fitter.setFunction(new ExponentialFunction());
@@ -81,26 +80,37 @@ public class VolumeFitter {
 		}
 
 		int iArray;
-		if (buffimg.size() != 1) {
-			for (int i = 0; i < buffimg.size(); i++) {
-				iArray = buffimg.get(i).getRGB(x, y);
-				if (logScale) {
-					fitter.addPoint(i + 1, Math.log10(iArray));
+		int width = buffimg.get(0).getWidth();
+		int rgb[] = new int[width * buffimg.get(0).getHeight()];
+		for (int x = 0; x < buffimg.get(0).getWidth(); x++) {
+			for (int y = 0; y < buffimg.get(0).getHeight(); y++) {
+				float pointcloud[][] = new float[echo_numbers][2];
+				if (buffimg.size() != 1) {
+					for (int i = 0; i < buffimg.size(); i++) {
+						iArray = buffimg.get(i).getRGB(x, y);
+						if (logScale) {
+							pointcloud[i][0] = i + 1;
+							pointcloud[i][1] = (float) Math.log10(iArray);
+						} else {
+							pointcloud[i][0] = i + 1;
+							pointcloud[i][1] = iArray;
+						}
+					}
+					fitter.setPoints(pointcloud);
+					fitter.fit();
+					rgb[x + y * width] = (int)fitter.getValue(0);
 				} else {
-					fitter.addPoint(i + 1, iArray);
+					iArray = getMin(vol.getData().get(slice),
+							new PointRoi(x, y));
+					if (logScale) {
+						rgb[x + y * width] =(int) Math.log10(iArray);
+					} else {
+						rgb[x + y * width] = iArray;
+					}
 				}
 			}
-		} else {
-			iArray = getMin(vol.getData().get(slice), new PointRoi(x, y));
-			if (logScale) {
-				return Math.log10(iArray);
-			} else {
-				return iArray;
-			}
 		}
-
-		fitter.fit();
-		return fitter.getValue(new Point1D(0));
+		return rgb;
 	}
 
 	public BufferedImage getPlot(Volume vol, Roi relativroi, int slice,

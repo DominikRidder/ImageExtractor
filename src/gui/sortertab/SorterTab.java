@@ -257,7 +257,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		outputArea.setMargin(new Insets(0, 0, 0, 0));
 		outputScroller = new JScrollPane(outputArea);
 		GUI.setfinalSize(outputScroller, new Dimension(parent.width,
-				parent.height / 2));
+				(int)(parent.height / 2.6)));
 		outputScroller
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 

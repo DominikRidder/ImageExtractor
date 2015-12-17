@@ -91,16 +91,29 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	boolean extendedWindow = false;
 
 	/**
-	 * 
+	 * This class is used, to load and save the config of the ImageExtractor.
 	 */
 	public ImageExtractorConfig imec;
 
+	/**
+	 * Width is the width of the GUI.
+	 */
 	public int width;
 
+	/**
+	 * Height is the height of the GUI.
+	 */
 	public int height;
 
 	/**
-	 * One and only Constructor.
+	 * Constructs a new GUI. The GUI can be controlled with a Mouse or even
+	 * based on Java code.
+	 * 
+	 * @param forceProgrammEndIfThereIsNoWindow
+	 *            determines, if System.exit(1) is called, if all windows closed
+	 * @param visible
+	 *            Is used to control the visibility of the GUI. This can be
+	 *            helpfull for testcases.
 	 */
 	public GUI(boolean forceProgrammEndIfThereIsNoWindow, boolean visible) {
 		imec = new ImageExtractorConfig();
@@ -108,8 +121,8 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension d = tk.getScreenSize();
-		System.out.println("Screen width "+d.width);
-		System.out.println("Screen height "+d.height);
+		System.out.println("Screen width " + d.width);
+		System.out.println("Screen height " + d.height);
 		width = (int) (((double) d.width) / 2.5);
 		height = d.height / 2;
 
@@ -166,13 +179,13 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		add(tabber);
 		setLocationRelativeTo(null);
 		setTitle("ImageExtractor");
-		setResizable(false);
+		setResizable(true);
 		setVisible(visible);
 
 		System.out.println("Gui width = " + width);
 		System.out.println("Gui height = " + height);
 
-		new Thread(this).start();
+		//new Thread(this).start();
 	}
 
 	/**
@@ -183,10 +196,21 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		lifeupdate();
 	}
 
+	/**
+	 * Method, to find, if the GUI is running.
+	 * 
+	 * @return true, if there are more than 0 window open; else false
+	 */
 	public boolean isAlive() {
 		return windows != 0;
 	}
 
+	/**
+	 * Setting the current displayed Tab of the GUI.
+	 * 
+	 * @param i
+	 *            The Position of the tab in the Tabbar.
+	 */
 	public void setCurrentTab(int i) {
 		this.tabber.setSelectedIndex(i);
 	}
@@ -212,7 +236,10 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	}
 
 	/**
-	 * Method for creating a new Tab.
+	 * Creates a new Tab if there are less than 10 Tabs open.
+	 * 
+	 * @param comp
+	 *            The Tab Component, that should be attached to the Tabbar
 	 */
 	private void newTab(JComponent comp) {
 		// Max 9 Tabs
@@ -263,22 +290,25 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		tabber.setSelectedIndex(tabber.getTabCount() - 1);
 	}
 
+	/**
+	 * This Method was used, to change the Size of the GUI. This was used by the
+	 * Sorter and VolumeTab, since the ROI Panel took additional space.
+	 * 
+	 * @param bool
+	 *            if true, expanding the window; else making it smaller
+	 */
+	@Deprecated
 	public void setExtendedWindow(boolean bool) {
 		if (extendedWindow == bool) {
 			return;
 		}
 		extendedWindow = bool;
-
-		// if (extendedWindow) {
-		// setfinalSize(this, new Dimension(1400, 550));
-		// } else {
-		// setfinalSize(this, new Dimension(1100, 550));
-		// }
 	}
 
 	/**
 	 * Method, which is always running, to handle the lifeupdate of the tabs.
 	 */
+	@Deprecated
 	private void lifeupdate() {
 		while (this.isVisible()) {
 			if (tabber.getTabCount() == 0) {
@@ -292,6 +322,15 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		}
 	}
 
+	/**
+	 * Requesting a new Width Size for the GUI. This Method only works, if the
+	 * Tab, that calls this Method, is the current focused Tab.
+	 * 
+	 * @param width
+	 *            The new Width for the GUI.
+	 * @param requester
+	 *            The 'MyTab' that calls this method.
+	 */
 	public void requestWidth(int width, MyTab requester) {
 		if (tabber.getComponentAt(tabber.getSelectedIndex()).equals(requester)) {
 			if (width != this.getWidth()) {
@@ -301,7 +340,12 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	}
 
 	/**
-	 * Method, which should force a choosen Size for a Component.
+	 * Secures, that a Component should stay in his Shape.
+	 * 
+	 * @param p
+	 *            The Component, that gets modified
+	 * @param d
+	 *            The Dimension, the Component should fit
 	 */
 	public static void setfinalSize(Component p, Dimension d) {
 		p.setMinimumSize(d);
@@ -311,7 +355,13 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	}
 
 	/**
-	 * Method to add a list of Components to a JPanel.
+	 * Method to add a list of Components to a JPanel. This Method can be used,
+	 * to create shorter code.
+	 * 
+	 * @param here
+	 *            The JPanel, that should contain the Components at the end
+	 * @param toadd
+	 *            The Components, that are added to the JPanel
 	 */
 	public static void addComponents(JPanel here, Component[] toadd) {
 		for (int i = 0; i < toadd.length; i++) {
@@ -320,7 +370,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	}
 
 	/**
-	 * Method for the Close Buttons in the Tab.
+	 * Class for the Close Buttons in the Tab.
 	 */
 	class MyCloseActionHandler implements ActionListener {
 

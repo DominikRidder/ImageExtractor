@@ -103,7 +103,6 @@ public class Image implements Comparable<Image> {
 	 * Returning all Implemented KeyWords in a String, where one line is one
 	 * Attribute Name.
 	 * 
-	 * @return
 	 */
 	public static String getKeyWords() {
 		ArrayList<String> words = new ArrayList<String>();
@@ -129,7 +128,6 @@ public class Image implements Comparable<Image> {
 	 * regular expression.
 	 * 
 	 * @param regularExpression
-	 * @return
 	 */
 	public static String getKeyWords(String regularExpression) {
 		ArrayList<String> words = new ArrayList<String>();
@@ -173,7 +171,7 @@ public class Image implements Comparable<Image> {
 	/**
 	 * This method returns the current roi.
 	 * 
-	 * @return
+	 * 
 	 */
 	public Roi getRoi() {
 		return roi;
@@ -182,7 +180,6 @@ public class Image implements Comparable<Image> {
 	/**
 	 * Returns the Image typ. Known Implementation in this class: IMA and dcm.
 	 * 
-	 * @return
 	 */
 	public String getType() {
 		return type;
@@ -191,7 +188,6 @@ public class Image implements Comparable<Image> {
 	/**
 	 * Returns the path of the Image as a String.
 	 * 
-	 * @return
 	 */
 	public String getPath() {
 		return path;
@@ -204,7 +200,6 @@ public class Image implements Comparable<Image> {
 	 * Else you only have 1 row and 1 value.
 	 * 
 	 * @param key
-	 * @return
 	 */
 	public String getAttribute(String key) {
 		TextOptions topt = new TextOptions();
@@ -230,7 +225,6 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @param key
 	 * @param topt
-	 * @return
 	 */
 	public String getAttribute(String key, TextOptions topt) {
 		if (!key.contains("*") && !key.contains("?")) {
@@ -270,7 +264,6 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @param en
 	 * @param topt
-	 * @return
 	 */
 	public String getAttribute(KeyMap en, TextOptions topt) {
 		TextOptions to = new TextOptions();
@@ -299,8 +292,6 @@ public class Image implements Comparable<Image> {
 	 * Returns all key matching sepperated in an array.
 	 * 
 	 * @param key
-	 * @param topt
-	 * @return
 	 */
 	public String[] getAttributeList(String key) {
 		return getAttribute(key).split("\n");
@@ -311,7 +302,7 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @param key
 	 * @param topt
-	 * @return
+	 * 
 	 */
 	public String[] getAttributeList(String key, TextOptions topt) {
 		return getAttribute(key, topt).split("\n");
@@ -341,8 +332,6 @@ public class Image implements Comparable<Image> {
 
 	/**
 	 * Return the Image, that is in the data of this file, as a BufferedImage.
-	 * 
-	 * @return
 	 */
 	public ImagePlus getData() {
 		if (data == null) {
@@ -423,7 +412,6 @@ public class Image implements Comparable<Image> {
 	 * This method trys to find out, if the Initialized path can be handeld as a
 	 * Dicom.
 	 * 
-	 * @return
 	 */
 	public static boolean isDicom(Path path) {
 		ImagePlus imp = new ImagePlus(path.toString());
@@ -496,7 +484,7 @@ public class Image implements Comparable<Image> {
 		default:
 			throw new RuntimeException("The Image Type can't be handeld.");
 		}
-		de.extractData(path, outputdir);
+		de.extractImage(path, outputdir);
 	}
 
 	/**
@@ -531,7 +519,7 @@ public class Image implements Comparable<Image> {
 	 * Return a String, which contains the Absolute path name of the folder,
 	 * which is above this image.
 	 * 
-	 * @return
+	 * 
 	 */
 	public String getParentFolder() {
 		File f = new File(path);
@@ -543,7 +531,7 @@ public class Image implements Comparable<Image> {
 	 * Returns Dicom attributes, to a given enum of the KeyMap.
 	 * 
 	 * @param en
-	 * @return
+	 * 
 	 */
 	public String getAttributeDicom(KeyMap en) {
 		String key = en.getValue(type);
@@ -561,7 +549,7 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @param path
 	 * @param en
-	 * @return
+	 * 
 	 */
 	public static String[] getAttributesDicom(String path, KeyMap en[]) {
 		String key[] = new String[en.length];

@@ -30,7 +30,6 @@ public abstract class Volume {
 	 * This method calls the Image.getKeyWords() method. Take a look at the
 	 * Java-doc of Image.getKeyWords() for more informations.
 	 * 
-	 * @return
 	 */
 	public static String getKeyWords() {
 		return Image.getKeyWords();
@@ -40,7 +39,6 @@ public abstract class Volume {
 	 * This method calls the Image.getKeyWords(str) method. Take a look at the
 	 * Java-doc of Image.getKeyWords(String str) for more informations.
 	 * 
-	 * @return
 	 */
 	public static String getKeyWords(String str) {
 		return Image.getKeyWords(str);
@@ -213,7 +211,7 @@ public abstract class Volume {
 	/**
 	 * Creates png files of the images, in the outputdir folder.
 	 * 
-	 * @param outputdir
+	 * @param Outputdir
 	 */
 	public abstract void extractData(String Outputdir);
 
@@ -238,7 +236,6 @@ public abstract class Volume {
 	 * first slice.
 	 *
 	 * @param en
-	 * @return
 	 */
 	public abstract String getAttribute(KeyMap en);
 
@@ -248,7 +245,6 @@ public abstract class Volume {
 	 *
 	 * @param en
 	 * @param slice
-	 * @return
 	 */
 	public abstract String getAttribute(KeyMap en, int slice);
 
@@ -256,9 +252,11 @@ public abstract class Volume {
 	 * Returning a Attribute value, to a given enum and a Vector named slices,
 	 * which contains the indizies of the slices, which should be used.
 	 * 
-	 * @param key
+	 * @param en
 	 * @param slices
-	 * @return
+	 * @return A String array, where each value is the result of the call:
+	 * <p>
+	 * Image.getAttribute(en)
 	 */
 	public abstract String[] getAttribute(KeyMap en, Vector<Integer> slices);
 
@@ -267,8 +265,7 @@ public abstract class Volume {
 	 * given key are not the same in all slices, a message is printed into the
 	 * console. This method always returns the attribute of the last image.
 	 * 
-	 * @param key
-	 * @return
+	 * @return The Information in the volume, that matches the key
 	 */
 	public abstract String getAttribute(String key);
 
@@ -280,7 +277,6 @@ public abstract class Volume {
 	 * 
 	 * @param key
 	 * @param slices
-	 * @return
 	 */
 	public abstract String[] getAttribute(String key, Vector<Integer> slices);
 
@@ -289,7 +285,6 @@ public abstract class Volume {
 	 * ArrayList.
 	 *
 	 * @param en
-	 * @return
 	 */
 	public abstract String[] getAttributeForEachSlice(KeyMap en);
 
@@ -299,7 +294,6 @@ public abstract class Volume {
 	 * searchparameter.
 	 * 
 	 * @param key
-	 * @return
 	 */
 	public abstract String[] getAttributeForEachSlice(String key);
 
@@ -310,7 +304,6 @@ public abstract class Volume {
 	 * 
 	 * @param key
 	 * @param slice
-	 * @return
 	 */
 	public abstract String[] getAttributeList(String key, int slice);
 
@@ -319,7 +312,6 @@ public abstract class Volume {
 	 * 
 	 * @param key
 	 * @param slices
-	 * @return
 	 */
 	public abstract String[][] getAttributeList(String key,
 			Vector<Integer> slices);
@@ -328,21 +320,18 @@ public abstract class Volume {
 	 * Returning a two dimensional array, with the informations inside.
 	 * 
 	 * @param key
-	 * @return
 	 */
 	public abstract String[][] getAttributeListForEachSlice(String key);
 
 	/**
 	 * Returning the Data of an Image.
 	 * 
-	 * @return
 	 */
 	public abstract ArrayList<ImagePlus> getData();
 
 	/**
 	 * Returning the headers of all images separated in a ArrayList
 	 * 
-	 * @return
 	 */
 	public abstract ArrayList<String> getHeader();
 
@@ -354,7 +343,6 @@ public abstract class Volume {
 	 * Returning the type of the first image in the slice. This type should be
 	 * the same type of the other i
 	 * 
-	 * @return
 	 */
 	public abstract String getImageType();
 
@@ -362,7 +350,6 @@ public abstract class Volume {
 	 * Returns the specific Image, starting with int i = 0.
 	 *
 	 * @param i
-	 * @return
 	 */
 	public abstract Image getSlice(int i);
 

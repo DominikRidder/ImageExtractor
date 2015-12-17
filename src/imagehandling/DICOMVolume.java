@@ -13,12 +13,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Vector;
 
-public class DICOMVolume extends Volume{
+public class DICOMVolume extends Volume {
 	/**
 	 * This method calls the Image.getKeyWords() method. Take a look at the
 	 * Java-doc of Image.getKeyWords() for more informations.
 	 * 
-	 * @return
+	 * @return All implemented KeyWords
 	 */
 	public static String getKeyWords() {
 		return Image.getKeyWords();
@@ -28,7 +28,7 @@ public class DICOMVolume extends Volume{
 	 * This method calls the Image.getKeyWords(str) method. Take a look at the
 	 * Java-doc of Image.getKeyWords(String str) for more informations.
 	 * 
-	 * @return
+	 * @return Attribute Names, that matches to the given String
 	 */
 	public static String getKeyWords(String str) {
 		return Image.getKeyWords(str);
@@ -88,26 +88,26 @@ public class DICOMVolume extends Volume{
 					// This was not an Image
 				}
 			}
-			if (size() == 0){
+			if (size() == 0) {
 				throw new RuntimeException();
 			}
 
 			// sort images
 			Collections.sort(slices);
 		}
-//		} else if (path.endsWith(".nii")) {
-//			Nifti_Reader nr = new Nifti_Reader();
-//			ImagePlus nifti = nr.load(file.getParent(), file.getName());
-//			System.out.println(nifti.getT());
-//			for (int i = 0; i < nifti.getImageStackSize(); i++) {
-//				Image img = new Image(path, "nii");
-//				ImagePlus data = new ImagePlus();
-//				nifti.setSlice(i);
-//				data.setImage(nifti.getBufferedImage());
-//				img.setData(data);
-//				slices.add(img);
-//			}
-//		}
+		// } else if (path.endsWith(".nii")) {
+		// Nifti_Reader nr = new Nifti_Reader();
+		// ImagePlus nifti = nr.load(file.getParent(), file.getName());
+		// System.out.println(nifti.getT());
+		// for (int i = 0; i < nifti.getImageStackSize(); i++) {
+		// Image img = new Image(path, "nii");
+		// ImagePlus data = new ImagePlus();
+		// nifti.setSlice(i);
+		// data.setImage(nifti.getBufferedImage());
+		// img.setData(data);
+		// slices.add(img);
+		// }
+		// }
 
 	}
 
@@ -117,7 +117,6 @@ public class DICOMVolume extends Volume{
 	 * correct, while this method throws a RuntimeException.
 	 * 
 	 * @param path
-	 * @param gui
 	 */
 	public DICOMVolume(String path, VolumeTab volumetab) {
 		resetTextOptions();
@@ -175,7 +174,6 @@ public class DICOMVolume extends Volume{
 	/**
 	 * Creates png files of the images, in the outputdir folder.
 	 * 
-	 * @param outputdir
 	 */
 	public void extractData(String Outputdir) {
 		for (Image img : slices) {
@@ -220,7 +218,9 @@ public class DICOMVolume extends Volume{
 	 * first slice.
 	 *
 	 * @param en
-	 * @return
+	 *            KeyMap enum, that contains the information, that is needed to
+	 *            get the Attribute
+	 * @return The Attribute, that matches the enum name
 	 */
 	public String getAttribute(KeyMap en) {
 		if (en == null) {
@@ -267,7 +267,8 @@ public class DICOMVolume extends Volume{
 	 *
 	 * @param en
 	 * @param slice
-	 * @return
+	 * @return The Attribute of the Image with the Image number slice (-1) if
+	 *         the enum is not null; "&lt;&lt;no key given&gt;&gt;" else
 	 */
 	public String getAttribute(KeyMap en, int slice) {
 		if (en == null) {
@@ -282,9 +283,10 @@ public class DICOMVolume extends Volume{
 	 * Returning a Attribute value, to a given enum and a Vector named slices,
 	 * which contains the indizies of the slices, which should be used.
 	 * 
-	 * @param key
+	 * @param en
 	 * @param slices
-	 * @return
+	 * @return The Attribute that Matches the enum. For each slice one array
+	 *         element.
 	 */
 	public String[] getAttribute(KeyMap en, Vector<Integer> slices) {
 		String[] att = new String[slices.size()];
@@ -302,7 +304,7 @@ public class DICOMVolume extends Volume{
 	 * console. This method always returns the attribute of the last image.
 	 * 
 	 * @param key
-	 * @return
+	 * @return The Information in the Header, that matches the key
 	 */
 	public String getAttribute(String key) {
 		if (key == null) {
@@ -364,7 +366,6 @@ public class DICOMVolume extends Volume{
 	 * 
 	 * @param key
 	 * @param slices
-	 * @return
 	 */
 	public String[] getAttribute(String key, Vector<Integer> slices) {
 		Integer[] a = new Integer[0];
@@ -381,7 +382,6 @@ public class DICOMVolume extends Volume{
 	 * ArrayList.
 	 *
 	 * @param en
-	 * @return
 	 */
 	public String[] getAttributeForEachSlice(KeyMap en) {
 		if (en == null) {
@@ -403,7 +403,6 @@ public class DICOMVolume extends Volume{
 	 * searchparameter.
 	 * 
 	 * @param key
-	 * @return
 	 */
 	public String[] getAttributeForEachSlice(String key) {
 		if (key == null) {
@@ -430,7 +429,6 @@ public class DICOMVolume extends Volume{
 	 * 
 	 * @param key
 	 * @param slice
-	 * @return
 	 */
 	public String[] getAttributeList(String key, int slice) {
 		return getAttribute(key, slice).split("\n");
@@ -441,7 +439,6 @@ public class DICOMVolume extends Volume{
 	 * 
 	 * @param key
 	 * @param slices
-	 * @return
 	 */
 	public String[][] getAttributeList(String key, Vector<Integer> slices) {
 		String[][] str = new String[size()][];
@@ -456,7 +453,6 @@ public class DICOMVolume extends Volume{
 	 * Returning a two dimensional array, with the informations inside.
 	 * 
 	 * @param key
-	 * @return
 	 */
 	public String[][] getAttributeListForEachSlice(String key) {
 		String[][] str = new String[size()][];
@@ -470,7 +466,6 @@ public class DICOMVolume extends Volume{
 	/**
 	 * Returning the Data of an Image.
 	 * 
-	 * @return
 	 */
 	public ArrayList<ImagePlus> getData() {
 		ArrayList<ImagePlus> data = new ArrayList<ImagePlus>();
@@ -483,7 +478,6 @@ public class DICOMVolume extends Volume{
 	/**
 	 * Returning the headers of all images separated in a ArrayList
 	 * 
-	 * @return
 	 */
 	public ArrayList<String> getHeader() {
 		ArrayList<String> header = new ArrayList<String>(slices.size());
@@ -497,7 +491,6 @@ public class DICOMVolume extends Volume{
 	 * Returning the type of the first image in the slice. This type should be
 	 * the same type of the other i
 	 * 
-	 * @return
 	 */
 	public String getImageType() {
 		return slices.get(0).getType();
@@ -507,7 +500,6 @@ public class DICOMVolume extends Volume{
 	 * Returns the specific Image, starting with int i = 0.
 	 *
 	 * @param i
-	 * @return
 	 */
 	public Image getSlice(int i) {
 		int size = slices.size();
@@ -600,9 +592,8 @@ public class DICOMVolume extends Volume{
 		return slices.size();
 	}
 
-	
-	public void loadData(){
-		for (Image img : slices){
+	public void loadData() {
+		for (Image img : slices) {
 			img.loadData();
 		}
 	}

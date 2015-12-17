@@ -28,7 +28,7 @@ public class DicomDataExtractor implements DataExtractor {
 	/**
 	 * This methods creates png Files in the outputdir folder, of the image to the given dicom path.
 	 */
-	public void extractData(String path, String outputdir) {
+	public void extractImage(String path, String outputdir) {
 		BufferedImage bi = getData(path).getBufferedImage();
 		File img = new File(path);
 		File output = new File(outputdir + "/"

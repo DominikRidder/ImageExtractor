@@ -69,7 +69,6 @@ public class TextOptions {
 	 * This method returns the String, which defines the output of a
 	 * getAttribute method.
 	 * 
-	 * @return
 	 */
 	public String getReturnExpression() {
 		return returnexp;
@@ -78,7 +77,6 @@ public class TextOptions {
 	/**
 	 * This method returns the searchoptions. The HashSet is not copyd.
 	 * 
-	 * @return
 	 */
 	public HashSet<Integer> getSearchOptions() {
 		return searchoptions;

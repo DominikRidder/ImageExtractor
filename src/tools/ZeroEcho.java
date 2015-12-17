@@ -92,9 +92,6 @@ public class ZeroEcho implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("100%");
-		System.out.println("finished");
-
 		double neededtime = (System.currentTimeMillis()-start);
 		System.out.println("Needed "+neededtime+" mill. to Perform "+max+" fits.");
 		System.out.println("(Performing "+(int)(max/(neededtime/1000))+" fits per second)");
@@ -104,21 +101,10 @@ public class ZeroEcho implements Runnable {
 
 	private void CalculateZeroEcho(int todo, int offset) {
 		VolumeFitter volfit = new VolumeFitter();
-		
-		int counter = 0;
-		int last = -1;
-		int max = width * height * todo;
 
 		for (int s = offset; s < offset+todo; s++) {
 			int rgbArray[] = new int[width*height];
-			for (int x = 0; x < width; x++) {
-				for (int y = 0; y < height; y++) {
-					if ((offset==0) && (((++counter) * 100 / max)) > last && last != 99) {
-						System.out.println(++last + "%");
-					}
-					rgbArray[x+y*width] = (int) volfit.getZeroValue(vol, x, y, s, degree, takelog);
-				}
-			}
+			rgbArray = volfit.getZeroValues(vol,s, degree, takelog);
 			BufferedImage next = echo0.get(s);
 			next.setRGB(0, 0, width, height, rgbArray, 0, width);
 		}

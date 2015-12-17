@@ -1,12 +1,8 @@
 package gui;
 
-import java.awt.Component;
-
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-
-import sun.swing.FilePane;
 
 public class ContextMenuFileChooser extends JFileChooser {
 
@@ -23,11 +19,11 @@ public class ContextMenuFileChooser extends JFileChooser {
 		JMenuItem menuItem = new JMenuItem("Delete Folder");
 		menuItem.addActionListener(new DeleteAction(this));
 
-		for (Component c : this.getComponents()){
-			if (c instanceof FilePane){
-				((FilePane)c).getComponentPopupMenu().add(menuItem);
-			}
-		}
+//		for (Component c : this.getComponents()){
+////			if (c instanceof FilePane){
+////				((FilePane)c).getComponentPopupMenu().add(menuItem);
+////			}
+//		}
 	}
 
 

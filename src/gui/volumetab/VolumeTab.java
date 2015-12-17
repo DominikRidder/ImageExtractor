@@ -2,10 +2,11 @@ package gui.volumetab;
 
 import gui.GUI;
 import gui.MyTab;
+import ij.WindowManager;
 import ij.gui.OvalRoi;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
-import imagehandling.Image;
+import ij.plugin.frame.ContrastAdjuster;
 import imagehandling.KeyMap;
 import imagehandling.TextOptions;
 import imagehandling.Volume;
@@ -25,9 +26,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-
-import javafx.scene.paint.Color;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -52,8 +50,6 @@ import javax.swing.plaf.basic.BasicArrowButton;
 import tools.ImageExtractorConfig;
 import tools.VolumeFitter;
 import tools.ZeroEcho;
-
-import com.sun.javafx.geom.transform.SingularMatrixException;
 
 /**
  * This class representing a Tab in the GUI window, where you can look up the
@@ -615,6 +611,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			if (volume == null) {
 				throw new RuntimeException();
 			}
+			WindowManager.setTempCurrentImage(volume.getData().get(0));
+			ContrastAdjuster c = new ContrastAdjuster();
+			c.run("");
+			
+			
 			path.setText(volume.getPath());
 
 			volume.getTextOptions().setReturnExpression(
@@ -838,11 +839,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	/***
 	 * This Method gets called, whenever the ZeroEcho Class finished an ZeroEcho
 	 * slice.
-	 * 
-	 * @param img
-	 *            the img to add in the VolumeTab.
-	 * @param slice
-	 *            The particular slice, that is given in the ZeroEcho.
 	 */
 	public void addZeroEcho(ArrayList<BufferedImage> zeroecho, String fittingfunction) {
 		this.zeroecho = zeroecho;
