@@ -136,7 +136,8 @@ public class DICOMVolume extends Volume {
 			// adding the Images
 			for (File l : list) {
 				try {
-					slices.add(new Image(l.getAbsolutePath()));
+					Image img = new Image(l.getAbsolutePath());
+					slices.add(img);
 				} catch (RuntimeException e) {
 				}
 			}

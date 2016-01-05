@@ -2,6 +2,8 @@ package gui.volumetab;
 
 import gui.GUI;
 import gui.MyTab;
+import ij.ImageListener;
+import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.OvalRoi;
 import ij.gui.PointRoi;
@@ -11,21 +13,35 @@ import imagehandling.KeyMap;
 import imagehandling.TextOptions;
 import imagehandling.Volume;
 
+import java.awt.Adjustable;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.TooManyListenersException;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -60,7 +76,7 @@ import tools.ZeroEcho;
  */
 public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		ChangeListener, MouseWheelListener, MouseListener, KeyListener,
-		Runnable, CaretListener {
+		Runnable, CaretListener, DropTargetListener {
 
 	/**
 	 * The parent is the actual window, that created this VolumeTab.
@@ -256,13 +272,16 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			.contains("mac") ? 0.7 : 0.35;
 
 	private ArrayList<BufferedImage> zeroecho;
-	
+
+	private ContrastAdjuster contrast;
+
 	/**
 	 * Standard Constructur.
 	 */
 	public VolumeTab(JFileChooser filechooser, GUI gui) {
 		parent = gui;
-
+		
+		new DropTarget(this, this);
 		// ImageExtractorConfig iec = new ImageExtractorConfig();
 		// customImagej.
 
@@ -271,6 +290,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		path.addKeyListener(this);
 		path.setEditable(false);
 		path.setBackground(null);
+		new DropTarget(path, this);
+//		path.setDropTarget(dnd);
 		GUI.setfinalSize(path, new Dimension((int) (parent.width / 2.5),
 				(int) (parent.height / 17)));
 
@@ -488,7 +509,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// Calc zero echo
 		JButton zero_echo = new JButton("Calculate Zero Echo");
 		zero_echo.addActionListener(this);
-		GUI.setfinalSize(zero_echo, new Dimension((int)(parent.width / 5.5),
+		GUI.setfinalSize(zero_echo, new Dimension((int) (parent.width / 5.5),
 				parent.height / 25));
 
 		JPanel dimselection = new JPanel();
@@ -496,20 +517,18 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				.setLayout(new BoxLayout(dimselection, BoxLayout.LINE_AXIS));
 		dimselection.add(text_dim);
 		dimselection.add(dimension);
-//		dimselection.add(zero_echo);
+		// dimselection.add(zero_echo);
 		GUI.setfinalSize(dimselection, new Dimension(
-				(int) (parent.width * roitabwidth),
-				(int) (parent.height / 20)));
+				(int) (parent.width * roitabwidth), (int) (parent.height / 20)));
 
 		JPanel zeropanel = new JPanel();
-		zeropanel
-				.setLayout(new BoxLayout(zeropanel, BoxLayout.LINE_AXIS));
-		zeropanel.add(Box.createRigidArea(new Dimension((int) (parent.width / 15.7143), 1)));
+		zeropanel.setLayout(new BoxLayout(zeropanel, BoxLayout.LINE_AXIS));
+		zeropanel.add(Box.createRigidArea(new Dimension(
+				(int) (parent.width / 15.7143), 1)));
 		zeropanel.add(zero_echo);
 		GUI.setfinalSize(zeropanel, new Dimension(
-				(int) (parent.width * roitabwidth),
-				(int) (parent.height / 25)));
-		
+				(int) (parent.width * roitabwidth), (int) (parent.height / 25)));
+
 		// image
 		roiimage = new BufferedImage(
 				(int) (parent.width * roitabwidth * 7. / 10),
@@ -518,6 +537,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		roiimgicon = new ImageIcon(roiimage);
 		// imagepanel wrapps the ImageIcon
 		JLabel roilabel = new JLabel(roiimgicon);
+		new DropTarget(roilabel, this);
+//		roilabel.setDropTarget(dnd);
 		GUI.setfinalSize(roilabel,
 				new Dimension((int) (parent.width * roitabwidth),
 						(int) (parent.height / 1.8)));
@@ -555,19 +576,17 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		logpanel.add(alsolog);
 		logpanel.add(logtext);
 		logpanel.add(shape);
-		GUI.setfinalSize(logpanel,
-				new Dimension((int) (parent.width * roitabwidth),
-						(int) (parent.height / 10)));
+		GUI.setfinalSize(logpanel, new Dimension(
+				(int) (parent.width * roitabwidth), (int) (parent.height / 10)));
 
 		sizepanel = new JPanel();
 		sizepanel.setLayout(new BoxLayout(sizepanel, BoxLayout.LINE_AXIS));
 		sizepanel.add(radius);
 		sizepanel.add(radiustext);
 		sizepanel.add(unit);
-		GUI.setfinalSize(sizepanel,
-				new Dimension((int) (parent.width * roitabwidth),
-						(int) (parent.height / 15)));
-		
+		GUI.setfinalSize(sizepanel, new Dimension(
+				(int) (parent.width * roitabwidth), (int) (parent.height / 15)));
+
 		// Putting the roi Panel together
 		roiPanel = new JPanel();
 		roiPanel.setLayout(new BoxLayout(roiPanel, BoxLayout.Y_AXIS));
@@ -575,7 +594,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				new Dimension((int) (parent.width * roitabwidth),
 						(int) (parent.height / 1.2)));
 		Component[] roistuff = { Box.createRigidArea(new Dimension(0, 5)),
-				dimselection,Box.createRigidArea(new Dimension(0, 3)),zeropanel, Box.createRigidArea(new Dimension(0, 5)), roiimg,
+				dimselection, Box.createRigidArea(new Dimension(0, 3)),
+				zeropanel, Box.createRigidArea(new Dimension(0, 5)), roiimg,
 				logpanel, sizepanel };
 		GUI.addComponents(roiPanel, roistuff);
 		roiPanel.setVisible(false);
@@ -612,10 +632,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				throw new RuntimeException();
 			}
 			WindowManager.setTempCurrentImage(volume.getData().get(0));
-			ContrastAdjuster c = new ContrastAdjuster();
-			c.run("");
-			
-			
+			contrast = new ContrastAdjuster();
+			contrast.run("");
+			WindowManager.setTempCurrentImage(contrast.thread, volume.getData()
+					.get(0));
+
 			path.setText(volume.getPath());
 
 			volume.getTextOptions().setReturnExpression(
@@ -811,7 +832,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				}
 			}
 		}
-		
+
 		ZeroEcho ze = new ZeroEcho(volume, this, degree, alsolog.isSelected());
 		new Thread(ze).start();
 	}
@@ -825,12 +846,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	public boolean zeroEchoCheck() {
 		try {
-			if (zeroecho.get(this.getActualSlice()+shape.getSelectedIndex()) != null){
-				max_echo.setText(max_echo.getText().replace("+ 0", "")+"+ 0");
+			if (zeroecho.get(this.getActualSlice() + shape.getSelectedIndex()) != null) {
+				max_echo.setText(max_echo.getText().replace("+ 0", "") + "+ 0");
 				return true;
 			}
 		} catch (IOException e) {
-			
+
 		}
 		max_echo.setText(max_echo.getText().replace("+ 0", ""));
 		return false;
@@ -840,9 +861,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * This Method gets called, whenever the ZeroEcho Class finished an ZeroEcho
 	 * slice.
 	 */
-	public void addZeroEcho(ArrayList<BufferedImage> zeroecho, String fittingfunction) {
+	public void addZeroEcho(ArrayList<BufferedImage> zeroecho,
+			String fittingfunction) {
 		this.zeroecho = zeroecho;
-		max_echo.setText(max_echo.getText().replace(" + 0", "")+" + 0");
+		max_echo.setText(max_echo.getText().replace(" + 0", "") + " + 0");
 	}
 
 	public void actionBrowse() {
@@ -977,7 +999,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				}
 				if (act > echoNumbers) {
 					act = echoNumbers;
-				} else if (act <= 0 && zeroecho != null){
+				} else if (act <= 0 && zeroecho != null) {
 					act = 0;
 				} else if (act < 1 && volume != null) {
 					act = 1;
@@ -1054,7 +1076,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					}
 				} else if (arrow_down_echo.getModel().isPressed()) {
 					slice = false;
-					if (getActualEcho() != 1 || getActualEcho() == 1 && zeroecho != null) {
+					if (getActualEcho() != 1 || getActualEcho() == 1
+							&& zeroecho != null) {
 						index_echo.setText("" + (getActualEcho() - 1));
 					}
 				} else {
@@ -1104,19 +1127,26 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	private boolean displayImage() {
 		try {
-			if (volume == null || (actualSliceIndex() < 0
-					|| actualSliceIndex() >= volume.size()) && !(getActualEcho() == 0 && zeroecho != null)) {
+			if (volume == null
+					|| (actualSliceIndex() < 0 || actualSliceIndex() >= volume
+							.size())
+					&& !(getActualEcho() == 0 && zeroecho != null)) {
 				return false;
 			}
 
 			BufferedImage buff = null;
-			if (getActualEcho() != 0){
-			 buff = this.volume.getSlice(actualSliceIndex())
-					.getData().getBufferedImage();
-			}else{
-				buff = zeroecho.get(getActualSlice()-1);
+			if (getActualEcho() != 0) {
+				WindowManager.setTempCurrentImage(contrast.thread, volume
+						.getSlice(actualSliceIndex()).getData());
+				contrast.adjustmentValueChanged(new AdjustmentEvent(
+						DummyAdjuster.dummy, 0, 0, 0));
+				sleep(20); // waiting for the ContrastAdjuster
+				buff = this.volume.getSlice(actualSliceIndex()).getData()
+						.getBufferedImage();
+			} else {
+				buff = zeroecho.get(getActualSlice() - 1);
 			}
-			
+
 			int max = buff.getHeight() > buff.getWidth() ? buff.getHeight()
 					: buff.getWidth();
 			double imgmax = image.getWidth() > image.getHeight() ? image
@@ -1311,11 +1341,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 						alsolog.isSelected(), roiimage.getWidth(),
 						roiimage.getHeight()));
 				if (!ownExtended) {
-					parent.setExtendedWindow(true);
 					ownExtended = true;
 				}
 				roiPanel.setVisible(true);
 			} catch (Exception e) {
+				e.printStackTrace();
 				// a lot of exception can ocure here
 				// (IOException, SingularMatrixException,
 				// ArrayIndexOutOfBoundsException, ...)
@@ -1324,7 +1354,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			relativroi = null;
 			roiPanel.setVisible(false);
 			if (ownExtended) {
-				parent.setExtendedWindow(false);
 				ownExtended = false;
 			}
 		}
@@ -1517,5 +1546,51 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			}
 		}
 	}
+
+	@Override
+	public void dragEnter(DropTargetDragEvent dtde) {
+		dtde.acceptDrag(dtde.getDropAction());
+	}
+
+	@Override
+	public void dragOver(DropTargetDragEvent dtde) {
+		
+	}
+
+	@Override
+	public void dropActionChanged(DropTargetDragEvent dtde) {
+		
+	}
+
+	@Override
+	public void dragExit(DropTargetEvent dte) {
+		
+	}
+
+	@Override
+	public void drop(DropTargetDropEvent dtde) {
+		try {
+			dtde.acceptDrop(dtde.getDropAction());
+			List<File> dropppedFiles = (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
+			for (File file : dropppedFiles){
+				if (file.isDirectory()){
+					path.setText(file.getAbsolutePath());
+				}else{
+					if (file.getName().endsWith(".nii")){
+						path.setText(file.getAbsolutePath());
+					}else{
+						path.setText(file.getParent());
+					}
+				}
+				createVolume();
+				break;
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
 
 }

@@ -84,7 +84,7 @@ public class VolumeFitter {
 		int rgb[] = new int[width * buffimg.get(0).getHeight()];
 		for (int x = 0; x < buffimg.get(0).getWidth(); x++) {
 			for (int y = 0; y < buffimg.get(0).getHeight(); y++) {
-				float pointcloud[][] = new float[echo_numbers][2];
+				float pointcloud[][] = new float[echo_numbers][3];
 				if (buffimg.size() != 1) {
 					for (int i = 0; i < buffimg.size(); i++) {
 						iArray = buffimg.get(i).getRGB(x, y);
@@ -172,9 +172,9 @@ public class VolumeFitter {
 			}
 
 			if (logScale) {
-				fitter.addPoint(i + 1, Math.log10(val));
+				fitter.addPoint(i + 1, Math.log10(val), 0);
 			} else {
-				fitter.addPoint(i + 1, val);
+				fitter.addPoint(i + 1, val, 0);
 			}
 		}
 		return fitter.plotVolume(logScale, wwidth, wheight);
