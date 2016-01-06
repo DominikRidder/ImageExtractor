@@ -56,6 +56,8 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 */
 	private static final long serialVersionUID = 1L;
 
+	public static final int RIGHT_CLICK = 3, LEFT_CLICK = 1;
+	
 	/**
 	 * The tabber managing the Tabs.
 	 */

@@ -51,7 +51,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
@@ -76,7 +78,7 @@ import tools.ZeroEcho;
  */
 public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		ChangeListener, MouseWheelListener, MouseListener, KeyListener,
-		Runnable, CaretListener, DropTargetListener {
+		Runnable, CaretListener, DropTargetListener, MouseMotionListener {
 
 	/**
 	 * The parent is the actual window, that created this VolumeTab.
@@ -326,6 +328,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		imagelabel.addMouseWheelListener(this);
 		imagelabel.addKeyListener(this);
 		imagelabel.addMouseListener(this);
+		imagelabel.addMouseMotionListener(this);
 
 		// initialize the Buttons
 		open_imagej = new JButton("open in External");
@@ -617,6 +620,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		GUI.setfinalSize(this, new Dimension(parent.width,
 				(int) (parent.height / 1.2)));
 
+		JPopupMenu popup = new JPopupMenu();
+		popup.add(new JMenuItem("Hallo"));
+		
+		roilabel.addMouseListener(new PopupListener(popup));
+		
 		this.setVisible(true);
 	}
 
@@ -1482,8 +1490,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	public void mouseClicked(MouseEvent e) {
 		if (e.getSource() == this.imagelabel && volume != null) {
 			setRoiPosition(e.getX(), e.getY());
-			displayImage();
-			showROI(true);
 		}
 	}
 
@@ -1589,6 +1595,19 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		if (e.getSource() == this.imagelabel && volume != null) {
+			setRoiPosition(e.getX(), e.getY());
+		}	
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		// TODO Auto-generated method stub
 		
 	}
 
