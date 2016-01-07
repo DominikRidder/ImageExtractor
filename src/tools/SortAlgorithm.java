@@ -30,6 +30,11 @@ import java.util.Stack;
  */
 public class SortAlgorithm {
 
+	public final static String DEFAULT_PATIENTID = "NO_ID",
+			DEFAULT_PROCOLNAME = "NO_PROT_NAME", DEFAULT_IMAGENUMBER = "0",
+			DEFAULT_BIRTHDATE = "NO_BIRTH_DATE", DEFAULT_ECHONUMBERS = "1",
+			DEFAULT_SERIES_NUMBERS = "1", DEFAULT_INSTANCE_UID = "1";
+
 	/**
 	 * This boolean is used to print a error Message, when curropt data was
 	 * found. This way i only print one time a error Message.
@@ -329,7 +334,8 @@ public class SortAlgorithm {
 	/**
 	 * Returns the information, if there was a problem with the permission.
 	 * 
-	 * @return true, if there was a Problem to transfer/copy the Files; false else
+	 * @return true, if there was a Problem to transfer/copy the Files; false
+	 *         else
 	 */
 	public boolean getPermissionProblem() {
 		return permissionProblem;
@@ -419,6 +425,37 @@ public class SortAlgorithm {
 			return false;
 		}
 
+		int numberofnii = createNiftis();
+
+		// The last output
+		start = System.currentTimeMillis() - start;
+		String operation = "";
+		if (!createNiftis) {
+			if (move) {
+				operation = "moved";
+			} else {
+				operation = "copied";
+			}
+		} else {
+			operation = "created";
+			// transfered = numberofnii;
+		}
+		if (!createNiftis) {
+			out.println("I found and sorted " + found + " Dicoms in " + start
+					/ 1000 + " seconds! I " + operation + " " + transfered
+					+ " of them to the Output directory.");
+		} else {
+			out.println("I found " + found + " Dicoms in " + start / 1000
+					+ " seconds! I " + operation + " " + numberofnii
+					+ " niftis in the Output directory.");
+		}
+		return true;
+	}
+
+	/**
+	 * This Method creates the Niftis at the end of the SortAlgorithmen.
+	 */
+	private int createNiftis() {
 		int numberofnii = 0;
 		if (createNiftis) {
 			out.println("Creating Niftis..");
@@ -453,10 +490,10 @@ public class SortAlgorithm {
 						is = new ImageStack(dcm.getWidth(), dcm.getHeight());
 						ip.setCalibration(dcm.getCalibration());
 					}
-					if (++needlast == dicomtonifti.get(key).size()){
+					if (++needlast == dicomtonifti.get(key).size()) {
 						ip.setProperty("Filepath", imagepath);
 					}
-					
+
 					try {
 						is.addSlice(dcm.getProcessor());
 					} catch (IllegalArgumentException e) {
@@ -482,30 +519,7 @@ public class SortAlgorithm {
 				}
 			}
 		}
-
-		// The last output
-		start = System.currentTimeMillis() - start;
-		String operation = "";
-		if (!createNiftis) {
-			if (move) {
-				operation = "moved";
-			} else {
-				operation = "copied";
-			}
-		} else {
-			operation = "created";
-			// transfered = numberofnii;
-		}
-		if (!createNiftis) {
-			out.println("I found and sorted " + found + " Dicoms in " + start
-					/ 1000 + " seconds! I " + operation + " " + transfered
-					+ " of them to the Output directory.");
-		} else {
-			out.println("I found " + found + " Dicoms in " + start / 1000
-					+ " seconds! I " + operation + " " + numberofnii
-					+ " niftis in the Output directory.");
-		}
-		return true;
+		return numberofnii;
 	}
 
 	/**
@@ -808,6 +822,37 @@ public class SortAlgorithm {
 		String birthDate = att[4];
 		String echoNumbers = att[5];
 
+		if (patientID.equals("")) { // att[0]
+			patientID = DEFAULT_PATIENTID;
+			out.println("PatientID not found. Using Default for sorting: "
+					+ DEFAULT_PATIENTID);
+		}
+		if (protocolName.equals("")) { // att[1]
+			patientID = DEFAULT_PROCOLNAME;
+			out.println("Protocolname not found. Using Default for sorting: "
+					+ DEFAULT_PROCOLNAME);
+		}
+		if (imageNumber.equals("")) { // att[2]
+			patientID = DEFAULT_IMAGENUMBER;
+			out.println("Imagenumber not found. Using Default for sorting: "
+					+ DEFAULT_IMAGENUMBER);
+		}
+		if (instanceUID.equals("")) { // att[3]
+			patientID = DEFAULT_INSTANCE_UID;
+			out.println("InstanceUID not found. Using Default for sorting: "
+					+ DEFAULT_INSTANCE_UID);
+		}
+		if (birthDate.equals("")) { // att[4]
+			patientID = DEFAULT_PATIENTID;
+			out.println("PatientID not found. Using Default for sorting: "
+					+ DEFAULT_PATIENTID);
+		}
+		if (echoNumbers.equals("")) { // att[5]
+			patientID = DEFAULT_ECHONUMBERS;
+			out.println("Echonumber not found. Using Default for sorting: "
+					+ DEFAULT_ECHONUMBERS);
+		}
+
 		// Check existing
 		StringBuilder path = new StringBuilder();
 		path.append(dir + "/" + patientID);
@@ -996,6 +1041,42 @@ public class SortAlgorithm {
 		String birthDate = att[4];
 		String seriesNumber = att[5];
 		String echoNumbers = att[6];
+
+		if (patientID.equals("")) { // att[0]
+			patientID = DEFAULT_PATIENTID;
+			out.println("PatientID not found. Using Default for sorting: "
+					+ DEFAULT_PATIENTID);
+		}
+		if (protocolName.equals("")) { // att[1]
+			patientID = DEFAULT_PROCOLNAME;
+			out.println("Protocolname not found. Using Default for sorting: "
+					+ DEFAULT_PROCOLNAME);
+		}
+		if (imageNumber.equals("")) { // att[2]
+			patientID = DEFAULT_IMAGENUMBER;
+			out.println("Imagenumber not found. Using Default for sorting: "
+					+ DEFAULT_IMAGENUMBER);
+		}
+		if (instanceUID.equals("")) { // att[3]
+			patientID = DEFAULT_INSTANCE_UID;
+			out.println("InstanceUID not found. Using Default for sorting: "
+					+ DEFAULT_INSTANCE_UID);
+		}
+		if (birthDate.equals("")) { // att[4]
+			patientID = DEFAULT_PATIENTID;
+			out.println("PatientID not found. Using Default for sorting: "
+					+ DEFAULT_PATIENTID);
+		}
+		if (seriesNumber.equals("")) { // att[5]
+			patientID = DEFAULT_SERIES_NUMBERS;
+			out.println("Seriesnumber not found. Using Default for sorting: "
+					+ DEFAULT_SERIES_NUMBERS);
+		}
+		if (echoNumbers.equals("")) { // att[6]
+			patientID = DEFAULT_ECHONUMBERS;
+			out.println("Echonumber not found. Using Default for sorting: "
+					+ DEFAULT_ECHONUMBERS);
+		}
 
 		StringBuilder path = new StringBuilder();
 		// Check existing
