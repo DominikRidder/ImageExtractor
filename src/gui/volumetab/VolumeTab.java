@@ -2,7 +2,6 @@ package gui.volumetab;
 
 import gui.GUI;
 import gui.MyTab;
-import ij.ImageListener;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.OvalRoi;
@@ -13,12 +12,10 @@ import imagehandling.KeyMap;
 import imagehandling.TextOptions;
 import imagehandling.Volume;
 
-import java.awt.Adjustable;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DropTarget;
 import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
@@ -27,7 +24,6 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
-import java.awt.event.AdjustmentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -41,7 +37,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TooManyListenersException;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -208,7 +203,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	/**
 	 * The imagepanel is the container, which contains the ImageIcon ic.
 	 */
-	private JLabel imagelabel;
+	private ImageLabel imagelabel;
 
 	private JLabel radiustext;
 
@@ -282,7 +277,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	public VolumeTab(JFileChooser filechooser, GUI gui) {
 		parent = gui;
-		
+
 		new DropTarget(this, this);
 		// ImageExtractorConfig iec = new ImageExtractorConfig();
 		// customImagej.
@@ -293,7 +288,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		path.setEditable(false);
 		path.setBackground(null);
 		new DropTarget(path, this);
-//		path.setDropTarget(dnd);
+		// path.setDropTarget(dnd);
 		GUI.setfinalSize(path, new Dimension((int) (parent.width / 2.5),
 				(int) (parent.height / 17)));
 
@@ -322,13 +317,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// The ImageIcon is kinda a wrapper for the image
 		imgicon = new ImageIcon(image);
 		// imagepanel wrapps the ImageIcon
-		imagelabel = new JLabel(imgicon);
+		imagelabel = new ImageLabel(imgicon);
 		GUI.setfinalSize(imagelabel, new Dimension(
 				(int) (parent.width / 2.483), (int) (parent.height / 1.219)));
 		imagelabel.addMouseWheelListener(this);
 		imagelabel.addKeyListener(this);
 		imagelabel.addMouseListener(this);
 		imagelabel.addMouseMotionListener(this);
+		imagelabel.setParent(this);
 
 		// initialize the Buttons
 		open_imagej = new JButton("open in External");
@@ -387,6 +383,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		index_slice.addMouseWheelListener(this);
 		index_slice.addKeyListener(this);
 		index_slice.addCaretListener(this);
+		index_slice.addKeyListener(imagelabel);
 		GUI.setfinalSize(index_slice, new Dimension(
 				(int) (parent.width / 14.67), (int) (parent.height / 5.4)));
 
@@ -395,6 +392,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		index_echo.addMouseWheelListener(this);
 		index_echo.addKeyListener(this);
 		index_echo.addCaretListener(this);
+		index_echo.addKeyListener(imagelabel);
 		GUI.setfinalSize(index_echo, new Dimension(
 				(int) (parent.width / 14.67), (int) (parent.height / 5.4)));
 
@@ -541,7 +539,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// imagepanel wrapps the ImageIcon
 		JLabel roilabel = new JLabel(roiimgicon);
 		new DropTarget(roilabel, this);
-//		roilabel.setDropTarget(dnd);
+		// roilabel.setDropTarget(dnd);
 		GUI.setfinalSize(roilabel,
 				new Dimension((int) (parent.width * roitabwidth),
 						(int) (parent.height / 1.8)));
@@ -622,9 +620,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 		JPopupMenu popup = new JPopupMenu();
 		popup.add(new JMenuItem("Hallo"));
-		
+
 		roilabel.addMouseListener(new PopupListener(popup));
-		
+
 		this.setVisible(true);
 	}
 
@@ -1144,11 +1142,13 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 			BufferedImage buff = null;
 			if (getActualEcho() != 0) {
-				WindowManager.setTempCurrentImage(contrast.thread, volume
-						.getSlice(actualSliceIndex()).getData());
-				contrast.adjustmentValueChanged(new AdjustmentEvent(
-						DummyAdjuster.dummy, 0, 0, 0));
-				sleep(20); // waiting for the ContrastAdjuster
+				if (contrast != null && contrast.thread != null) {
+					WindowManager.setTempCurrentImage(contrast.thread, volume
+							.getSlice(actualSliceIndex()).getData());
+					contrast.adjustmentValueChanged(new AdjustmentEvent(
+							DummyAdjuster.dummy, 0, 0, 0));
+					sleep(20); // waiting for the ContrastAdjuster
+				}
 				buff = this.volume.getSlice(actualSliceIndex()).getData()
 						.getBufferedImage();
 			} else {
@@ -1560,31 +1560,32 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	@Override
 	public void dragOver(DropTargetDragEvent dtde) {
-		
+
 	}
 
 	@Override
 	public void dropActionChanged(DropTargetDragEvent dtde) {
-		
+
 	}
 
 	@Override
 	public void dragExit(DropTargetEvent dte) {
-		
+
 	}
 
 	@Override
 	public void drop(DropTargetDropEvent dtde) {
 		try {
 			dtde.acceptDrop(dtde.getDropAction());
-			List<File> dropppedFiles = (List<File>)dtde.getTransferable().getTransferData(DataFlavor.javaFileListFlavor);
-			for (File file : dropppedFiles){
-				if (file.isDirectory()){
+			List<File> dropppedFiles = (List<File>) dtde.getTransferable()
+					.getTransferData(DataFlavor.javaFileListFlavor);
+			for (File file : dropppedFiles) {
+				if (file.isDirectory()) {
 					path.setText(file.getAbsolutePath());
-				}else{
-					if (file.getName().endsWith(".nii")){
+				} else {
+					if (file.getName().endsWith(".nii")) {
 						path.setText(file.getAbsolutePath());
-					}else{
+					} else {
 						path.setText(file.getParent());
 					}
 				}
@@ -1595,21 +1596,32 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		if (e.getSource() == this.imagelabel && volume != null) {
 			setRoiPosition(e.getX(), e.getY());
-		}	
+		}
 	}
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
+	public ImagePlus getImage() {
+		try {
+			return volume.getSlice(actualSliceIndex()).getData();
+		} catch (IOException | NullPointerException e) {
+		}
+		return null;
+	}
+
+	public double getScale() {
+		return scaling;
+	}
 
 }
