@@ -72,24 +72,29 @@ public class ImageLabel extends JLabel implements KeyListener {
 	}
 
 	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
+		Graphics scratchGraphics = (g == null) ? null : g.create();
+		try {
+			ui.update(scratchGraphics, this);
 
-		if (isactiv && mousein && parent.getImage() != null) {
-			g.setColor(Color.YELLOW);
-			String todraw = "GrayScale: "
-					+ parent.getImage().getProcessor().getPixel(posX, posY);
-			int stringwidth = g.getFontMetrics().stringWidth(todraw);
-			int stringheight = g.getFontMetrics().getHeight();
-			int changeY = 20;
-			int changeX = 0;
+			if (isactiv && mousein && parent.getImage() != null) {
+				g.setColor(Color.YELLOW);
+				String todraw = "GrayScale: "
+						+ parent.getImage().getProcessor().getPixel(posX, posY);
+				int stringwidth = g.getFontMetrics().stringWidth(todraw);
+				int stringheight = g.getFontMetrics().getHeight();
+				int changeY = 20;
+				int changeX = 0;
 
-			if (stringwidth + mouseX + changeX > this.getWidth()) {
-				changeX = this.getWidth() - stringwidth - mouseX;
+				if (stringwidth + mouseX + changeX > this.getWidth()) {
+					changeX = this.getWidth() - stringwidth - mouseX;
+				}
+				if (stringheight + mouseY + changeY > this.getHeight()) {
+					changeY = this.getHeight() - stringheight - mouseY;
+				}
+				g.drawString(todraw, mouseX + changeX, mouseY + changeY);
 			}
-			if (stringheight + mouseY + changeY > this.getHeight()) {
-				changeY = this.getHeight() - stringheight - mouseY;
-			}
-			g.drawString(todraw, mouseX + changeX, mouseY + changeY);
+		} finally {
+			scratchGraphics.dispose();
 		}
 	}
 

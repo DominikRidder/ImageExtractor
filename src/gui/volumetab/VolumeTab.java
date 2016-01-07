@@ -268,7 +268,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private double roitabwidth = System.getProperty("os.name").toLowerCase()
 			.contains("mac") ? 0.7 : 0.35;
 
-	private ArrayList<BufferedImage> zeroecho;
+	private ArrayList<ImagePlus> zeroecho;
 
 	private ContrastAdjuster contrast;
 
@@ -867,7 +867,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * This Method gets called, whenever the ZeroEcho Class finished an ZeroEcho
 	 * slice.
 	 */
-	public void addZeroEcho(ArrayList<BufferedImage> zeroecho,
+	public void addZeroEcho(ArrayList<ImagePlus> zeroecho,
 			String fittingfunction) {
 		this.zeroecho = zeroecho;
 		max_echo.setText(max_echo.getText().replace(" + 0", "") + " + 0");
@@ -1140,20 +1140,21 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				return false;
 			}
 
-			BufferedImage buff = null;
+			ImagePlus imp = null;
 			if (getActualEcho() != 0) {
-				if (contrast != null && contrast.thread != null) {
-					WindowManager.setTempCurrentImage(contrast.thread, volume
-							.getSlice(actualSliceIndex()).getData());
-					contrast.adjustmentValueChanged(new AdjustmentEvent(
-							DummyAdjuster.dummy, 0, 0, 0));
-					sleep(20); // waiting for the ContrastAdjuster
-				}
-				buff = this.volume.getSlice(actualSliceIndex()).getData()
-						.getBufferedImage();
+				imp = this.volume.getSlice(actualSliceIndex()).getData();
 			} else {
-				buff = zeroecho.get(getActualSlice() - 1);
+				imp = zeroecho.get(getActualSlice() - 1);
 			}
+
+			if (contrast != null && contrast.thread != null) {
+				WindowManager.setTempCurrentImage(contrast.thread, imp);
+				contrast.adjustmentValueChanged(new AdjustmentEvent(
+						DummyAdjuster.dummy, 0, 0, 0));
+				sleep(20); // waiting for the ContrastAdjuster
+			}
+
+			BufferedImage buff = imp.getBufferedImage();
 
 			int max = buff.getHeight() > buff.getWidth() ? buff.getHeight()
 					: buff.getWidth();
@@ -1614,7 +1615,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	public ImagePlus getImage() {
 		try {
-			return volume.getSlice(actualSliceIndex()).getData();
+			if (getActualEcho() != 0) {
+				return this.volume.getSlice(actualSliceIndex()).getData();
+			} else {
+				return zeroecho.get(getActualSlice() - 1);
+			}
 		} catch (IOException | NullPointerException e) {
 		}
 		return null;
