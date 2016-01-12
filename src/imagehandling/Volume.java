@@ -1,18 +1,10 @@
 package imagehandling;
 
-import gui.volumetab.Roi3D;
-import gui.volumetab.VolumeTab;
 import ij.ImagePlus;
-import ij.gui.OvalRoi;
 import ij.gui.Roi;
-import ij.plugin.Nifti_Reader;
 
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Vector;
 
 /**
@@ -25,7 +17,7 @@ import java.util.Vector;
 public abstract class Volume {
 
 	protected String path;
-	
+
 	/**
 	 * This method calls the Image.getKeyWords() method. Take a look at the
 	 * Java-doc of Image.getKeyWords() for more informations.
@@ -255,8 +247,8 @@ public abstract class Volume {
 	 * @param en
 	 * @param slices
 	 * @return A String array, where each value is the result of the call:
-	 * <p>
-	 * Image.getAttribute(en)
+	 *         <p>
+	 *         Image.getAttribute(en)
 	 */
 	public abstract String[] getAttribute(KeyMap en, Vector<Integer> slices);
 
@@ -338,7 +330,7 @@ public abstract class Volume {
 	public String getPath() {
 		return path;
 	}
-	
+
 	/**
 	 * Returning the type of the first image in the slice. This type should be
 	 * the same type of the other i

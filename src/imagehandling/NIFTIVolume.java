@@ -7,7 +7,6 @@ import ij.gui.Roi;
 import ij.io.FileInfo;
 import ij.plugin.NiftiHeader;
 import ij.plugin.Nifti_Reader;
-import ij.plugin.filter.Info;
 
 import java.awt.Rectangle;
 import java.io.File;
@@ -23,7 +22,7 @@ public class NIFTIVolume extends Volume {
 	private TextOptions to = new TextOptions();
 
 	NiftiHeader nifti_hdr;
-	
+
 	public NIFTIVolume(String path) {
 		File file = new File(path);
 		Nifti_Reader nr = new Nifti_Reader();
@@ -40,7 +39,7 @@ public class NIFTIVolume extends Volume {
 
 			slices.add(img);
 		}
-		
+
 		nifti_hdr = (NiftiHeader) nifti.getProperty("nifti");
 	}
 
@@ -103,7 +102,7 @@ public class NIFTIVolume extends Volume {
 	@Override
 	public String getAttribute(KeyMap en, int slice) {
 		if (en == KeyMap.KEY_ECHO_NUMBERS_S) {
-			return nifti_hdr.dim[4]+ "";// getNFrames() + "";
+			return nifti_hdr.dim[4] + "";// getNFrames() + "";
 		}
 		return null;
 	}
@@ -227,12 +226,12 @@ public class NIFTIVolume extends Volume {
 
 			}
 			int per_echo = 1;
-			try{
-			per_echo = size()
-					/ Integer.parseInt(getAttribute(KeyMap.KEY_ECHO_NUMBERS_S,
-							0));
-			}catch (NumberFormatException | NullPointerException e) {
-				
+			try {
+				per_echo = size()
+						/ Integer.parseInt(getAttribute(
+								KeyMap.KEY_ECHO_NUMBERS_S, 0));
+			} catch (NumberFormatException | NullPointerException e) {
+
 			}
 			Rectangle rec = realroi.getBounds();
 			Roi3D roi3 = (Roi3D) realroi;

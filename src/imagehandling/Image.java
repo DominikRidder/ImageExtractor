@@ -6,14 +6,11 @@ import ij.gui.OvalRoi;
 import ij.gui.PointRoi;
 import ij.gui.PolygonRoi;
 import ij.gui.Roi;
-import ij.plugin.DICOM;
 import ij.util.DicomTools;
 import ij.util.WildcardMatch;
 
 import java.awt.Polygon;
-import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,10 +50,10 @@ public class Image implements Comparable<Image> {
 	 */
 	private ImagePlus data;
 
-	public void setData(ImagePlus data){
+	public void setData(ImagePlus data) {
 		this.data = data;
 	}
-	
+
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
 	 * of the image dont end with a known ending, the images handeld as a IMA
@@ -316,14 +313,14 @@ public class Image implements Comparable<Image> {
 		switch (type) {
 		case "dcm":
 		case "IMA":
-			if (data != null){
+			if (data != null) {
 				return data.getInfoProperty().toString();
 			}
 			he = new DicomHeaderExtractor();
 			break;
 		case "nii":
 			return NIFTIVolume.createHeader(data);
-			
+
 		default:
 			throw new RuntimeException("The Image Type can't be handeld.");
 		}
@@ -340,7 +337,7 @@ public class Image implements Comparable<Image> {
 		return data;
 	}
 
-	public void loadData(){
+	public void loadData() {
 		DataExtractor de = null;
 		switch (type) {
 		case "dcm":
@@ -352,10 +349,10 @@ public class Image implements Comparable<Image> {
 		}
 		data = de.getData(path);
 	}
-	
+
 	public void setROI(Roi roi) {
 		this.roi = roi;
-		if (data != null){
+		if (data != null) {
 			data.setRoi(roi);
 		}
 	}
@@ -419,7 +416,7 @@ public class Image implements Comparable<Image> {
 		KeyMap testdata[] = { KeyMap.KEY_PROTOCOL_NAME, KeyMap.KEY_PATIENT_ID,
 				KeyMap.KEY_IMAGE_NUMBER };
 
-//		PrintStream stdout = System.out;
+		// PrintStream stdout = System.out;
 		// try {
 		// System.setOut(new PrintStream(new
 		// File("/opt/dridder_local/Test/Syntaxfehler")){
@@ -435,7 +432,7 @@ public class Image implements Comparable<Image> {
 		for (KeyMap test : testdata) {
 			String k = DicomTools.getTag(imp, test.getValue("IMA"));
 			if (k == null) {
-//				System.setOut(stdout);
+				// System.setOut(stdout);
 				return false;
 			}
 		}

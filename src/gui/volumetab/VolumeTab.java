@@ -46,6 +46,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -272,11 +273,18 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	private ContrastAdjuster contrast;
 
+	private JMenu imagemenu = new JMenu("Image");
+
 	/**
 	 * Standard Constructur.
 	 */
 	public VolumeTab(JFileChooser filechooser, GUI gui) {
 		parent = gui;
+
+		JMenuItem contrtmen = new JMenuItem("Adjust Brightness/Contrast");
+		contrtmen.addActionListener(this);
+		imagemenu.add(contrtmen);
+		// imagemenu.addActionListener(this);
 
 		new DropTarget(this, this);
 		// ImageExtractorConfig iec = new ImageExtractorConfig();
@@ -637,11 +645,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			if (volume == null) {
 				throw new RuntimeException();
 			}
-			WindowManager.setTempCurrentImage(volume.getData().get(0));
-			contrast = new ContrastAdjuster();
-			contrast.run("");
-			WindowManager.setTempCurrentImage(contrast.thread, volume.getData()
-					.get(0));
+			// WindowManager.setTempCurrentImage(volume.getData().get(0));
+			// WindowManager.setTempCurrentImage(contrast.thread,
+			// volume.getData()
+			// .get(0));
 
 			path.setText(volume.getPath());
 
@@ -797,6 +804,30 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			break;
 		case "comboBoxChanged":
 			actionShape();
+			break;
+		case "Adjust Brightness/Contrast":
+			if (volume == null) {
+				return;
+			}
+			contrast = new ContrastAdjuster();
+			contrast.run("");
+			try {
+				ImagePlus imp = null;
+				if (getActualEcho() != 0) {
+					imp = this.volume.getSlice(actualSliceIndex()).getData();
+				} else {
+					imp = zeroecho.get(getActualSlice() - 1);
+				}
+
+				if (contrast != null && contrast.thread != null) {
+					WindowManager.setTempCurrentImage(volume.getData().get(0));
+					WindowManager.setTempCurrentImage(contrast.thread, imp);
+					contrast.adjustmentValueChanged(new AdjustmentEvent(
+							DummyAdjuster.dummy, 0, 0, 0));
+					sleep(20); // waiting for the ContrastAdjuster
+				}
+			} catch (IOException | NullPointerException e1) {
+			}
 			break;
 		default:
 			if (e.getSource() == dimension) {
@@ -1372,8 +1403,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	public void setRoiPosition(int x, int y) {
 		try {
-			BufferedImage orig = this.volume.getSlice(actualSliceIndex())
-					.getData().getBufferedImage();
 			Roi realroi = null;
 
 			switch ((String) shape.getSelectedItem()) {
@@ -1406,86 +1435,74 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void setRoiPosition(int x, int y, int z) {
-		try {
-			BufferedImage orig = this.volume.getSlice(actualSliceIndex())
-					.getData().getBufferedImage();
-			Roi realroi = null;
+		Roi realroi = null;
 
-			switch ((String) shape.getSelectedItem()) {
-			case "Point":
-			case "Circle":
-				setRoiPosition(x, y);
-				return;
-			case "Sphere":
-				double radius = calculateRadius();
-				double newr = (int) (radius * scaling);
-				x -= newr;
-				y -= newr;
-				relativroi = new SphereRoi(x, y, z, newr);
-				realroi = new SphereRoi(((double) x) / scaling, ((double) y)
-						/ scaling, z, radius);
+		switch ((String) shape.getSelectedItem()) {
+		case "Point":
+		case "Circle":
+			setRoiPosition(x, y);
+			return;
+		case "Sphere":
+			double radius = calculateRadius();
+			double newr = (int) (radius * scaling);
+			x -= newr;
+			y -= newr;
+			relativroi = new SphereRoi(x, y, z, newr);
+			realroi = new SphereRoi(((double) x) / scaling, ((double) y)
+					/ scaling, z, radius);
 
-				break;
-			}
-			relativroi.setProperty("unit", (String) unit.getSelectedItem());
-			realroi.setProperty("unit", (String) unit.getSelectedItem());
-			volume.setRoi(realroi);
-			this.displayImage();
-		} catch (IOException e) {
-			// couldn't read actual slice/echo
+			break;
 		}
+		relativroi.setProperty("unit", (String) unit.getSelectedItem());
+		realroi.setProperty("unit", (String) unit.getSelectedItem());
+		volume.setRoi(realroi);
+		this.displayImage();
 	}
 
 	public void updateROI() {
-		try {
-			BufferedImage orig = this.volume.getSlice(actualSliceIndex())
-					.getData().getBufferedImage();
-			Roi realroi = null;
-			if (shape.getSelectedItem().equals("Point")) {
-			} else if (shape.getSelectedItem().equals("Circle")) {
-				double x = relativroi.getXBase();
-				double y = relativroi.getYBase();
-				double calrad = relativroi.getBounds().getWidth() / 2;
+		Roi realroi = null;
+		if (shape.getSelectedItem().equals("Point")) {
+		} else if (shape.getSelectedItem().equals("Circle")) {
+			double x = relativroi.getXBase();
+			double y = relativroi.getYBase();
+			double calrad = relativroi.getBounds().getWidth() / 2;
 
-				double radius = this.radius.getValue();
+			double radius = this.radius.getValue();
 
-				if (unit.getSelectedItem().equals("pixel")) {
-					radius /= volume.getSlice(0).getData().getFileInfo().pixelWidth;
-				}
-
-				double newr = (int) (radius * scaling);
-
-				x += calrad - newr;
-				y += calrad - newr;
-
-				relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
-				realroi = new OvalRoi(((double) x) / scaling, ((double) y)
-						/ scaling, radius * 2, radius * 2);
-			} else if (shape.getSelectedItem().equals("Sphere")) {
-				double x = relativroi.getXBase();
-				double y = relativroi.getYBase();
-				int z = ((Roi3D) relativroi).getZ();
-				double calrad = relativroi.getBounds().getHeight() / 2;
-
-				double radius = this.radius.getValue();
-
-				if (unit.getSelectedItem().equals("pixel")) {
-					radius /= volume.getSlice(0).getData().getFileInfo().pixelWidth;
-				}
-				double newr = (int) (radius * scaling);
-				x += calrad - newr;
-				y += calrad - newr;
-				relativroi = new SphereRoi((int) x, (int) y, z, newr);
-				realroi = new SphereRoi(((double) x) / scaling, ((double) y)
-						/ scaling, z, radius);
+			if (unit.getSelectedItem().equals("pixel")) {
+				radius /= volume.getSlice(0).getData().getFileInfo().pixelWidth;
 			}
-			relativroi.setProperty("unit", (String) unit.getSelectedItem());
-			realroi.setProperty("unit", (String) unit.getSelectedItem());
-			volume.setRoi(realroi);
-			this.displayImage();
-		} catch (IOException e) {
-			// couldn't read the actual slice/echo
+
+			double newr = (int) (radius * scaling);
+
+			x += calrad - newr;
+			y += calrad - newr;
+
+			relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
+			realroi = new OvalRoi(((double) x) / scaling, ((double) y)
+					/ scaling, radius * 2, radius * 2);
+		} else if (shape.getSelectedItem().equals("Sphere")) {
+			double x = relativroi.getXBase();
+			double y = relativroi.getYBase();
+			int z = ((Roi3D) relativroi).getZ();
+			double calrad = relativroi.getBounds().getHeight() / 2;
+
+			double radius = this.radius.getValue();
+
+			if (unit.getSelectedItem().equals("pixel")) {
+				radius /= volume.getSlice(0).getData().getFileInfo().pixelWidth;
+			}
+			double newr = (int) (radius * scaling);
+			x += calrad - newr;
+			y += calrad - newr;
+			relativroi = new SphereRoi((int) x, (int) y, z, newr);
+			realroi = new SphereRoi(((double) x) / scaling, ((double) y)
+					/ scaling, z, radius);
 		}
+		relativroi.setProperty("unit", (String) unit.getSelectedItem());
+		realroi.setProperty("unit", (String) unit.getSelectedItem());
+		volume.setRoi(realroi);
+		this.displayImage();
 	}
 
 	public void mouseClicked(MouseEvent e) {
@@ -1574,6 +1591,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void drop(DropTargetDropEvent dtde) {
 		try {
@@ -1627,6 +1645,19 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	public double getScale() {
 		return scaling;
+	}
+
+	@Override
+	public void onFocus() {
+		preferedWidth();
+		parent.getJMenuBar().add(imagemenu);
+		parent.getJMenuBar().repaint();
+	}
+
+	@Override
+	public void onExit() {
+		parent.getJMenuBar().remove(imagemenu);
+		parent.getJMenuBar().repaint();
 	}
 
 }

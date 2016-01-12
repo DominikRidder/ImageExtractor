@@ -11,6 +11,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
@@ -56,8 +57,12 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public static final int RIGHT_CLICK = 3, LEFT_CLICK = 1;
-	
+	/**
+	 * Int values that are used, to make code more readable.
+	 */
+	public static final int RIGHT_CLICK = MouseEvent.BUTTON3,
+			LEFT_CLICK = MouseEvent.BUTTON1;
+
 	/**
 	 * The tabber managing the Tabs.
 	 */
@@ -107,6 +112,10 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 */
 	public int height;
 
+	JMenuBar menuBar;
+
+	MyTab currentTab;
+
 	/**
 	 * Constructs a new GUI. The GUI can be controlled with a Mouse or even
 	 * based on Java code.
@@ -144,10 +153,8 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		filechooser.setCurrentDirectory(new File(startbrowse));
 		filechooser.setDialogTitle("Search Directory");
 		filechooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		// filechooser.setAcceptAllFileFilterUsed(false);
 
 		forceEnd = forceProgrammEndIfThereIsNoWindow;
-		JMenuBar menuBar;
 		JMenu menu;
 		JMenuItem newGuiWindow, newVolumeTab, newSortTab;
 
@@ -184,10 +191,11 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		setResizable(true);
 		setVisible(visible);
 
+		currentTab = (MyTab) tabber.getSelectedComponent();
+		currentTab.onFocus();
+
 		System.out.println("Gui width = " + width);
 		System.out.println("Gui height = " + height);
-
-		//new Thread(this).start();
 	}
 
 	/**
@@ -409,14 +417,22 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() == tabber) {
-			// this.setExtendedWindow(false);
+			if (currentTab != null) {
+				currentTab.onExit();
+			}
+
 			if (tabber.getSelectedIndex() != -1) {
 				if (tabber.getComponentAt(tabber.getSelectedIndex()) instanceof MyTab) {
-					((MyTab) tabber.getComponentAt(tabber.getSelectedIndex()))
-							.neededSize();
+					currentTab = ((MyTab) tabber.getComponentAt(tabber
+							.getSelectedIndex()));
+					currentTab.onFocus();
 				}
 			}
 		}
+	}
+
+	public JMenuBar getJMenueBar() {
+		return menuBar;
 	}
 
 	public MyTab getCurrentTab() {

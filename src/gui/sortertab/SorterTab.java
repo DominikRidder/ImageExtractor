@@ -3,7 +3,6 @@ package gui.sortertab;
 import gui.GUI;
 import gui.MyTab;
 
-import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -169,16 +168,15 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 				BoxLayout.LINE_AXIS));
 		table_header_left.add(createText("Status", parent.width / 11,
 				rowheight, false));
-		table_header_left.add(createText("Input Dir",
-				(int) (parent.width / 7), rowheight, false));
+		table_header_left.add(createText("Input Dir", (int) (parent.width / 7),
+				rowheight, false));
 		table_header_left.add(createText("Option",
 				(int) (parent.width / 13.75), rowheight, false));
-		table_header_left.add(createText("To Output Nr.", 3*rowheight,
+		table_header_left.add(createText("To Output Nr.", 3 * rowheight,
 				rowheight, false));
 		table_header_left.add(Box.createRigidArea(new Dimension(rowheight,
 				rowheight)));
-		table_header_left.add(createText("Nifti", rowheight, rowheight,
-				false));
+		table_header_left.add(createText("Nifti", rowheight, rowheight, false));
 
 		GUI.setfinalSize(table_header_left, new Dimension(
 				(int) (parent.width / 1.93), rowheight));
@@ -257,7 +255,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		outputArea.setMargin(new Insets(0, 0, 0, 0));
 		outputScroller = new JScrollPane(outputArea);
 		GUI.setfinalSize(outputScroller, new Dimension(parent.width,
-				(int)(parent.height / 2.6)));
+				(int) (parent.height / 2.6)));
 		outputScroller
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
@@ -270,7 +268,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		JPanel upper = new JPanel();
 		upper.setLayout(new BoxLayout(upper, BoxLayout.LINE_AXIS));
 		upper.add(upperleft);
-		upper.add(Box.createRigidArea(new Dimension(rowheight,rowheight)));
+		upper.add(Box.createRigidArea(new Dimension(rowheight, rowheight)));
 		upper.add(separator);
 		upper.add(upperright);
 
@@ -319,7 +317,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		// File transfer option
 		rowPanel.add(jc);
 		// Output Nr field
-		rowPanel.add(createText("" + 1, 3*rowheight, rowheight, true));
+		rowPanel.add(createText("" + 1, 3 * rowheight, rowheight, true));
 		// browse dir button
 		rowPanel.add(browseButton);
 		// to make it fit
@@ -327,12 +325,12 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		rowPanel.add(tonifti);
 
 		int neededwidth = 0;
-		for (Component c: rowPanel.getComponents()){
+		for (Component c : rowPanel.getComponents()) {
 			neededwidth += c.getWidth();
 		}
-		
+
 		GUI.setfinalSize(rowPanel, new Dimension(neededwidth, rowheight));
-		
+
 		return rowPanel;
 	}
 
@@ -361,7 +359,9 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		rowPanel.add(imgdigits);
 		// browse dir button
 		rowPanel.add(browseButton);
-		GUI.setfinalSize(rowPanel, new Dimension((int)(parent.width / 11)+(int)(parent.width / 5.5) +(int)(parent.width / 22)+rowheight, rowheight));
+		GUI.setfinalSize(rowPanel, new Dimension((int) (parent.width / 11)
+				+ (int) (parent.width / 5.5) + (int) (parent.width / 22)
+				+ rowheight, rowheight));
 		return rowPanel;
 	}
 
@@ -534,7 +534,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 			JTextField tooutput = (JTextField) left_stuff[3];
 			@SuppressWarnings("unchecked")
 			JComboBox<String> move = (JComboBox<String>) left_stuff[2];
-			JCheckBox nifti = (JCheckBox) left_stuff[6];
+			JCheckBox nifti = (JCheckBox) left_stuff[5];
 
 			// catching empty input
 			if (inputfield.getText().equals("")) {
@@ -677,6 +677,16 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 	@Override
 	public int preferedWidth() {
 		return parent.width;
+	}
+
+	@Override
+	public void onFocus() {
+		preferedWidth();
+	}
+
+	@Override
+	public void onExit() {
+
 	}
 
 }

@@ -1,6 +1,5 @@
 package tools;
 
-import fitterAlgorithm.LRDecomposition;
 import fitterAlgorithm.LowestSquare;
 import fitterAlgorithm.PolynomialLowestSquare;
 import functions.ExponentialFunction;
@@ -8,23 +7,15 @@ import gui.volumetab.Roi3D;
 import ij.ImagePlus;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
-import ij.process.ByteProcessor;
-import ij.process.ColorProcessor;
 import ij.process.ImageProcessor;
-import ij.process.ShortProcessor;
 import imagehandling.Image;
 import imagehandling.KeyMap;
 import imagehandling.Volume;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 
-import javax.swing.BoxLayout;
-import javax.swing.JFrame;
-
-import polyfitter.Point1D;
 import polyfitter.Polyfitter;
 
 public class VolumeFitter {
@@ -98,12 +89,12 @@ public class VolumeFitter {
 					}
 					fitter.setPoints(pointcloud);
 					fitter.fit();
-					rgb[x + y * width] = (int)fitter.getValue(0);
+					rgb[x + y * width] = (int) fitter.getValue(0);
 				} else {
 					iArray = getMin(vol.getData().get(slice),
 							new PointRoi(x, y));
 					if (logScale) {
-						rgb[x + y * width] =(int) Math.log10(iArray);
+						rgb[x + y * width] = (int) Math.log10(iArray);
 					} else {
 						rgb[x + y * width] = iArray;
 					}

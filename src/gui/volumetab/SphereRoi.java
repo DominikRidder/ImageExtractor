@@ -1,12 +1,12 @@
 package gui.volumetab;
 
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-
 import ij.gui.OvalRoi;
 import ij.gui.Roi;
 import imagehandling.KeyMap;
 import imagehandling.Volume;
+
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 
 public class SphereRoi extends Roi implements Roi3D {
 
@@ -28,13 +28,13 @@ public class SphereRoi extends Roi implements Roi3D {
 
 	public void draw(Volume vol, BufferedImage bigimg, int slice, double scaling) {
 		if (this.getProperty("unit").equals("mm")) {
-			BufferedImage orig = vol.getSlice(0).getData().getBufferedImage();
 			double thickness = 1;
-			try{
+			try {
 				thickness = Double.parseDouble(vol.getSlice(0).getAttribute(
-					KeyMap.KEY_SLICE_THICKNESS));
-			}catch(Exception e){
-				System.out.println("Found no thickness parameter. Setting thickness to 1.");
+						KeyMap.KEY_SLICE_THICKNESS));
+			} catch (Exception e) {
+				System.out
+						.println("Found no thickness parameter. Setting thickness to 1.");
 			}
 			Rectangle rec = this.getBounds();
 			Roi3D roi3 = (Roi3D) this;
@@ -53,7 +53,6 @@ public class SphereRoi extends Roi implements Roi3D {
 				return;
 			}
 		} else {
-			BufferedImage orig = vol.getSlice(0).getData().getBufferedImage();
 			Rectangle rec = this.getBounds();
 			Roi3D roi3 = (Roi3D) this;
 			double radius = this.getBounds().getHeight() / 2;

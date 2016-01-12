@@ -314,6 +314,7 @@ public class SortAlgorithm {
 	 * created and creates the directory to the path.
 	 * 
 	 * @param path
+	 *            The Path to check
 	 */
 	private void existOrCreate(StringBuilder path) {
 		File test = new File(path.toString());

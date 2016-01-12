@@ -12,6 +12,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
 public class ImageLabel extends JLabel implements KeyListener {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private int posX, posY;
 	private int mouseX, mouseY;
 	private boolean mousein;
