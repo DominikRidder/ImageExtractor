@@ -570,6 +570,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				(int) (parent.height / 5.4)));
 
 		radius = new JSlider();
+		radius.setMinimum(1);
 		radius.setMaximum(10);
 		radius.addChangeListener(this);
 		GUI.setfinalSize(radius, new Dimension((int) (parent.width / 9),
@@ -639,6 +640,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	public void createVolume() {
 		creatingVolume = true;
+		if (path.getText() == "") {
+			return;
+		}
 		try {
 			creatingText();
 			volume = Volume.createVolume(path.getText());
@@ -736,7 +740,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				createVolume();
 			}
 			// Did it work?
-			if (volume != null) {
+			if (volume != null && !volume.isEmpty()) {
 				// Is the user searching something or do we show them all?
 				if (displayAll) {
 					// getting the header of the actual slice
@@ -1076,6 +1080,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void stateChanged(ChangeEvent e) {
+		if (volume == null) {
+			return;
+		}
 		if (e.getSource() instanceof JButton) {
 			JButton b = (JButton) e.getSource();
 			String name = b.getText();
@@ -1291,7 +1298,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			if (makechange) {
 				if (changeEcho) {
 					try {
-						if (!(getActualEcho() + change < 1 || getActualEcho()
+						if (!(getActualEcho() + change < 1
+								|| (zeroecho != null && getActualEcho()
+										+ change < 0) || getActualEcho()
 								+ change > echoNumbers))
 							index_echo
 									.setText(""
@@ -1385,7 +1394,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				}
 				roiPanel.setVisible(true);
 			} catch (Exception e) {
-				e.printStackTrace();
+				// e.printStackTrace();
 				// a lot of exception can ocure here
 				// (IOException, SingularMatrixException,
 				// ArrayIndexOutOfBoundsException, ...)

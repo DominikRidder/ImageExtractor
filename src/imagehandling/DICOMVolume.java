@@ -504,7 +504,11 @@ public class DICOMVolume extends Volume {
 	 */
 	public Image getSlice(int i) {
 		int size = slices.size();
-		if (i >= size) {
+		if (size == 0) {
+			System.out
+					.println("You can't get a slice, when the volume is empty. Returning null instead.");
+			return null;
+		} else if (i >= size) {
 			System.out.println("Out of range (Index: " + i + ", Slices: "
 					+ size + "). The Last Image is returned instead ("
 					+ (size - 1) + ").");

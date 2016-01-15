@@ -44,6 +44,12 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private static final long serialVersionUID = 1L;
 
+	private static final int L_STATUS = 0, L_INPUT = 1, L_OPTION = 2,
+			L_OUTPUT_NR = 3, L_BROWSE = 4, L_NIFTI = 5;
+
+	private static final int R_STATUS = 0, R_OUTPUT = 1, R_IMAGE_DIGITS = 2,
+			R_BROWSE = 3;
+
 	/**
 	 * The SortAlgorithm, which is used to perform the sort.
 	 */
@@ -414,20 +420,21 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 						.getAbsolutePath());
 				String path = f.isDirectory() ? f.getAbsolutePath() : f
 						.getParent();
-				for (i = 0; i < 5; i++) {
-					if (e.getSource().equals(tablerows_left[i].getComponent(4))) {
+				for (i = 0; i < tablerows_left.length; i++) {
+					if (e.getSource().equals(
+							tablerows_left[i].getComponent(L_BROWSE))) {
 						found = true;
 						break;
 					}
 				}
 				if (found) {
 					JTextField targetIn = ((JTextField) tablerows_left[i]
-							.getComponents()[1]);
+							.getComponents()[L_INPUT]);
 					targetIn.setText(path);
 				} else {
 					for (i = 0; i < 5; i++) {
 						if (e.getSource().equals(
-								tablerows_right[i].getComponent(3))) {
+								tablerows_right[i].getComponent(R_BROWSE))) {
 							found = true;
 							break;
 						}
@@ -435,7 +442,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 				}
 				if (found) {
 					JTextField targetOut = ((JTextField) tablerows_right[i]
-							.getComponents()[1]);
+							.getComponents()[R_BROWSE]);
 					targetOut.setText(path);
 				}
 			}
@@ -448,12 +455,13 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 			if (e.getSource() instanceof JCheckBox) {
 				int j = 0;
 				for (j = 0; j < 4; j++) {
-					if (e.getSource().equals(tablerows_left[j].getComponent(6))) {
+					if (e.getSource().equals(
+							tablerows_left[j].getComponent(L_NIFTI))) {
 						break;
 					}
 				}
 				JComboBox<String> target = ((JComboBox<String>) tablerows_left[j]
-						.getComponents()[2]);
+						.getComponents()[L_OPTION]);
 				if (target.isEnabled()) {
 					target.setEnabled(false);
 					target.setSelectedIndex(0);
@@ -519,7 +527,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		// Setting every status to Unchecked
 		for (int i = 0; i < tablerows_left.length; i++) {
 			Component[] left_stuff = tablerows_left[i].getComponents();
-			JTextField status = (JTextField) left_stuff[0];
+			JTextField status = (JTextField) left_stuff[L_STATUS];
 			status.setBackground(null);
 			status.setText("Unchecked");
 		}
@@ -528,13 +536,13 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		for (int i = 0; i < tablerows_left.length; i++) {
 			// getting the components and casting them
 			Component[] left_stuff = tablerows_left[i].getComponents();
-			JTextField status = (JTextField) left_stuff[0];
+			JTextField status = (JTextField) left_stuff[L_STATUS];
 			status.setBackground(color_inProgress);
-			JTextField inputfield = (JTextField) left_stuff[1];
-			JTextField tooutput = (JTextField) left_stuff[3];
+			JTextField inputfield = (JTextField) left_stuff[L_INPUT];
+			JTextField tooutput = (JTextField) left_stuff[L_OUTPUT_NR];
 			@SuppressWarnings("unchecked")
-			JComboBox<String> move = (JComboBox<String>) left_stuff[2];
-			JCheckBox nifti = (JCheckBox) left_stuff[5];
+			JComboBox<String> move = (JComboBox<String>) left_stuff[L_OPTION];
+			JCheckBox nifti = (JCheckBox) left_stuff[L_NIFTI];
 
 			// catching empty input
 			if (inputfield.getText().equals("")) {

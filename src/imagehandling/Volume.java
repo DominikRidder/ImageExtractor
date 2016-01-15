@@ -169,6 +169,10 @@ public abstract class Volume {
 	// Collections.sort(slices);
 	// }
 
+	public boolean isEmpty() {
+		return size() == 0;
+	}
+
 	public static Volume createVolume(String path) {
 		try {
 			if (path.endsWith(".nii")) {

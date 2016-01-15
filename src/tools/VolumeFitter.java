@@ -8,7 +8,6 @@ import ij.ImagePlus;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
-import imagehandling.Image;
 import imagehandling.KeyMap;
 import imagehandling.Volume;
 
@@ -49,11 +48,8 @@ public class VolumeFitter {
 			lastdegree = degree;
 
 		} else if (lastdegree != degree) {
-			fitter.removeAlgorithm();
-			if (degree > -1) {
+			if (degree != -2) {
 				fitter.setAlgorithm(new PolynomialLowestSquare(degree));
-			} else if (degree == -1) {
-				fitter.setAlgorithm(new PolynomialLowestSquare(echo_numbers - 1));
 			} else {
 				fitter.setAlgorithm(new LowestSquare(1));
 				fitter.setFunction(new ExponentialFunction());
@@ -72,13 +68,16 @@ public class VolumeFitter {
 
 		int iArray;
 		int width = buffimg.get(0).getWidth();
+		ImageProcessor ip = vol.getSlice(slice).getData().getProcessor();
 		int rgb[] = new int[width * buffimg.get(0).getHeight()];
 		for (int x = 0; x < buffimg.get(0).getWidth(); x++) {
 			for (int y = 0; y < buffimg.get(0).getHeight(); y++) {
 				float pointcloud[][] = new float[echo_numbers][3];
 				if (buffimg.size() != 1) {
 					for (int i = 0; i < buffimg.size(); i++) {
-						iArray = buffimg.get(i).getRGB(x, y);
+						// iArray = buffimg.get(i).getRGB(x, y);
+						// iArray = getMin(data, data.getRoi());
+						iArray = ip.get(x, y);
 						if (logScale) {
 							pointcloud[i][0] = i + 1;
 							pointcloud[i][1] = (float) Math.log10(iArray);
@@ -88,6 +87,8 @@ public class VolumeFitter {
 						}
 					}
 					fitter.setPoints(pointcloud);
+					fitter.fit();
+					fitter.removeBadPoints();
 					fitter.fit();
 					rgb[x + y * width] = (int) fitter.getValue(0);
 				} else {
@@ -201,12 +202,10 @@ public class VolumeFitter {
 	public int getMin(Volume vol, int echon) {
 		int minvalue = 500;
 		int nextmin = 0;
-		Image img = null;
 		ImagePlus data = null;
 
 		for (int i = echon * perEcho; i < (echon + 1) * perEcho; i++) {
-			img = vol.getSlice(i);
-			data = img.getData();
+			data = vol.getSlice(i).getData();
 			if (data.getRoi() != null) {
 				nextmin = getMin(data, data.getRoi());
 				if (nextmin < minvalue) {
