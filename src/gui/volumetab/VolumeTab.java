@@ -946,6 +946,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		parent.getStatusBar().setVisible(false);
 		parent.getProgressBar().setVisible(false);
 		zero_echo.setText("Calculate Zero Echo");
+		ze = null;
 	}
 
 	public void actionBrowse() {

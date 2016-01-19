@@ -3,6 +3,7 @@ package tools;
 import fitterAlgorithm.LowestSquare;
 import fitterAlgorithm.PolynomialLowestSquare;
 import functions.ExponentialFunction;
+import gui.GUI;
 import gui.volumetab.Roi3D;
 import ij.ImagePlus;
 import ij.gui.PointRoi;
@@ -14,6 +15,8 @@ import imagehandling.Volume;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+
+import com.sun.prism.paint.Color;
 
 import polyfitter.Polyfitter;
 
@@ -70,14 +73,86 @@ public class VolumeFitter {
 		int width = buffimg.get(0).getWidth();
 		ImageProcessor ip = vol.getSlice(slice).getData().getProcessor();
 		int rgb[] = new int[width * buffimg.get(0).getHeight()];
+
+		/*******************************/
+		/********** GET FITTING BOUNDS ***/
+//
+//		int minX = 0;
+//		int maxX = buffimg.get(0).getWidth();
+//		int yhelp = buffimg.get(0).getHeight() / 2;
+		int backgroundmax = 50;
+//
+//		for (int x = 0; x < buffimg.get(0).getWidth(); x++) {
+//			if (ip.get(x, yhelp) >= backgroundmax) {
+//				minX = x;
+//				break;
+//			}
+//		}
+//
+//		for (int x = buffimg.get(0).getWidth() - 1; x >= 0; x--) {
+//			if (ip.get(x, yhelp) >= backgroundmax) {
+//				maxX = x;
+//				break;
+//			}
+//		}
+//
+//		int minY = 0;
+//		int maxY = buffimg.get(0).getWidth();
+//		int xhelp = buffimg.get(0).getWidth() / 2;
+//
+//		for (int y = 0; y < buffimg.get(0).getHeight(); y++) {
+//			if (ip.get(xhelp, y) >= backgroundmax) {
+//				minY = y;
+//				break;
+//			}
+//		}
+//
+//		for (int y = buffimg.get(0).getHeight() - 1; y >= 0; y--) {
+//			if (ip.get(xhelp, y) >= backgroundmax) {
+//				maxY = y;
+//				break;
+//			}
+//		}
+//
+//		Rectangle fittingbounds = new Rectangle(minX, minY, maxX - minX, maxY
+//				- minY);
+
+		float pointcloud[][] = new float[echo_numbers][3];
+		for (int i = 0; i < buffimg.size(); i++) {
+			iArray = ip.get(0, 0);
+			if (logScale) {
+				pointcloud[i][0] = i + 1;
+				pointcloud[i][1] = (float) Math.log10(iArray);
+			} else {
+				pointcloud[i][0] = i + 1;
+				pointcloud[i][1] = iArray;
+			}
+		}
+
+		fitter.setPoints(pointcloud);
+		fitter.fit();
+		fitter.removeBadPoints();
+		fitter.fit();
+		int nullrgb = (int) fitter.getValue(0);
+		
+		if (GUI.DEBUG){
+			nullrgb = Color.RED.getIntArgbPre();
+		}
+		
+		/*******************************/
+
 		for (int x = 0; x < buffimg.get(0).getWidth(); x++) {
-			for (int y = 0; y < buffimg.get(0).getHeight(); y++) {
-				float pointcloud[][] = new float[echo_numbers][3];
-				if (buffimg.size() != 1) {
+			Xloop: for (int y = 0; y < buffimg.get(0).getHeight(); y++) {
+//				if (fittingbounds.contains(x, y)) {
+					pointcloud = new float[echo_numbers][3];
 					for (int i = 0; i < buffimg.size(); i++) {
 						// iArray = buffimg.get(i).getRGB(x, y);
 						// iArray = getMin(data, data.getRoi());
 						iArray = ip.get(x, y);
+						if (iArray < backgroundmax){
+							rgb[x + y * width] = nullrgb;
+							continue Xloop;
+						}
 						if (logScale) {
 							pointcloud[i][0] = i + 1;
 							pointcloud[i][1] = (float) Math.log10(iArray);
@@ -90,16 +165,10 @@ public class VolumeFitter {
 					fitter.fit();
 					fitter.removeBadPoints();
 					fitter.fit();
-					rgb[x + y * width] = (int) fitter.getValue(0);
-				} else {
-					iArray = getMin(vol.getData().get(slice),
-							new PointRoi(x, y));
-					if (logScale) {
-						rgb[x + y * width] = (int) Math.log10(iArray);
-					} else {
-						rgb[x + y * width] = iArray;
-					}
-				}
+					rgb[x + y * width] = Float.floatToIntBits((float)fitter.getValue(0));
+//				} else {
+//					rgb[x + y * width] = nullrgb;
+//				}
 			}
 		}
 		return rgb;

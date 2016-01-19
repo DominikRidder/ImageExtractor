@@ -2,6 +2,7 @@ package tools;
 
 import gui.volumetab.VolumeTab;
 import ij.ImagePlus;
+import ij.process.ImageProcessor;
 import imagehandling.KeyMap;
 import imagehandling.Volume;
 
@@ -146,6 +147,7 @@ public class ZeroEcho implements Runnable {
 		for (int s = offset; s < offset + todo; s++) {
 			int rgbArray[] = new int[width * height];
 			rgbArray = volfit.getZeroValues(vol, s, degree, takelog);
+			echo0.get(s).setProcessor(vol.getSlice(s).getData().getProcessor().createProcessor(width, height));
 			BufferedImage next = echo0.get(s).getBufferedImage();
 			next.setRGB(0, 0, width, height, rgbArray, 0, width);
 			echo0.get(s).setImage(next);

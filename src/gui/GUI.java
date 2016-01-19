@@ -48,6 +48,8 @@ import tools.ImageExtractorConfig;
 public class GUI extends JFrame implements ActionListener, ChangeListener,
 		Runnable, WindowListener {
 
+	public static final boolean DEBUG = false;
+	
 	/**
 	 * Main method, to start the GUI.
 	 * 
