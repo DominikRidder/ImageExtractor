@@ -20,6 +20,7 @@ public class ZeroEcho implements Runnable {
 	private int degree;
 	private boolean takelog;
 	private boolean canceld;
+	private boolean failed;
 
 	private int numbertasks;
 	private int solvedtasks;
@@ -105,7 +106,7 @@ public class ZeroEcho implements Runnable {
 			threads[i].start();
 		}
 
-		while (solvedtasks != numbertasks) {
+		fitting: while (solvedtasks != numbertasks) {
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
@@ -116,8 +117,8 @@ public class ZeroEcho implements Runnable {
 						"ZeroEchoCalculation", value, nextvalue));
 			}
 			value = nextvalue;
-			if (canceld) {
-				break;
+			if (canceld || failed) {
+				break fitting;
 			}
 		}
 		for (int i = 0; i < threads.length; i++) {
@@ -127,10 +128,10 @@ public class ZeroEcho implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		
+
 		if (canceld) {
-			parent.setZeroEcho(null, "canceld");
-			System.out.println("canceld");
+			parent.setZeroEcho(null, "failed");
+			System.out.println("FITTING FAILED");
 		} else {
 			double neededtime = (System.currentTimeMillis() - start);
 			System.out.println("Needed " + neededtime + " mill. to Perform "
@@ -142,19 +143,25 @@ public class ZeroEcho implements Runnable {
 	}
 
 	private void CalculateZeroEcho(int todo, int offset) {
-		VolumeFitter volfit = new VolumeFitter();
+		try {
+			VolumeFitter volfit = new VolumeFitter();
 
-		for (int s = offset; s < offset + todo; s++) {
-			int rgbArray[] = new int[width * height];
-			rgbArray = volfit.getZeroValues(vol, s, degree, takelog);
-			echo0.get(s).setProcessor(vol.getSlice(s).getData().getProcessor().createProcessor(width, height));
-			BufferedImage next = echo0.get(s).getBufferedImage();
-			next.setRGB(0, 0, width, height, rgbArray, 0, width);
-			echo0.get(s).setImage(next);
-			solvedtasks++;
-			if (canceld) {
-				break;
+			for (int s = offset; s < offset + todo; s++) {
+				if (canceld || failed) {
+					break;
+				}
+				int rgbArray[] = new int[width * height];
+				rgbArray = volfit.getZeroValues(vol, s, degree, takelog);
+				echo0.get(s).setProcessor(
+						vol.getSlice(s).getData().getProcessor()
+								.createProcessor(width, height));
+				BufferedImage next = echo0.get(s).getBufferedImage();
+				next.setRGB(0, 0, width, height, rgbArray, 0, width);
+				echo0.get(s).setImage(next);
+				solvedtasks++;
 			}
+		} catch (Exception e) {
+			failed = true;
 		}
 
 	}

@@ -57,6 +57,7 @@ import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
@@ -283,7 +284,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private JButton zero_echo;
 
 	private ZeroEcho ze;
-
+	
+	final Timer timer = new Timer(500, this);
+	
 	/**
 	 * Standard Constructur.
 	 */
@@ -656,8 +659,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		}
 		try {
 			parent.getStatusBar().setVisible(true);
-			creatingText();
+			timer.start();
 			volume = Volume.createVolume(path.getText());
+			timer.stop();
+			
 			parent.getStatusBar().setVisible(false);
 			if (volume == null) {
 				throw new RuntimeException();
@@ -706,38 +711,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			repaint();
 		} finally {
 			creatingVolume = false;
-		}
-	}
-
-	private void creatingText() {
-		new java.util.Timer().schedule(new java.util.TimerTask() {
-			public void run() {
-				if (creatingVolume) {
-					switch (creatingTextStatus) {
-					case 0:
-						parent.getStatusLabel().setText("Creating");
-						break;
-					case 1:
-						parent.getStatusLabel().setText("Creating.");
-						break;
-					case 2:
-						parent.getStatusLabel().setText("Creating..");
-						break;
-					case 3:
-						parent.getStatusLabel().setText("Creating...");
-						break;
-					}
-					creatingTextStatus += 1;
-					creatingTextStatus %= 4;
-					creatingText();
-				} else if (volume != null) {
-					displayAttributes();
-				} else {
-					outputArea
-							.setText("Creating Volume didnt work. Please check the path. (Maybe the Selected Folder is empty)");
-				}
+			if (timer.isRunning()) {
+				timer.stop();
 			}
-		}, 500);
+		}
 	}
 
 	public void setPath(String path) {
@@ -808,6 +785,24 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * This method is called by the 5 buttons of VolumeTab.
 	 */
 	public void actionPerformed(ActionEvent e) {
+		if (e.getSource().equals(timer)) {
+			switch (creatingTextStatus) {
+			case 0:
+				parent.getStatusLabel().setText("Creating");
+				break;
+			case 1:
+				parent.getStatusLabel().setText("Creating.");
+				break;
+			case 2:
+				parent.getStatusLabel().setText("Creating..");
+				break;
+			case 3:
+				parent.getStatusLabel().setText("Creating...");
+				break;
+			}
+			creatingTextStatus += 1;
+			creatingTextStatus %= 4;
+		}
 		if (creatingVolume) {
 			return;
 		}
