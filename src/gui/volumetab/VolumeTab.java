@@ -144,12 +144,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	/**
 	 * Arrow, for changing the index.
 	 */
-	private JButton arrow_up_slice, arrow_down_slice;
+	private ArrowButton arrow_up_slice, arrow_down_slice;
 
 	/**
 	 * Arrows, for changing the index.
 	 */
-	private JButton arrow_up_echo, arrow_down_echo;
+	private ArrowButton arrow_up_echo, arrow_down_echo;
 
 	/**
 	 * JFileChooser is used to search a Volume (dir).
@@ -321,7 +321,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 		// image
 		image = new BufferedImage((int) (parent.width / 2.483),
-				(int) (parent.height / 1.219), BufferedImage.TYPE_4BYTE_ABGR);
+				(int) (parent.height / 1.219), BufferedImage.TYPE_3BYTE_BGR);
 		// The ImageIcon is kinda a wrapper for the image
 		imgicon = new ImageIcon(image);
 		// imagepanel wrapps the ImageIcon
@@ -353,22 +353,26 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		GUI.setfinalSize(show_attributes, new Dimension(
 				(int) (parent.width / 4), (int) (parent.height / 5.4)));
 
-		arrow_up_slice = new BasicArrowButton(BasicArrowButton.NORTH);
-		arrow_up_slice.setText("arrow_up_slice@1");
-		arrow_up_slice.addChangeListener(this);
+		arrow_up_slice = new ArrowButton(BasicArrowButton.NORTH);
+		arrow_up_slice.setChange(1);
+		arrow_up_slice.setType(ArrowButton.SLICE_ARROW);
+		arrow_up_slice.setToCall(this);
 
-		arrow_down_slice = new BasicArrowButton(BasicArrowButton.SOUTH);
-		arrow_down_slice.setText("arrow_down_slice@-1");
-		arrow_down_slice.addChangeListener(this);
+		arrow_down_slice = new ArrowButton(BasicArrowButton.SOUTH);
+		arrow_down_slice.setChange(-1);
+		arrow_down_slice.setType(ArrowButton.SLICE_ARROW);
+		arrow_down_slice.setToCall(this);
 
-		arrow_up_echo = new BasicArrowButton(BasicArrowButton.NORTH);
-		arrow_up_echo.setText("arrow_up_echo@1");
-		arrow_up_echo.addChangeListener(this);
-
-		arrow_down_echo = new BasicArrowButton(BasicArrowButton.SOUTH);
-		arrow_down_echo.setText("arrow_down_echo@-1");
-		arrow_down_echo.addChangeListener(this);
-
+		arrow_up_echo = new ArrowButton(BasicArrowButton.NORTH);
+		arrow_up_echo.setChange(1);
+		arrow_up_echo.setType(ArrowButton.ECHO_ARROW);
+		arrow_up_echo.setToCall(this);
+		
+		arrow_down_echo = new ArrowButton(BasicArrowButton.SOUTH);
+		arrow_down_echo.setChange(-1);
+		arrow_down_echo.setType(ArrowButton.ECHO_ARROW);
+		arrow_down_echo.setToCall(this);
+		
 		// Next some not editable TextFields
 		max_slice = new JTextField("/0");
 		max_slice.setEditable(false);
@@ -649,11 +653,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			if (volume == null) {
 				throw new RuntimeException();
 			}
-			// WindowManager.setTempCurrentImage(volume.getData().get(0));
-			// WindowManager.setTempCurrentImage(contrast.thread,
-			// volume.getData()
-			// .get(0));
-
 			path.setText(volume.getPath());
 
 			volume.getTextOptions().setReturnExpression(
@@ -687,8 +686,18 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			index_echo.setEditable(false);
 			index_echo.setText("0");
 			max_echo.setText("/0");
+
+			if (image != null) {
+				image = new BufferedImage((int) (image.getWidth()),
+						(int) (image.getHeight()), BufferedImage.TYPE_3BYTE_BGR);
+				imgicon.setImage(image);
+				imagelabel.setIcon(imgicon);
+				showROI(false);
+			}
+			repaint();
+		} finally {
+			creatingVolume = false;
 		}
-		creatingVolume = false;
 	}
 
 	private void creatingText() {
@@ -736,9 +745,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private void displayAttributes() {
 		try {
 			// Do we have a Volume? If not we try to create one..
-			if (volume == null) {
-				createVolume();
-			}
+			// if (volume == null) {
+			// createVolume();
+			// }
 			// Did it work?
 			if (volume != null && !volume.isEmpty()) {
 				// Is the user searching something or do we show them all?
@@ -1106,10 +1115,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			if (System.currentTimeMillis() - lastpressed > 50) {
 				lastpressed = System.currentTimeMillis();
 				if (arrow_up_slice.getModel().isPressed()) {
+					addtoSlice(1);
 					if (getActualSlice() != perEcho) {
 						index_slice.setText("" + (getActualSlice() + 1));
 					}
 				} else if (arrow_down_slice.getModel().isPressed()) {
+					addtoSlice(-1);
 					if (getActualSlice() != 1) {
 						index_slice.setText("" + (getActualSlice() - 1));
 					}
@@ -1149,6 +1160,22 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			}
 		} catch (IOException e) {
 			// couldn't read actual slice/echo
+		}
+	}
+
+	public void addtoSlice(int change) {
+		try {
+			if (!(getActualSlice() + change < 1 || getActualSlice() + change > perEcho)) {
+				index_slice.setText(""
+						+ (Integer.parseInt(index_slice.getText()) + change));
+				checkSlice();
+			}
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -1210,19 +1237,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			imgicon.setImage(image);
 			imagelabel.setIcon(imgicon);
 
-			int neededwidth = image.getWidth() + (int) (parent.width / 1.6923);
-			if (relativroi != null) {
-				neededwidth += (int) (parent.width * roitabwidth);
-			}
-
-			if (parent.getWidth() != neededwidth) {
-				parent.requestWidth(neededwidth, this);
-				GUI.setfinalSize(toppanel, new Dimension(neededwidth,
-						parent.height));
-				System.out.println("Roi Panel width = " + parent.width
-						* roitabwidth);
-			}
-
+			showROI(true);
 			if (relativroi != null) {
 				if (relativroi instanceof Roi3D) {
 					((Roi3D) relativroi).draw(volume, image,
@@ -1230,7 +1245,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				} else {
 					relativroi.draw(image.getGraphics());
 				}
-				showROI(true);
 			}
 			repaint();
 			return true;
@@ -1297,36 +1311,32 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 			if (makechange) {
 				if (changeEcho) {
-					try {
-						if (!(getActualEcho() + change < 1
-								|| (zeroecho != null && getActualEcho()
-										+ change < 0) || getActualEcho()
-								+ change > echoNumbers))
-							index_echo
-									.setText(""
-											+ (Integer.parseInt(index_echo
-													.getText()) + change));
-						checkEcho();
-					} catch (NumberFormatException | IOException e1) {
-
-					}
+					addtoEcho(change);
 				} else {
-					try {
-						if (!(getActualSlice() + change < 1 || getActualSlice()
-								+ change > perEcho)) {
-							index_slice
-									.setText(""
-											+ (Integer.parseInt(index_slice
-													.getText()) + change));
-							checkSlice();
-						}
-					} catch (NumberFormatException | IOException e1) {
-
-					}
+					addtoSlice(change);
 				}
 			}
 			lastpressed = System.currentTimeMillis();
 		}
+	}
+
+	public void addtoEcho(int change) {
+		try {
+			int actecho = getActualEcho();
+			int lowest = zeroecho == null ? 1 : 0;
+			if (actecho+change > lowest-1 && actecho+change <= echoNumbers) {
+				index_echo.setText(""
+						+ (Integer.parseInt(index_echo.getText()) + change));
+				checkEcho();
+			}
+		} catch (NumberFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 
 	public void keyPressed(KeyEvent e) {
@@ -1344,11 +1354,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			}
 
 			if (index_echo.hasFocus()) {
-				index_echo.setText(""
-						+ (Integer.parseInt(index_echo.getText()) + change));
+				addtoEcho(change);
 			} else {
-				index_slice.setText(""
-						+ (Integer.parseInt(index_slice.getText()) + change));
+				addtoSlice(change);
 			}
 			lastpressed = System.currentTimeMillis();
 		}
@@ -1370,7 +1378,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void showROI(boolean visible) {
-		if (visible) {
+		if (visible && !max_echo.getText().equals("/1") && relativroi != null) {
+			parent.requestWidth(preferedWidth(), this);
+			GUI.setfinalSize(toppanel, new Dimension(preferedWidth(),
+					parent.height));
+
 			if (vf == null) {
 				vf = new VolumeFitter();
 			}
@@ -1400,11 +1412,13 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				// ArrayIndexOutOfBoundsException, ...)
 			}
 		} else {
+			if (volume != null) {
+				volume.setRoi(null);
+			}
 			relativroi = null;
 			roiPanel.setVisible(false);
-			if (ownExtended) {
-				ownExtended = false;
-			}
+			ownExtended = false;
+			parent.requestWidth(preferedWidth(), this);
 		}
 
 		this.repaint();
@@ -1658,7 +1672,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	@Override
 	public void onFocus() {
-		preferedWidth();
+		parent.requestWidth(preferedWidth(), this);
 		parent.getJMenuBar().add(imagemenu);
 		parent.getJMenuBar().repaint();
 	}
