@@ -33,6 +33,7 @@ public class ArrowButton extends BasicArrowButton implements ActionListener {
 			@Override
 			public void stateChanged(ChangeEvent cEvt) {
 				if (bModel.isPressed() && !timer.isRunning()) {
+					timer.setInitialDelay(0);
 					timer.start();
 				} else if (!bModel.isPressed() && timer.isRunning()) {
 					timer.stop();

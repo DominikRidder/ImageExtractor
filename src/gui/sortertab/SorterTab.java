@@ -689,7 +689,8 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 
 	@Override
 	public void onFocus() {
-		preferedWidth();
+		parent.requestWidth(preferedWidth(), this);
+		parent.getJMenuBar().repaint();
 	}
 
 	@Override

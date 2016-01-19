@@ -6,6 +6,8 @@ import imagehandling.KeyMap;
 import imagehandling.Volume;
 
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
 public class ZeroEcho implements Runnable {
@@ -16,16 +18,29 @@ public class ZeroEcho implements Runnable {
 	private int width, height;
 	private int degree;
 	private boolean takelog;
+	private boolean canceld;
+
+	private int numbertasks;
+	private int solvedtasks;
+	private int value;
+
+	private PropertyChangeListener progresslistener;
 
 	public ZeroEcho(Volume vol, VolumeTab volumeTab, int fittingfunction,
-			boolean log) {
+			boolean log, PropertyChangeListener progress) {
+		this.progresslistener = progress;
 		this.vol = vol;
 		this.degree = fittingfunction;
 		parent = volumeTab;
 		takelog = log;
 	}
 
+	public void Cancle() {
+		canceld = true;
+	}
+
 	public void run() {
+		canceld = false;
 		int cores = Runtime.getRuntime().availableProcessors();
 		if (cores < 1) {
 			cores = 1;
@@ -37,6 +52,7 @@ public class ZeroEcho implements Runnable {
 		int slice_perEcho = vol.size()
 				/ Integer.parseInt(vol.getAttribute(KeyMap.KEY_ECHO_NUMBERS_S,
 						vol.size() - 1));
+		numbertasks = slice_perEcho;
 
 		ImagePlus data = vol.getData().get(0);
 
@@ -88,6 +104,21 @@ public class ZeroEcho implements Runnable {
 			threads[i].start();
 		}
 
+		while (solvedtasks != numbertasks) {
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+			}
+			int nextvalue = solvedtasks;
+			if (progresslistener != null) {
+				progresslistener.propertyChange(new PropertyChangeEvent(this,
+						"ZeroEchoCalculation", value, nextvalue));
+			}
+			value = nextvalue;
+			if (canceld) {
+				break;
+			}
+		}
 		for (int i = 0; i < threads.length; i++) {
 			try {
 				threads[i].join();
@@ -95,13 +126,18 @@ public class ZeroEcho implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		double neededtime = (System.currentTimeMillis() - start);
-		System.out.println("Needed " + neededtime + " mill. to Perform " + max
-				+ " fits.");
-		System.out.println("(Performing " + (int) (max / (neededtime / 1000))
-				+ " fits per second)");
-
-		parent.addZeroEcho(echo0, "fitting");
+		
+		if (canceld) {
+			parent.setZeroEcho(null, "canceld");
+			System.out.println("canceld");
+		} else {
+			double neededtime = (System.currentTimeMillis() - start);
+			System.out.println("Needed " + neededtime + " mill. to Perform "
+					+ max + " fits.");
+			System.out.println("(Performing "
+					+ (int) (max / (neededtime / 1000)) + " fits per second)");
+			parent.setZeroEcho(echo0, "fitting");
+		}
 	}
 
 	private void CalculateZeroEcho(int todo, int offset) {
@@ -113,6 +149,10 @@ public class ZeroEcho implements Runnable {
 			BufferedImage next = echo0.get(s).getBufferedImage();
 			next.setRGB(0, 0, width, height, rgbArray, 0, width);
 			echo0.get(s).setImage(next);
+			solvedtasks++;
+			if (canceld) {
+				break;
+			}
 		}
 
 	}

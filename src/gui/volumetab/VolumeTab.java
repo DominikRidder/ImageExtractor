@@ -32,6 +32,8 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -74,7 +76,8 @@ import tools.ZeroEcho;
  */
 public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		ChangeListener, MouseWheelListener, MouseListener, KeyListener,
-		Runnable, CaretListener, DropTargetListener, MouseMotionListener {
+		Runnable, CaretListener, DropTargetListener, MouseMotionListener,
+		PropertyChangeListener {
 
 	/**
 	 * The parent is the actual window, that created this VolumeTab.
@@ -266,14 +269,20 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private boolean ownExtended = false;
 
-	private double roitabwidth = System.getProperty("os.name").toLowerCase()
-			.contains("mac") ? 0.7 : 0.35;
+	private boolean ismac = System.getProperty("os.name").toLowerCase()
+			.contains("mac");
+
+	private double roitabwidth = 0.35 * (ismac ? 2 : 1);
 
 	private ArrayList<ImagePlus> zeroecho;
 
 	private ContrastAdjuster contrast;
 
 	private JMenu imagemenu = new JMenu("Image");
+
+	private JButton zero_echo;
+
+	private ZeroEcho ze;
 
 	/**
 	 * Standard Constructur.
@@ -284,11 +293,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		JMenuItem contrtmen = new JMenuItem("Adjust Brightness/Contrast");
 		contrtmen.addActionListener(this);
 		imagemenu.add(contrtmen);
-		// imagemenu.addActionListener(this);
 
 		new DropTarget(this, this);
-		// ImageExtractorConfig iec = new ImageExtractorConfig();
-		// customImagej.
 
 		// The path for the Volume
 		path = new JTextField("");
@@ -296,7 +302,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		path.setEditable(false);
 		path.setBackground(null);
 		new DropTarget(path, this);
-		// path.setDropTarget(dnd);
 		GUI.setfinalSize(path, new Dimension((int) (parent.width / 2.5),
 				(int) (parent.height / 17)));
 
@@ -310,13 +315,15 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		shape = new JComboBox<String>(shapes);
 		shape.setSelectedIndex(1);
 		shape.addActionListener(this);
-		GUI.setfinalSize(shape, new Dimension((int) (parent.width / 15.714),
+		GUI.setfinalSize(shape, new Dimension(
+				(int) (parent.width / 15.714 * (ismac ? 2 : 1)),
 				(int) (parent.height / 21.6)));
 
 		String[] units = { "mm", "pixel" };
 		unit = new JComboBox<String>(units);
 		unit.addActionListener(this);
-		GUI.setfinalSize(unit, new Dimension((int) (parent.width / 15.714),
+		GUI.setfinalSize(unit, new Dimension(
+				(int) (parent.width / 15.714 * (ismac ? 2 : 1)),
 				(int) (parent.height / 21.6)));
 
 		// image
@@ -367,12 +374,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		arrow_up_echo.setChange(1);
 		arrow_up_echo.setType(ArrowButton.ECHO_ARROW);
 		arrow_up_echo.setToCall(this);
-		
+
 		arrow_down_echo = new ArrowButton(BasicArrowButton.SOUTH);
 		arrow_down_echo.setChange(-1);
 		arrow_down_echo.setType(ArrowButton.ECHO_ARROW);
 		arrow_down_echo.setToCall(this);
-		
+
 		// Next some not editable TextFields
 		max_slice = new JTextField("/0");
 		max_slice.setEditable(false);
@@ -450,7 +457,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				(int) (parent.height / 13.5)));
 
 		// creating the output field
-		outputArea = new JTextArea("status");
+		outputArea = new JTextArea("");
 		outputArea.setEditable(false);
 		outputScroller = new JScrollPane(outputArea);
 		outputScroller.setPreferredSize(new Dimension(parent.width / 11,
@@ -520,7 +527,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				(int) (parent.height / 15)));
 
 		// Calc zero echo
-		JButton zero_echo = new JButton("Calculate Zero Echo");
+		zero_echo = new JButton("Calculate Zero Echo");
 		zero_echo.addActionListener(this);
 		GUI.setfinalSize(zero_echo, new Dimension((int) (parent.width / 5.5),
 				parent.height / 25));
@@ -648,8 +655,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			return;
 		}
 		try {
+			parent.getStatusBar().setVisible(true);
 			creatingText();
 			volume = Volume.createVolume(path.getText());
+			parent.getStatusBar().setVisible(false);
 			if (volume == null) {
 				throw new RuntimeException();
 			}
@@ -706,16 +715,16 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				if (creatingVolume) {
 					switch (creatingTextStatus) {
 					case 0:
-						outputArea.setText("Creating");
+						parent.getStatusLabel().setText("Creating");
 						break;
 					case 1:
-						outputArea.setText("Creating.");
+						parent.getStatusLabel().setText("Creating.");
 						break;
 					case 2:
-						outputArea.setText("Creating..");
+						parent.getStatusLabel().setText("Creating..");
 						break;
 					case 3:
-						outputArea.setText("Creating...");
+						parent.getStatusLabel().setText("Creating...");
 						break;
 					}
 					creatingTextStatus += 1;
@@ -804,7 +813,15 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		}
 		switch (e.getActionCommand()) {
 		case "Calculate Zero Echo":
-			actionCalculateZeroEcho();
+			if (ze == null) {
+				actionCalculateZeroEcho();
+			}
+			break;
+		case "Cancle":
+			if (ze != null) {
+				ze.Cancle();
+				ze = null;
+			}
 			break;
 		case "open in External":
 			actionOpenInExternal();
@@ -883,7 +900,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			}
 		}
 
-		ZeroEcho ze = new ZeroEcho(volume, this, degree, alsolog.isSelected());
+		zero_echo.setText("Cancle");
+
+		parent.getStatusLabel().setText("Calculating ZeroEcho: ");
+		parent.getStatusBar().setVisible(true);
+		parent.getProgressBar().setValue(0);
+		parent.getProgressBar().setMaximum(perEcho);
+		parent.getProgressBar().setVisible(true);
+		ze = new ZeroEcho(volume, this, degree, alsolog.isSelected(), this);
 		new Thread(ze).start();
 	}
 
@@ -911,10 +935,17 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * This Method gets called, whenever the ZeroEcho Class finished an ZeroEcho
 	 * slice.
 	 */
-	public void addZeroEcho(ArrayList<ImagePlus> zeroecho,
+	public void setZeroEcho(ArrayList<ImagePlus> zeroecho,
 			String fittingfunction) {
 		this.zeroecho = zeroecho;
-		max_echo.setText(max_echo.getText().replace(" + 0", "") + " + 0");
+		if (zeroecho == null) {
+			max_echo.setText(max_echo.getText().replace(" + 0", ""));
+		} else {
+			max_echo.setText(max_echo.getText().replace(" + 0", "") + " + 0");
+		}
+		parent.getStatusBar().setVisible(false);
+		parent.getProgressBar().setVisible(false);
+		zero_echo.setText("Calculate Zero Echo");
 	}
 
 	public void actionBrowse() {
@@ -1092,13 +1123,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		if (volume == null) {
 			return;
 		}
-		if (e.getSource() instanceof JButton) {
-			JButton b = (JButton) e.getSource();
-			String name = b.getText();
-			if (name.contains("arrow")) {
-				whilePressed(300);
-			}
-		} else if (e.getSource() == alsolog) {
+		if (e.getSource() == alsolog) {
 			showROI(true);
 		} else if (e.getSource() == radius) {
 			radiustext.setText("Radius: " + radius.getValue());
@@ -1324,7 +1349,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		try {
 			int actecho = getActualEcho();
 			int lowest = zeroecho == null ? 1 : 0;
-			if (actecho+change > lowest-1 && actecho+change <= echoNumbers) {
+			if (actecho + change > lowest - 1
+					&& actecho + change <= echoNumbers) {
 				index_echo.setText(""
 						+ (Integer.parseInt(index_echo.getText()) + change));
 				checkEcho();
@@ -1406,7 +1432,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				}
 				roiPanel.setVisible(true);
 			} catch (Exception e) {
-				// e.printStackTrace();
+				e.printStackTrace();
 				// a lot of exception can ocure here
 				// (IOException, SingularMatrixException,
 				// ArrayIndexOutOfBoundsException, ...)
@@ -1631,7 +1657,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 						path.setText(file.getParent());
 					}
 				}
-				createVolume();
+				new Thread(this).start();
 				break;
 			}
 		} catch (Exception e) {
@@ -1681,6 +1707,13 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	public void onExit() {
 		parent.getJMenuBar().remove(imagemenu);
 		parent.getJMenuBar().repaint();
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (evt.getSource() instanceof ZeroEcho) {
+			parent.getProgressBar().setValue((int) evt.getNewValue());
+		}
 	}
 
 }

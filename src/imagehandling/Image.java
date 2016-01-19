@@ -352,9 +352,10 @@ public class Image implements Comparable<Image> {
 
 	public void setROI(Roi roi) {
 		this.roi = roi;
-		if (data != null) {
-			data.setRoi(roi);
+		if (data == null) {
+			loadData();
 		}
+		data.setRoi(roi);
 	}
 
 	public void setROI(int roitype, int x, int y, int width, int height) {

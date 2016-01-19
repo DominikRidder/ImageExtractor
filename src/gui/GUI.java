@@ -3,10 +3,12 @@ package gui;
 import gui.sortertab.SorterTab;
 import gui.volumetab.VolumeTab;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,7 +29,10 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
+import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -116,6 +121,10 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 	MyTab currentTab;
 
+	private JPanel statusPanel;
+	private JLabel statusLabel;
+	private JProgressBar progressBar;
+	
 	/**
 	 * Constructs a new GUI. The GUI can be controlled with a Mouse or even
 	 * based on Java code.
@@ -189,6 +198,26 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		setLocationRelativeTo(null);
 		setTitle("ImageExtractor");
 		setResizable(true);
+		
+		statusPanel = new JPanel();
+		statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
+		this.add(statusPanel, BorderLayout.SOUTH);
+		statusPanel.setPreferredSize(new Dimension(this.getWidth(), 20));
+		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
+		statusLabel = new JLabel("");
+		statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		statusPanel.add(statusLabel);
+		
+		progressBar = new JProgressBar();
+		progressBar.setVisible(false);
+		progressBar.setStringPainted(true);
+		Rectangle bounds = progressBar.getBounds();
+		bounds.width = 100;
+		progressBar.setBounds(bounds);
+		statusPanel.add(progressBar);
+
+		statusPanel.setVisible(false);
+		
 		setVisible(visible);
 
 		currentTab = (MyTab) tabber.getSelectedComponent();
@@ -206,6 +235,18 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		lifeupdate();
 	}
 
+	public JPanel getStatusBar() {
+		return statusPanel;
+	}
+	
+	public JLabel getStatusLabel() {
+		return statusLabel;
+	}
+	
+	public JProgressBar getProgressBar() {
+		return progressBar;
+	}
+	
 	/**
 	 * Method, to find, if the GUI is running.
 	 * 
