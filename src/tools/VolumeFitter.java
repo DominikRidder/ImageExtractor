@@ -33,7 +33,7 @@ public class VolumeFitter {
 	private boolean useproccessor;
 
 	public int[] getZeroValues(Volume vol, int slice, int degree,
-			boolean logScale) {
+			boolean logScale, ImageProcessor processor) {
 		if (fitter == null) {
 			useproccessor = false;
 			String str_echo_numbers = vol.getSlice(vol.size() - 1)
@@ -61,19 +61,22 @@ public class VolumeFitter {
 		}
 		fitter.removePoints();
 
-		ArrayList<BufferedImage> buffimg = new ArrayList<BufferedImage>(
-				echo_numbers);
+		ArrayList<ImagePlus> buffimg = new ArrayList<ImagePlus>(echo_numbers);
 
 		for (int e = 0; e < echo_numbers; e++) {
-			buffimg.add(vol.getSlice(slice + perEcho * e).getData()
-					.getBufferedImage());
+			buffimg.add(vol.getSlice(slice + perEcho * e).getData());
 		}
 
-		int iArray;
+		float iArray;
 		int width = buffimg.get(0).getWidth();
-		ImageProcessor ip = vol.getSlice(slice).getData().getProcessor();
-		int rgb[] = new int[width * buffimg.get(0).getHeight()];
+		int height = buffimg.get(0).getHeight();
+		int rgb[] = new int[width * height];
 
+		ImageProcessor ip[] = new ImageProcessor[echo_numbers];
+		for (int i = 0; i<echo_numbers; i++){
+			ip[i] = buffimg.get(i).getProcessor();
+		}
+				
 		/*******************************/
 		/********** GET FITTING BOUNDS ***/
 //
@@ -119,7 +122,7 @@ public class VolumeFitter {
 
 		float pointcloud[][] = new float[echo_numbers][3];
 		for (int i = 0; i < buffimg.size(); i++) {
-			iArray = ip.get(0, 0);
+			iArray = ip[i].getf(0, 0);
 			if (logScale) {
 				pointcloud[i][0] = i + 1;
 				pointcloud[i][1] = (float) Math.log10(iArray);
@@ -133,7 +136,7 @@ public class VolumeFitter {
 		fitter.fit();
 		fitter.removeBadPoints();
 		fitter.fit();
-		int nullrgb = (int) fitter.getValue(0);
+		float nullrgb = (float) fitter.getValue(0);
 		
 		if (GUI.DEBUG){
 			nullrgb = Color.RED.getIntArgbPre();
@@ -145,27 +148,39 @@ public class VolumeFitter {
 			Xloop: for (int y = 0; y < buffimg.get(0).getHeight(); y++) {
 //				if (fittingbounds.contains(x, y)) {
 					pointcloud = new float[echo_numbers][3];
+					boolean isbackground = true;
 					for (int i = 0; i < buffimg.size(); i++) {
 						// iArray = buffimg.get(i).getRGB(x, y);
 						// iArray = getMin(data, data.getRoi());
-						iArray = ip.get(x, y);
-						if (iArray < backgroundmax){
-							rgb[x + y * width] = nullrgb;
+						iArray = ip[i].getf(x, y);
+
+						if (iArray >= backgroundmax){
+							isbackground = false;
+						}
+						if (isbackground && i == buffimg.size()-1) {
+							processor.setf(x,y,nullrgb);
 							continue Xloop;
 						}
+						
+						pointcloud[i][0] = i + 1;
 						if (logScale) {
-							pointcloud[i][0] = i + 1;
 							pointcloud[i][1] = (float) Math.log10(iArray);
 						} else {
-							pointcloud[i][0] = i + 1;
 							pointcloud[i][1] = iArray;
 						}
 					}
+					
 					fitter.setPoints(pointcloud);
 					fitter.fit();
 					fitter.removeBadPoints();
 					fitter.fit();
-					rgb[x + y * width] = Float.floatToIntBits((float)fitter.getValue(0));
+					
+//					buffimg.get(0).getBufferedImage().getRGB(x, y)
+					processor.setf(x,y,(float)fitter.getValue(0));
+//					rgb[x + y * width] = (int) Float.intBitsToFloat((int)fitter.getValue(0));
+//					rgb[x + y * width] = (int) Float.intBitsToFloat(ip[0].get(x, y));
+//					rgb[x + y * width] = (int)fitter.getValue(0);
+//					System.out.println(rgb[x + y * width]);
 //				} else {
 //					rgb[x + y * width] = nullrgb;
 //				}
