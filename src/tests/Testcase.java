@@ -32,10 +32,28 @@ public class Testcase {
 	}
 
 	@Test
-	public void First() {
+	public void VisibleAttributes() {
 		GUI g = new GUI(true, false);
-		MyTab tab = g.getCurrentTab();
+		VolumeTab voltab = (VolumeTab) g.getCurrentTab();
 
-		assertTrue(tab instanceof SorterTab);
+		voltab.setPath("/opt/dridder_local/TestDicoms/AllDicoms/B0092/14_wm_gre_rx=PA");
+		voltab.createVolume();
+		
+		double start = System.currentTimeMillis();
+		
+		while (voltab.isCreatingVolume()) {
+			if (System.currentTimeMillis()-start > 5000) {
+				break;
+			}else{
+				try{
+					Thread.sleep(300);
+				}catch(InterruptedException e){
+					// do nothing
+				}
+			}
+		}
+		
+		assertTrue(!voltab.isOutputAreaEmpty());
 	}
+
 }

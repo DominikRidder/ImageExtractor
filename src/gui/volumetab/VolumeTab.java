@@ -673,6 +673,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			// Default Index
 			index_slice.setText("1");
 			index_echo.setText("1");
+			displayAttributes();
 			// User can change fields again
 			index_slice.setEditable(true);
 			index_echo.setEditable(true);
@@ -1708,6 +1709,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		if (evt.getSource() instanceof ZeroEcho) {
 			parent.getProgressBar().setValue((int) evt.getNewValue());
 		}
+	}
+	
+	public boolean isOutputAreaEmpty() {
+		return outputArea.getText().equals("");
 	}
 
 }
