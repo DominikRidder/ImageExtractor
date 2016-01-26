@@ -210,7 +210,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		setResizable(true);
 		
 		statusPanel = new JPanel();
-		statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
+//		statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
 		this.add(statusPanel, BorderLayout.SOUTH);
 		statusPanel.setPreferredSize(new Dimension(this.getWidth(), 20));
 		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
