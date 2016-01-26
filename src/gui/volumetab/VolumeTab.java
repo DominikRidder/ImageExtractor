@@ -270,10 +270,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private boolean ownExtended = false;
 
-	private boolean ismac = System.getProperty("os.name").toLowerCase()
-			.contains("mac");
-
-	private double roitabwidth = 0.35 * (ismac ? 2 : 1);
+	private double roitabwidth = 0.35 * (!GUI.islinux && !GUI.testnewsize ? 2 : 1);
 
 	private ArrayList<ImagePlus> zeroecho;
 
@@ -319,14 +316,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		shape.setSelectedIndex(1);
 		shape.addActionListener(this);
 		GUI.setfinalSize(shape, new Dimension(
-				(int) (parent.width / 15.714 * (ismac ? 2 : 1)),
+				(int) (parent.width / 15.714 * (!GUI.islinux && !GUI.testnewsize ? 2 : 1)),
 				(int) (parent.height / 21.6)));
 
 		String[] units = { "mm", "pixel" };
 		unit = new JComboBox<String>(units);
 		unit.addActionListener(this);
 		GUI.setfinalSize(unit, new Dimension(
-				(int) (parent.width / 15.714 * (ismac ? 2 : 1)),
+				(int) (parent.width / 15.714 * (!GUI.islinux && !GUI.testnewsize ? 2 : 1)),
 				(int) (parent.height / 21.6)));
 
 		// image

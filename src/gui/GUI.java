@@ -50,6 +50,8 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 	public static final boolean DEBUG = false;
 	
+	public static boolean testnewsize = true;
+	
 	/**
 	 * Main method, to start the GUI.
 	 * 
@@ -127,6 +129,9 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	private JLabel statusLabel;
 	private JProgressBar progressBar;
 	
+	public static boolean islinux = System.getProperty("os.name").toLowerCase()
+			.contains("linux");
+	
 	/**
 	 * Constructs a new GUI. The GUI can be controlled with a Mouse or even
 	 * based on Java code.
@@ -151,6 +156,9 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		width = width < 1100 ? width : 1100;
 		height = height < 550 ? height : 550;
 
+		width = (islinux ? width : (int)(width*1.5));
+//		System.out.println(System.getProperty("os.name"));
+		
 		setfinalSize(this, new Dimension(width, height));
 
 		filechooser = new ContextMenuFileChooser();
