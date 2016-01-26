@@ -1,20 +1,29 @@
-package tests;
+package tests; 
 
-import static org.junit.Assert.*; // checking the values
+import static org.junit.Assert.assertTrue; // checking the values
+import gui.GUI;
+import gui.volumetab.VolumeTab;
 
 import java.util.List;
 
-import gui.GUI;
-import gui.MyTab;
-import gui.sortertab.SorterTab;
-import gui.volumetab.VolumeTab;
-
 import org.junit.Test; // needed for annotation
+import org.junit.runner.Result;
 import org.junit.runner.notification.Failure; // printing the failures
-import org.junit.runner.*;
 
+// Everytime an error occurs, please write a Test for this (take a look at Software Engineering).
+
+/**
+ * Test Class for some simple stuff.
+ *  
+ * @author Dominik Ridder
+ *
+ */
 public class Testcase {
 
+	/**
+	 * Main class for executing the JUnit Testcases. This main is normally not used, 
+	 * because there is a better way for running all Tests with an build.xml and ant.
+	 */
 	public static void main(String[] agrs) {
 		Result rc = new Result();
 
@@ -31,6 +40,15 @@ public class Testcase {
 		}
 	}
 
+	/**
+	 * Tests if the Attributes are displayed after opening a Volume.<p>
+	 * These are the steps of the tests:<p>
+	 * - Create GUI <p>
+	 * - Select VolumeTab <p>
+	 * - Set Path and create Volume <p>
+	 * (Wait max 5 seconds for opening the Volume) <p>
+	 * - Check if the OutputArea is empty <p>
+	 */
 	@Test
 	public void VisibleAttributes() {
 		GUI g = new GUI(true, false);
@@ -41,7 +59,7 @@ public class Testcase {
 		
 		double start = System.currentTimeMillis();
 		
-		while (voltab.isCreatingVolume()) {
+		while (voltab.isCreatingVolume()) { // wait max 5 sec for open the volume
 			if (System.currentTimeMillis()-start > 5000) {
 				break;
 			}else{
