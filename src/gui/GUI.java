@@ -218,7 +218,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		progressBar.setBounds(bounds);
 		statusPanel.add(progressBar);
 
-		statusPanel.setVisible(false);
+		statusPanel.setVisible(true);
 		
 		setVisible(visible);
 
@@ -237,9 +237,19 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		lifeupdate();
 	}
 
-	public JPanel getStatusBar() {
-		return statusPanel;
-	}
+//	public void StatusBarVisible(boolean visible) {
+//		if (visible) {
+//			if (!statusPanel.isVisible()){
+//				statusPanel.setVisible(visible);
+////				this.setSize(this.getWidth(), this.getHeight()+statusPanel.getHeight());
+//			}
+//		} else{
+//			if (statusPanel.isVisible()){
+//				statusPanel.setVisible(visible);
+////				this.setSize(this.getWidth(), this.getHeight()-statusPanel.getHeight());
+//			}
+//		}
+//	}
 	
 	public JLabel getStatusLabel() {
 		return statusLabel;
@@ -324,7 +334,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		btnClose.setMaximumSize(new Dimension(30, 15));
 		btnClose.setMargin(new Insets(0, 0, 0, 0));
 
-		// kinda changing the Layout of the Tabs
+		// changing the Layout of the Tabs
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;

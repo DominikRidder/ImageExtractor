@@ -616,7 +616,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		roiPanel.setLayout(new BoxLayout(roiPanel, BoxLayout.Y_AXIS));
 		GUI.setfinalSize(roiPanel,
 				new Dimension((int) (parent.width * roitabwidth),
-						(int) (parent.height / 1.2)));
+						(int) (parent.height / 1.3)));
 		Component[] roistuff = { Box.createRigidArea(new Dimension(0, 5)),
 				dimselection, Box.createRigidArea(new Dimension(0, 3)),
 				zeropanel, Box.createRigidArea(new Dimension(0, 5)), roiimg,
@@ -658,12 +658,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			return;
 		}
 		try {
-			parent.getStatusBar().setVisible(true);
 			timer.start();
 			volume = Volume.createVolume(path.getText());
 			timer.stop();
 			
-			parent.getStatusBar().setVisible(false);
 			if (volume == null) {
 				throw new RuntimeException();
 			}
@@ -714,6 +712,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			if (timer.isRunning()) {
 				timer.stop();
 			}
+			parent.getStatusLabel().setText("");
 		}
 	}
 
@@ -898,7 +897,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		zero_echo.setText("Cancle");
 
 		parent.getStatusLabel().setText("Calculating ZeroEcho: ");
-		parent.getStatusBar().setVisible(true);
 		parent.getProgressBar().setValue(0);
 		parent.getProgressBar().setMaximum(perEcho);
 		parent.getProgressBar().setVisible(true);
@@ -938,7 +936,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		} else {
 			max_echo.setText(max_echo.getText().replace(" + 0", "") + " + 0");
 		}
-		parent.getStatusBar().setVisible(false);
+		parent.getStatusLabel().setText("");
 		parent.getProgressBar().setVisible(false);
 		zero_echo.setText("Calculate Zero Echo");
 		ze = null;

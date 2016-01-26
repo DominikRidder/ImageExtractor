@@ -261,7 +261,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		outputArea.setMargin(new Insets(0, 0, 0, 0));
 		outputScroller = new JScrollPane(outputArea);
 		GUI.setfinalSize(outputScroller, new Dimension(parent.width,
-				(int) (parent.height / 2.6)));
+				(int) (parent.height / 2.9)));
 		outputScroller
 				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
@@ -297,7 +297,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		JButton browseButton = new JButton();
 		// the number at the start is used to know, where the browsed
 		// directory have to be set. The ":" is important for the splitt. At
-		// the end you will just the a "..." in the button.
+		// the end you will just see the a "..." in the button.
 		browseButton.setText("...");
 		GUI.setfinalSize(browseButton, new Dimension(rowheight, rowheight));
 		browseButton.setMargin(new Insets(0, 0, 0, 0));

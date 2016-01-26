@@ -1,5 +1,5 @@
 package tests;
-/*
+
 import static org.junit.Assert.*; // checking the values
 
 import java.util.List;
@@ -11,10 +11,10 @@ import gui.volumetab.VolumeTab;
 
 import org.junit.Test; // needed for annotation
 import org.junit.runner.notification.Failure; // printing the failures
-import org.junit.runner.*;*/
+import org.junit.runner.*;
 
 public class Testcase {
-/*
+
 	public static void main(String[] agrs) {
 		Result rc = new Result();
 
@@ -37,5 +37,5 @@ public class Testcase {
 		MyTab tab = g.getCurrentTab();
 
 		assertTrue(tab instanceof SorterTab);
-	}*/
+	}
 }
