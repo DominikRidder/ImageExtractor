@@ -190,7 +190,7 @@ public class VolumeFitter {
 	}
 
 	public BufferedImage getPlot(Volume vol, Roi relativroi, int slice,
-			int degree, boolean logScale, int wwidth, int wheight) {
+			int degree, boolean logScale, int wwidth, int wheight, int echonr) {
 		data = vol.getData();
 
 		Roi roi = data.get(slice).getRoi();
@@ -253,7 +253,7 @@ public class VolumeFitter {
 				fitter.addPoint(i + 1, val, 0);
 			}
 		}
-		return fitter.plotVolume(logScale, wwidth, wheight);
+		return fitter.plotVolume(logScale, wwidth, wheight, echonr);
 	}
 
 	public int getMin(ImagePlus imp, Roi roi) {

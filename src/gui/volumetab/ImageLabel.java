@@ -7,67 +7,29 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
-public class ImageLabel extends JLabel implements KeyListener {
+public class ImageLabel extends JLabel implements MouseMotionListener, MouseListener, KeyListener {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	private int posX, posY;
 	private int mouseX, mouseY;
-	private boolean mousein;
-	private boolean isactiv;
+	private boolean shiftdown;
+	private boolean inbounds;
 	private VolumeTab parent;
 
 	public ImageLabel(ImageIcon icon) {
 		super(icon);
 
-		addMouseMotionListener(new MouseMotionAdapter() {
-			public void mouseMoved(MouseEvent e) {
-				mouseX = e.getX();
-				mouseY = e.getY();
-				posX = (int) ((double) e.getX() / parent.getScale());
-				posY = (int) ((double) e.getY() / parent.getScale());
-				repaint();
-			}
-		});
+		addMouseMotionListener(this);
 
-		addMouseListener(new MouseListener() {
-
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
-
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				mousein = true;
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				mousein = false;
-				repaint();
-			}
-
-		});
-
+		addMouseListener(this);
+		
 		addKeyListener(this);
 	}
 
@@ -80,7 +42,7 @@ public class ImageLabel extends JLabel implements KeyListener {
 		try {
 			ui.update(scratchGraphics, this);
 
-			if (isactiv && mousein && parent.getImage() != null) {
+			if (shiftdown && inbounds &&  parent.getImage() != null) {
 				g.setColor(Color.YELLOW);
 				String todraw = "GrayScale: "
 						+ parent.getImage().getProcessor().getPixel(posX, posY);
@@ -102,22 +64,67 @@ public class ImageLabel extends JLabel implements KeyListener {
 		}
 	}
 
+	public void mouseMoved(MouseEvent e) {
+		mouseActions(e);
+	}
+	
+	public void mouseDragged(MouseEvent e) {
+		mouseActions(e);
+	}
+	
+	public void mouseActions(MouseEvent e) {
+		mouseX = e.getX();
+		mouseY = e.getY();
+		posX = (int) ((double) e.getX() / parent.getScale());
+		posY = (int) ((double) e.getY() / parent.getScale());
+		shiftdown = e.isControlDown();
+		inbounds = this.contains(e.getPoint());
+		repaint();
+	}
+	
+	
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		mouseActions(e);
+
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+		mouseActions(e);
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+		mouseActions(e);
+	}
+
 	@Override
 	public void keyTyped(KeyEvent e) {
+
 	}
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-			isactiv = true;
-		}
-
+		shiftdown = e.isControlDown();
+		repaint();
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-			isactiv = false;
-		}
+		shiftdown = e.isControlDown();
+		repaint();
 	}
 }

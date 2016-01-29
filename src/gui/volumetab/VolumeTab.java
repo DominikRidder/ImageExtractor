@@ -63,6 +63,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicArrowButton;
+import javax.swing.plaf.synth.SynthSpinnerUI;
 
 import tools.ImageExtractorConfig;
 import tools.VolumeFitter;
@@ -328,13 +329,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 		// image
 		image = new BufferedImage((int) (parent.width / 2.483),
-				(int) (parent.height / 1.219), BufferedImage.TYPE_3BYTE_BGR);
+				(int) (parent.height / 1.2), BufferedImage.TYPE_3BYTE_BGR);
 		// The ImageIcon is kinda a wrapper for the image
 		imgicon = new ImageIcon(image);
 		// imagepanel wrapps the ImageIcon
 		imagelabel = new ImageLabel(imgicon);
-		GUI.setfinalSize(imagelabel, new Dimension(
-				(int) (parent.width / 2.483), (int) (parent.height / 1.219)));
+		GUI.setfinalSize(imagelabel, new Dimension(image.getWidth(),image.getHeight()));
 		imagelabel.addMouseWheelListener(this);
 		imagelabel.addKeyListener(this);
 		imagelabel.addMouseListener(this);
@@ -402,7 +402,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		index_slice.addMouseWheelListener(this);
 		index_slice.addKeyListener(this);
 		index_slice.addCaretListener(this);
-		index_slice.addKeyListener(imagelabel);
 		GUI.setfinalSize(index_slice, new Dimension(
 				(int) (parent.width / 14.67), (int) (parent.height / 5.4)));
 
@@ -411,7 +410,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		index_echo.addMouseWheelListener(this);
 		index_echo.addKeyListener(this);
 		index_echo.addCaretListener(this);
-		index_echo.addKeyListener(imagelabel);
 		GUI.setfinalSize(index_echo, new Dimension(
 				(int) (parent.width / 14.67), (int) (parent.height / 5.4)));
 
@@ -552,7 +550,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// image
 		roiimage = new BufferedImage(
 				(int) (parent.width * roitabwidth * 7. / 10),
-				(int) (parent.height / 1.8), BufferedImage.TYPE_4BYTE_ABGR);
+				(int) (parent.height / 2), BufferedImage.TYPE_4BYTE_ABGR);
 		// The ImageIcon is kinda a wrapper for the image
 		roiimgicon = new ImageIcon(roiimage);
 		// imagepanel wrapps the ImageIcon
@@ -561,12 +559,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		// roilabel.setDropTarget(dnd);
 		GUI.setfinalSize(roilabel,
 				new Dimension((int) (parent.width * roitabwidth),
-						(int) (parent.height / 1.8)));
+						(int) (roiimage.getHeight())));
 		JPanel roiimg = new JPanel();
 		roiimg.add(roilabel);
 		GUI.setfinalSize(roiimg,
 				new Dimension((int) (parent.width * roitabwidth),
-						(int) (parent.height / 1.8)));
+						(int) (roiimage.getHeight())));
 
 		// Checkbox for showing the log evaluation
 		alsolog = new JCheckBox();
@@ -598,7 +596,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		logpanel.add(logtext);
 		logpanel.add(shape);
 		GUI.setfinalSize(logpanel, new Dimension(
-				(int) (parent.width * roitabwidth), (int) (parent.height / 10)));
+				(int) (parent.width * roitabwidth), (int) (parent.height / 15)));
 
 		sizepanel = new JPanel();
 		sizepanel.setLayout(new BoxLayout(sizepanel, BoxLayout.LINE_AXIS));
@@ -613,7 +611,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		roiPanel.setLayout(new BoxLayout(roiPanel, BoxLayout.Y_AXIS));
 		GUI.setfinalSize(roiPanel,
 				new Dimension((int) (parent.width * roitabwidth),
-						(int) (parent.height / 1.3)));
+						(int) (parent.height / 1.2)));
 		Component[] roistuff = { Box.createRigidArea(new Dimension(0, 5)),
 				dimselection, Box.createRigidArea(new Dimension(0, 3)),
 				zeropanel, Box.createRigidArea(new Dimension(0, 5)), roiimg,
@@ -688,7 +686,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				System.out.println("not worked");
 			}
 		} catch (RuntimeException ert) {
-			// thrown by new Volume() if it didit worked.
+			// thrown by createVolume() if it didit worked.
 			index_slice.setEditable(false);
 			index_slice.setText("0");
 			max_slice.setText("/0");
@@ -1242,6 +1240,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					: buff.getWidth();
 			double imgmax = image.getWidth() > image.getHeight() ? image
 					.getWidth() : image.getHeight();
+					max = buff.getHeight();
+					imgmax = image.getHeight();
 			scaling = imgmax / max;
 
 			image = new BufferedImage((int) (buff.getWidth() * scaling),
@@ -1358,6 +1358,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void keyPressed(KeyEvent e) {
+		imagelabel.keyPressed(e);
 		if (System.currentTimeMillis() - lastpressed > 50) {
 			int change = 0;
 			switch (e.getKeyCode()) {
@@ -1381,7 +1382,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void keyReleased(KeyEvent e) {
-
+		imagelabel.keyPressed(e);
 	}
 
 	public void keyTyped(KeyEvent e) {
@@ -1418,7 +1419,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				drawIntoImage(roiimage, vf.getPlot(this.volume,
 						this.relativroi, getActualSlice() - 1, degree,
 						alsolog.isSelected(), roiimage.getWidth(),
-						roiimage.getHeight()));
+						roiimage.getHeight(), getActualEcho()));
 				if (!ownExtended) {
 					ownExtended = true;
 				}
@@ -1557,7 +1558,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void mouseReleased(MouseEvent e) {
-
+		
 	}
 
 	public void mouseEntered(MouseEvent e) {
@@ -1668,7 +1669,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		// TODO Auto-generated method stub
 
 	}
 

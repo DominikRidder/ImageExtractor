@@ -42,7 +42,7 @@ import tools.ImageExtractorConfig;
  * This GUI is used, to look the Header and Images of Dicoms, to Search and Sort
  * Dicoms and to convert Dicoms to Niftis.
  * 
- * @author dridder_local
+ * @author Dominik Ridder
  *
  */
 public class GUI extends JFrame implements ActionListener, ChangeListener,
@@ -148,6 +148,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension d = tk.getScreenSize();
+//		System.out.println("Dots per inch: "+tk.getScreenResolution());
 		System.out.println("Screen width " + d.width);
 		System.out.println("Screen height " + d.height);
 		width = (int) (((double) d.width) / 2.5);
@@ -222,7 +223,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		progressBar.setVisible(false);
 		progressBar.setStringPainted(true);
 		Rectangle bounds = progressBar.getBounds();
-		bounds.width = 100;
+		bounds.height = 5;
 		progressBar.setBounds(bounds);
 		statusPanel.add(progressBar);
 
@@ -230,6 +231,8 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		
 		setVisible(visible);
 
+		height -= statusPanel.getHeight();
+		
 		currentTab = (MyTab) tabber.getSelectedComponent();
 		currentTab.onFocus();
 
@@ -405,7 +408,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	public void requestWidth(int width, MyTab requester) {
 		if (tabber.getComponentAt(tabber.getSelectedIndex()).equals(requester)) {
 			if (width != this.getWidth()) {
-				setfinalSize(this, new Dimension(width, height));
+				setfinalSize(this, new Dimension(width, height+statusPanel.getHeight()));
 			}
 		}
 	}
