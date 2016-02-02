@@ -3,10 +3,14 @@ package gui.volumetab;
 import gui.GUI;
 import gui.MyTab;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.OvalRoi;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
+import ij.plugin.Concatenator;
+import ij.plugin.DICOM;
+import ij.plugin.Nifti_Writer;
 import ij.plugin.frame.ContrastAdjuster;
 import imagehandling.KeyMap;
 import imagehandling.TextOptions;
@@ -38,7 +42,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -271,7 +277,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private boolean ownExtended = false;
 
-	private double roitabwidth = 0.35 * (!GUI.islinux && !GUI.testnewsize ? 2 : 1);
+	private double roitabwidth = 0.35 * (!GUI.islinux && !GUI.testnewsize ? 2
+			: 1);
 
 	private ArrayList<ImagePlus> zeroecho;
 
@@ -282,9 +289,13 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private JButton zero_echo;
 
 	private ZeroEcho ze;
-	
+
 	final Timer timer = new Timer(500, this);
-	
+
+	private boolean contrastupdate;
+
+	JMenuItem save;
+
 	/**
 	 * Standard Constructur.
 	 */
@@ -294,6 +305,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		JMenuItem contrtmen = new JMenuItem("Adjust Brightness/Contrast");
 		contrtmen.addActionListener(this);
 		imagemenu.add(contrtmen);
+		save = new JMenuItem("Save ZeroEcho");
+		save.addActionListener(this);
+		save.setEnabled(false);
+		imagemenu.add(save);
 
 		new DropTarget(this, this);
 
@@ -316,25 +331,28 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		shape = new JComboBox<String>(shapes);
 		shape.setSelectedIndex(1);
 		shape.addActionListener(this);
-		GUI.setfinalSize(shape, new Dimension(
-				(int) (parent.width / 15.714 * (!GUI.islinux && !GUI.testnewsize ? 2 : 1)),
-				(int) (parent.height / 21.6)));
+		GUI.setfinalSize(shape,
+				new Dimension((int) (parent.width / 12 * (!GUI.islinux
+						&& !GUI.testnewsize ? 2 : 1)),
+						(int) (parent.height / 21.6)));
 
 		String[] units = { "mm", "pixel" };
 		unit = new JComboBox<String>(units);
 		unit.addActionListener(this);
 		GUI.setfinalSize(unit, new Dimension(
-				(int) (parent.width / 15.714 * (!GUI.islinux && !GUI.testnewsize ? 2 : 1)),
+				(int) (parent.width / 15.714 * (!GUI.islinux
+						&& !GUI.testnewsize ? 2 : 1)),
 				(int) (parent.height / 21.6)));
 
 		// image
 		image = new BufferedImage((int) (parent.width / 2.483),
-				(int) (parent.height / 1.2), BufferedImage.TYPE_3BYTE_BGR);
+				(int) (parent.height / 1.3), BufferedImage.TYPE_3BYTE_BGR);
 		// The ImageIcon is kinda a wrapper for the image
 		imgicon = new ImageIcon(image);
 		// imagepanel wrapps the ImageIcon
 		imagelabel = new ImageLabel(imgicon);
-		GUI.setfinalSize(imagelabel, new Dimension(image.getWidth(),image.getHeight()));
+		GUI.setfinalSize(imagelabel,
+				new Dimension(image.getWidth(), image.getHeight()));
 		imagelabel.addMouseWheelListener(this);
 		imagelabel.addKeyListener(this);
 		imagelabel.addMouseListener(this);
@@ -557,14 +575,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		JLabel roilabel = new JLabel(roiimgicon);
 		new DropTarget(roilabel, this);
 		// roilabel.setDropTarget(dnd);
-		GUI.setfinalSize(roilabel,
-				new Dimension((int) (parent.width * roitabwidth),
-						(int) (roiimage.getHeight())));
+		GUI.setfinalSize(roilabel, new Dimension(
+				(int) (parent.width * roitabwidth),
+				(int) (roiimage.getHeight())));
 		JPanel roiimg = new JPanel();
 		roiimg.add(roilabel);
-		GUI.setfinalSize(roiimg,
-				new Dimension((int) (parent.width * roitabwidth),
-						(int) (roiimage.getHeight())));
+		GUI.setfinalSize(roiimg, new Dimension(
+				(int) (parent.width * roitabwidth),
+				(int) (roiimage.getHeight())));
 
 		// Checkbox for showing the log evaluation
 		alsolog = new JCheckBox();
@@ -656,7 +674,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			timer.start();
 			volume = Volume.createVolume(path.getText());
 			timer.stop();
-			
+
 			if (volume == null) {
 				throw new RuntimeException();
 			}
@@ -709,6 +727,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				timer.stop();
 			}
 			parent.getStatusLabel().setText("");
+			save.setEnabled(false);
 		}
 	}
 
@@ -825,11 +844,19 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		case "comboBoxChanged":
 			actionShape();
 			break;
+		case "Image Changed":
+			contrastupdate = true;
+			displayImage();
+			break;
+		case "Save ZeroEcho":
+			saveZeroEcho();
+			break;
 		case "Adjust Brightness/Contrast":
 			if (volume == null) {
 				return;
 			}
 			contrast = new ContrastAdjuster();
+			contrast.setImageUpdater(this);
 			contrast.run("");
 			try {
 				ImagePlus imp = null;
@@ -857,6 +884,48 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			}
 			break;
 		}
+	}
+
+	public void saveZeroEcho() {
+		if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION
+				&& chooser.getSelectedFile() != null) {
+			Nifti_Writer writer = new Nifti_Writer();
+			// Concatenator c = new Concatenator();
+			// ImagePlus imp = c.concatenate(zeroecho.toArray(new
+			// ImagePlus[zeroecho.size()]), true);
+
+			ImageStack is = null;
+			ImagePlus ip = new ImagePlus();
+			double min = 1000000;
+			double max = -1;
+			for (ImagePlus nextimp : zeroecho) {
+				if (is == null) {
+					is = new ImageStack(nextimp.getWidth(), nextimp.getHeight());
+					ip.setCalibration(nextimp.getCalibration());
+				}
+				
+				min = nextimp.getProcessor().getMin() < min ? nextimp.getProcessor().getMin() : min;
+				max = nextimp.getProcessor().getMax() > max ? nextimp.getProcessor().getMax() : max;
+				
+				
+				try {
+					is.addSlice(nextimp.getProcessor());
+				} catch (IllegalArgumentException e) {
+					continue;
+				}
+			}
+			ip.setStack(is);
+			ip.getProcessor().setMinAndMax(min, max);
+			WindowManager.setTempCurrentImage(ip);
+
+
+			writer.dicom_to_nifti = false;
+			writer.save(ip, chooser.getSelectedFile().getParent(), chooser
+					.getSelectedFile().getName());
+		}
+		parent.imec.setOption("LastBrowse", chooser.getCurrentDirectory()
+				.getAbsolutePath());
+		parent.imec.save();
 	}
 
 	public void actionShape() {
@@ -931,6 +1000,13 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			max_echo.setText(max_echo.getText().replace(" + 0", ""));
 		} else {
 			max_echo.setText(max_echo.getText().replace(" + 0", "") + " + 0");
+			
+			int i =0;
+			for (ImagePlus imp: zeroecho) {
+				imp.setCalibration(volume.getSlice(i).getData().getCalibration());
+			}
+			
+			save.setEnabled(true);
 		}
 		parent.getStatusLabel().setText("");
 		parent.getProgressBar().setVisible(false);
@@ -1227,12 +1303,16 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				imp = zeroecho.get(getActualSlice() - 1);
 			}
 
-			if (contrast != null && contrast.thread != null) {
-				WindowManager.setTempCurrentImage(contrast.thread, imp);
-				contrast.adjustmentValueChanged(new AdjustmentEvent(
-						DummyAdjuster.dummy, 0, 0, 0));
+			if (contrast != null && contrast.thread != null && !contrastupdate
+					&& contrast.isVisible()) {
+				WindowManager.setTempCurrentImage(contrast.thread, imp); // dirty
+																			// solution
+				contrast.apply();
 				sleep(20); // waiting for the ContrastAdjuster
+				return true;
 			}
+
+			contrastupdate = false;
 
 			BufferedImage buff = imp.getBufferedImage();
 
@@ -1240,8 +1320,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					: buff.getWidth();
 			double imgmax = image.getWidth() > image.getHeight() ? image
 					.getWidth() : image.getHeight();
-					max = buff.getHeight();
-					imgmax = image.getHeight();
+			max = buff.getHeight();
+			imgmax = image.getHeight();
 			scaling = imgmax / max;
 
 			image = new BufferedImage((int) (buff.getWidth() * scaling),
@@ -1558,7 +1638,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void mouseReleased(MouseEvent e) {
-		
+
 	}
 
 	public void mouseEntered(MouseEvent e) {
@@ -1707,7 +1787,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			parent.getProgressBar().setValue((int) evt.getNewValue());
 		}
 	}
-	
+
 	public boolean isOutputAreaEmpty() {
 		return outputArea.getText().equals("");
 	}

@@ -30,6 +30,9 @@ import java.util.Stack;
  */
 public class SortAlgorithm {
 
+	/**
+	 * Default Values, in case, the given file don't have one.
+	 */
 	public final static String DEFAULT_PATIENTID = "NO_ID",
 			DEFAULT_PROCOLNAME = "NO_PROT_NAME", DEFAULT_IMAGENUMBER = "0",
 			DEFAULT_BIRTHDATE = "NO_BIRTH_DATE", DEFAULT_ECHONUMBERS = "1",

@@ -153,7 +153,7 @@ public class ZeroEcho implements Runnable {
 				echo0.get(s).setProcessor(
 						vol.getSlice(s).getData().getProcessor()
 								.createProcessor(width, height));
-				int rgbArray[] = volfit.getZeroValues(vol, s, degree, takelog, echo0.get(s).getProcessor());
+				volfit.getZeroValues(vol, s, degree, takelog, echo0.get(s).getProcessor());
 				
 //				BufferedImage next = echo0.get(s).getBufferedImage();
 //				next.setRGB(0, 0, width, height, rgbArray, 0, width);
