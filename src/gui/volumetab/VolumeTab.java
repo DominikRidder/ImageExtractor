@@ -8,6 +8,7 @@ import ij.WindowManager;
 import ij.gui.OvalRoi;
 import ij.gui.PointRoi;
 import ij.gui.Roi;
+import ij.io.FileInfo;
 import ij.plugin.Concatenator;
 import ij.plugin.DICOM;
 import ij.plugin.Nifti_Writer;
@@ -93,7 +94,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private GUI parent;
 
 	/**
-	 * Volume, which is to get the header informations and the image.
+	 * Volume, which is used to get the header informations and the image.
 	 */
 	private Volume volume;
 
@@ -131,10 +132,23 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private JPanel attributeConfig;
 
+	/**
+	 * Panel that is a part of the roiPanel. The sizePanel contains the slider
+	 * and info about the current Circle/Sphere radius.<b>NOTE:
+	 * <p>
+	 * This Panel is not visible if there is no Roi on the Image.
+	 */
 	private JPanel sizepanel;
 
+	/**
+	 * Panel, that contains the options, that can be used with by the roi.
+	 */
 	private JPanel roiPanel;
 
+	/**
+	 * Field that contains the Information/Header about the current
+	 * Slice/Volume.
+	 */
 	private JScrollPane outputScroller;
 
 	/**
@@ -202,6 +216,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private JTextArea outputArea;
 
+	/**
+	 * CheckBox, that provides the Option, to fit throught the log(val+1) values
+	 * instead of the values itself.
+	 */
 	private JCheckBox alsolog;
 
 	private JComboBox<String> dimension;
@@ -233,10 +251,23 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private ImageIcon imgicon;
 
+	/**
+	 * This Roi is a scaled roi of the internal Roi. It is used, for a faster
+	 * and easyer solution, to find out, whether a roi is set or not and what
+	 * kind of roi is used.
+	 */
 	private Roi relativroi;
 
+	/**
+	 * This Object creates an BufferedImage (if requested) that contains a Graph
+	 * of a wished fit. This is used, to validate the roi.
+	 */
 	private VolumeFitter vf;
 
+	/**
+	 * String that was in the Attribute Filter Textfield since the lasttime the
+	 * filter got checked.
+	 */
 	private String lastfilter = "";
 
 	/**
@@ -244,6 +275,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * The LastTime in milliseconds, that the current Slice/Echo is changed.
+	 * This gives the User a better feeling i. e. sliding throught 64 slices
+	 * with 1 millisecond each slice would be to fast for the User.
+	 */
 	private long lastpressed;
 
 	/**
@@ -251,6 +287,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private int echoNumbers;
 
+	/**
+	 * Scaling factor, from the small (original) Image sizes to the Gui Image
+	 * sizes.
+	 */
 	private double scaling;
 
 	/**
@@ -258,6 +298,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private int perEcho;
 
+	/**
+	 * Status of the creation Text in the StatusPanel, that indicates, that the
+	 * createVolume() method is executed.
+	 */
 	private int creatingTextStatus = 0;
 
 	/**
@@ -277,24 +321,57 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private boolean ownExtended = false;
 
+	/**
+	 * This size is used to adjust a better size of some Gui Components.
+	 */
 	private double roitabwidth = 0.35 * (!GUI.islinux && !GUI.testnewsize ? 2
 			: 1);
 
+	/**
+	 * This field saves the ZeroEcho data.
+	 */
 	private ArrayList<ImagePlus> zeroecho;
 
+	/**
+	 * The ContrastAdjuster is used to change the min/max/brightness/contrast of
+	 * the Images.
+	 */
 	private ContrastAdjuster contrast;
 
+	/**
+	 * Menu, that is used, to call the ContrastAdjuster or to save a ZeroEcho.
+	 */
 	private JMenu imagemenu = new JMenu("Image");
 
+	/**
+	 * Button, that is used, to start or cancle the calculation of the ZeroEcho.
+	 */
 	private JButton zero_echo;
 
+	/**
+	 * This Object is used to calculate the ZeroEcho.
+	 */
 	private ZeroEcho ze;
 
-	final Timer timer = new Timer(500, this);
+	/**
+	 * This Timer is used to update the StatusPanel, while the createVolume()
+	 * method is executed.
+	 */
+	private final Timer timer = new Timer(500, this);
 
+	/**
+	 * This boolean indicates, if a actionPerformed() is called by the
+	 * ContrastAdjuster. Without this boolean the Programm could stuckt in an
+	 * Update Cyrcle.
+	 */
 	private boolean contrastupdate;
 
-	JMenuItem save;
+	/**
+	 * MenueItem, that contains the options to save the calculated ZeroEcho. In
+	 * case, that the user didn't calculated the ZeroEcho, this Menueitem will
+	 * be disabled.
+	 */
+	private JMenuItem save;
 
 	/**
 	 * Standard Constructur.
@@ -663,7 +740,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
-	 * Method to try, to create a Volume to the given path.
+	 * Method that tries to create a Volume to the given path.
 	 */
 	public void createVolume() {
 		creatingVolume = true;
@@ -903,22 +980,29 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					is = new ImageStack(nextimp.getWidth(), nextimp.getHeight());
 					ip.setCalibration(nextimp.getCalibration());
 				}
-				
-				min = nextimp.getProcessor().getMin() < min ? nextimp.getProcessor().getMin() : min;
-				max = nextimp.getProcessor().getMax() > max ? nextimp.getProcessor().getMax() : max;
-				
-				
+
+				min = nextimp.getProcessor().getMin() < min ? nextimp
+						.getProcessor().getMin() : min;
+				max = nextimp.getProcessor().getMax() > max ? nextimp
+						.getProcessor().getMax() : max;
+
 				try {
 					is.addSlice(nextimp.getProcessor());
 				} catch (IllegalArgumentException e) {
 					continue;
 				}
 			}
+//			for (ImagePlus nextimp : zeroecho) {
+//				nextimp.getProcessor().setMinAndMax(min, max);
+//			}
+			
 			ip.setStack(is);
 			ip.getProcessor().setMinAndMax(min, max);
 			WindowManager.setTempCurrentImage(ip);
-
-
+//			FileInfo fi = ip.getFileInfo();
+//			fi.fileType = FileInfo.GRAY32_FLOAT;
+//			ip.setFileInfo(fi);
+			
 			writer.dicom_to_nifti = false;
 			writer.save(ip, chooser.getSelectedFile().getParent(), chooser
 					.getSelectedFile().getName());
@@ -1000,12 +1084,13 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			max_echo.setText(max_echo.getText().replace(" + 0", ""));
 		} else {
 			max_echo.setText(max_echo.getText().replace(" + 0", "") + " + 0");
-			
-			int i =0;
-			for (ImagePlus imp: zeroecho) {
-				imp.setCalibration(volume.getSlice(i).getData().getCalibration());
+
+			int i = 0;
+			for (ImagePlus imp : zeroecho) {
+				imp.setCalibration(volume.getSlice(i).getData()
+						.getCalibration());
 			}
-			
+
 			save.setEnabled(true);
 		}
 		parent.getStatusLabel().setText("");
@@ -1326,7 +1411,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 			image = new BufferedImage((int) (buff.getWidth() * scaling),
 					(int) (buff.getHeight() * scaling),
-					BufferedImage.TYPE_3BYTE_BGR);
+					buff.getType());
 			drawIntoImage(image, buff);
 
 			GUI.setfinalSize(imagelabel,

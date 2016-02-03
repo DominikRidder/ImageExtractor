@@ -26,7 +26,8 @@ public class NIFTIVolume extends Volume {
 	public NIFTIVolume(String path) {
 		File file = new File(path);
 		Nifti_Reader nr = new Nifti_Reader();
-		nifti = nr.load(file.getParent(), file.getName());
+		nr.run(path);
+		nifti = nr;
 		this.path = path;
 
 		setUpInfo();
@@ -54,17 +55,13 @@ public class NIFTIVolume extends Volume {
 
 	private ImagePlus createImageData(int imagenumber) {
 		nifti.setSlice(imagenumber);
-		FileInfo origfi = nifti.getFileInfo();
+		FileInfo origfi = nifti.getOriginalFileInfo();
 
 		ImagePlus data = new ImagePlus("image " + imagenumber,
 				nifti.getBufferedImage());
-		data.setCalibration(nifti.getCalibration());
 		data.setFileInfo(origfi);
+		data.setCalibration(nifti.getCalibration());
 
-		FileInfo fi = data.getFileInfo();
-		fi.fileName = origfi.fileName;
-
-		data.setFileInfo(fi);
 		data.setProperty("nifti", nifti.getProperty("nifti"));
 		return data;
 	}
