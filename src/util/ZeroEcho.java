@@ -1,10 +1,9 @@
-package tools;
+package util;
 
 import gui.volumetab.VolumeTab;
 import ij.ImagePlus;
-import ij.process.ImageProcessor;
-import imagehandling.KeyMap;
 import imagehandling.Volume;
+import imagehandling.headerhandling.KeyMap;
 
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;

@@ -28,7 +28,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import tools.SortAlgorithm;
+import util.SortAlgorithm;
 
 /**
  * Tab of the GUI class. Used to represent a Tab, which is usefull to sort
@@ -313,22 +313,25 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		GUI.setfinalSize(jc, new Dimension((int) (parent.width / 13.75),
 				rowheight));
 
+		/*	private static final int L_STATUS = 0, L_INPUT = 1, L_OPTION = 2,
+			L_OUTPUT_NR = 3, L_BROWSE = 4, L_NIFTI = 5;*/
+		
 		JPanel rowPanel = new JPanel();
 		rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.LINE_AXIS));
 		// Status
-		rowPanel.add(createText("Undefined", parent.width / 11, rowheight,
+		rowPanel.add(createText("Undefined", parent.width / 11, rowheight, // L_STATUS
 				false));
 		// Input dir
-		rowPanel.add(createText("", (int) (parent.width / 7), rowheight, true));
+		rowPanel.add(createText("", (int) (parent.width / 7), rowheight, true)); // L_INPUT
 		// File transfer option
-		rowPanel.add(jc);
+		rowPanel.add(jc); // L_OPTION
 		// Output Nr field
-		rowPanel.add(createText("" + 1, 3 * rowheight, rowheight, true));
+		rowPanel.add(createText("" + 1, 3 * rowheight, rowheight, true)); // L_OUTPUT_NR
 		// browse dir button
-		rowPanel.add(browseButton);
+		rowPanel.add(browseButton); // L_BROWSE
 		// to make it fit
 		// option for niftis
-		rowPanel.add(tonifti);
+		rowPanel.add(tonifti); // L_NIFTI
 
 		int neededwidth = 0;
 		for (Component c : rowPanel.getComponents()) {
@@ -442,7 +445,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 				}
 				if (found) {
 					JTextField targetOut = ((JTextField) tablerows_right[i]
-							.getComponents()[R_BROWSE]);
+							.getComponents()[R_OUTPUT]);
 					targetOut.setText(path);
 				}
 			}
@@ -507,7 +510,6 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		} else {
 			currentdialog = new JFrame();
 			currentdialog.setLocationRelativeTo(this);
-			// currentdialog.setVisible(true);
 			option = JOptionPane
 					.showConfirmDialog(
 							currentdialog,
@@ -682,7 +684,6 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		parent.requestWidth(preferedWidth(), this);
 	}
 
-	@Override
 	public int preferedWidth() {
 		return parent.width;
 	}

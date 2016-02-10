@@ -8,6 +8,12 @@ import ij.gui.PolygonRoi;
 import ij.gui.Roi;
 import ij.util.DicomTools;
 import ij.util.WildcardMatch;
+import imagehandling.datahandling.DataExtractor;
+import imagehandling.datahandling.DicomDataExtractor;
+import imagehandling.headerhandling.DicomHeaderExtractor;
+import imagehandling.headerhandling.HeaderExtractor;
+import imagehandling.headerhandling.KeyMap;
+import imagehandling.headerhandling.TextOptions;
 
 import java.awt.Polygon;
 import java.io.File;
@@ -16,9 +22,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * The Image class is at the moment only used for Dicoms. You can use it to get
- * informations about the dicom, to test if you have a Dicom and to excract the
- * Image of a Dicom or the header of the Dicom.
+ * The Image class is at the moment used for Dicoms and Niftis. You can use it to get
+ * informations about the image, to test if you have a Dicom and to exctract the
+ * Image of a file or the header of the file.
  * 
  * @author dridder_local
  *

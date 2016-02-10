@@ -1,4 +1,4 @@
-package imagehandling;
+package imagehandling.headerhandling;
 
 import java.io.File;
 import java.io.FileWriter;

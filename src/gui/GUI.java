@@ -32,11 +32,10 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
-import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import tools.ImageExtractorConfig;
+import util.ImageExtractorConfig;
 
 /**
  * This GUI is used, to look the Header and Images of Dicoms, to Search and Sort
@@ -162,7 +161,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		
 		setfinalSize(this, new Dimension(width, height));
 
-		filechooser = new ContextMenuFileChooser();
+		filechooser = new JFileChooser();
 		String startbrowse = imec.getOption("StartBrowse");
 		if (startbrowse == null) {
 			startbrowse = imec.getOption("LastBrowse");

@@ -1,4 +1,4 @@
-package imagehandling;
+package imagehandling.headerhandling;
 
 /**
  * The KeyMap is used for some of the methods get Attribute in the classes image
@@ -27,7 +27,14 @@ public enum KeyMap {
 		return str;
 	}
 
-	// Dicom method for keys.
+	/**
+	 * This Method is used to get the field representation of a tag. For
+	 * Example:
+	 * <p>
+	 * KEY_STUDY_DATE is represented by "0008,0020"
+	 * 
+	 * @return The String, that is needed to find the information in the header.
+	 */
 	public String imaValue() {
 		String str = "";
 		switch (this) {

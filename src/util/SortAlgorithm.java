@@ -1,4 +1,4 @@
-package tools;
+package util;
 
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -6,7 +6,7 @@ import ij.WindowManager;
 import ij.plugin.DICOM;
 import ij.plugin.Nifti_Writer;
 import imagehandling.Image;
-import imagehandling.KeyMap;
+import imagehandling.headerhandling.KeyMap;
 
 import java.io.BufferedWriter;
 import java.io.File;

@@ -7,6 +7,9 @@ import ij.gui.Roi;
 import ij.io.FileInfo;
 import ij.plugin.NiftiHeader;
 import ij.plugin.Nifti_Reader;
+import imagehandling.headerhandling.KeyMap;
+import imagehandling.headerhandling.NIFTIHeaderWriter;
+import imagehandling.headerhandling.TextOptions;
 
 import java.awt.Rectangle;
 import java.io.File;
@@ -24,7 +27,6 @@ public class NIFTIVolume extends Volume {
 	NiftiHeader nifti_hdr;
 
 	public NIFTIVolume(String path) {
-		File file = new File(path);
 		Nifti_Reader nr = new Nifti_Reader();
 		nr.run(path);
 		nifti = nr;
@@ -36,7 +38,7 @@ public class NIFTIVolume extends Volume {
 			Image img = new Image(path, "nii");
 			nifti.setSlice(i);
 
-			img.setData(createImageData(i));
+			img.setData(nifti);
 
 			slices.add(img);
 		}
@@ -53,6 +55,7 @@ public class NIFTIVolume extends Volume {
 		nifti.setFileInfo(fi);
 	}
 
+	@Deprecated
 	private ImagePlus createImageData(int imagenumber) {
 		nifti.setSlice(imagenumber);
 		FileInfo origfi = nifti.getOriginalFileInfo();
@@ -282,7 +285,7 @@ public class NIFTIVolume extends Volume {
 
 	@Override
 	public int size() {
-		return nifti.getNSlices() * nifti.getNFrames();
+		return nifti.getNChannels() * nifti.getNSlices() * nifti.getNFrames();
 	}
 
 	@Override

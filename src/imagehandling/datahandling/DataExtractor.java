@@ -1,4 +1,4 @@
-package imagehandling;
+package imagehandling.datahandling;
 
 import ij.ImagePlus;
 
@@ -9,7 +9,7 @@ import ij.ImagePlus;
  * @author dridder_local
  *
  */
-interface DataExtractor {
+public interface DataExtractor {
 
 	/**
 	 * This method returns the information of an Image.

@@ -1,4 +1,5 @@
-package imagehandling;
+package imagehandling.headerhandling;
+
 
 /**
  * This interface defines, how an HeaderExtractor can be called, to extract
@@ -7,7 +8,7 @@ package imagehandling;
  * @author dridder_local
  *
  */
-interface HeaderExtractor {
+public interface HeaderExtractor {
 
 	/**
 	 * Returns the header to the given image path.
@@ -15,7 +16,7 @@ interface HeaderExtractor {
 	 * @param path
 	 * @return The Header, as a String
 	 */
-	String getHeader(String path);
+	public String getHeader(String path);
 
 	/**
 	 * Returns a single Attribute to a given path and the String item is used,
@@ -25,7 +26,7 @@ interface HeaderExtractor {
 	 * @param item
 	 * @return A single Attribute
 	 */
-	String getInfo(String path, String item);
+	public String getInfo(String path, String item);
 
 	/**
 	 * Returns mutliple Attributes to a given path, so the header dont have to

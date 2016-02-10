@@ -2,8 +2,8 @@ package gui.volumetab;
 
 import ij.gui.OvalRoi;
 import ij.gui.Roi;
-import imagehandling.KeyMap;
 import imagehandling.Volume;
+import imagehandling.headerhandling.KeyMap;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;

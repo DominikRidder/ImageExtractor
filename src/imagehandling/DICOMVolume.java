@@ -6,6 +6,8 @@ import ij.ImagePlus;
 import ij.gui.OvalRoi;
 import ij.gui.Roi;
 import ij.plugin.Nifti_Reader;
+import imagehandling.headerhandling.KeyMap;
+import imagehandling.headerhandling.TextOptions;
 
 import java.awt.Rectangle;
 import java.io.File;

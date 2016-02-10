@@ -1,4 +1,4 @@
-package tools;
+package util;
 
 import fitterAlgorithm.LowestSquare;
 import fitterAlgorithm.PolynomialLowestSquare;
@@ -6,17 +6,14 @@ import functions.ExponentialFunction;
 import gui.GUI;
 import gui.volumetab.Roi3D;
 import ij.ImagePlus;
-import ij.gui.PointRoi;
 import ij.gui.Roi;
 import ij.process.ImageProcessor;
-import imagehandling.KeyMap;
 import imagehandling.Volume;
+import imagehandling.headerhandling.KeyMap;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-
-import com.sun.prism.paint.Color;
 
 import polyfitter.Polyfitter;
 

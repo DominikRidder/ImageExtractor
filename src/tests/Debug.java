@@ -1,84 +1,138 @@
 package tests;
 
 import gui.GUI;
-import gui.MyTab;
 import gui.volumetab.VolumeTab;
+import imagehandling.Volume;
+import imagehandling.headerhandling.KeyMap;
+import imagehandling.headerhandling.TextOptions;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+
 
 public class Debug {
 	private static GUI gui;
 	private static VolumeTab voltab;
-
+ 
 	public static void main(String[] agrs) {
-		// String nifti =
-		// "/opt/dridder_local/TestDicoms/Nifti/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/015_si_gre_b0.nii";
-		// Volume vol = new Volume(nifti);
-		// System.out.println(vol.getHeader().get(0));
+		String filepath = "/opt/dridder_local/TestDicoms/AllDicoms/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/11_gre_t2star";
+		Volume vol = Volume.createVolume(filepath);
+		vol.getTextOptions().setReturnExpression(
+				"" + TextOptions.ATTRIBUTE_VALUE);
 
-		// SortAlgorithm sa = new SortAlgorithm();
-		// sa.setFilesOptionCopy();
-		// sa.setImgDigits(0);
-		// sa.setKeepImageName(true);
-		// sa.setCreateNiftis(true);
-		//
-		String input = "/opt/dridder_local/TestDicoms/AllDicoms/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/15_si_gre_b0";
-		// String output = "/opt/dridder_local/TestDicoms/Nifti";
-		//
-		// File f = new
-		// File("/opt/dridder_local/TestDicoms/Nifti/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/015_si_gre_b0.nii");
-		//
-		// if (f.exists()){
-		// System.out.println("File exist. I try to delete it.");
-		// if (f.delete()){
-		// System.out.println("Delete sucessfull");
-		// }else{
-		// System.out.println("Delete failed!");
-		// }
-		// }
-		//
-		//
-		// if (sa.searchAndSortIn(input, output)){
-		// System.out.println("sa sucessfull");
-		// }else{
-		// System.out.println("sa failed");
-		// }
-		//
-		//
-		//
-		gui = new GUI(true, true);
-		MyTab curtab = gui.getCurrentTab();
-		//
-		// // if (curtab instanceof SorterTab){
-		// // sorttab = (SorterTab) curtab;
-		// //
-		// // }
-		if (curtab instanceof VolumeTab) {
-			voltab = (VolumeTab) curtab;
-			voltab.setPath(input);
-			// //
-			// voltab.setPath("C:/Users/Dominik/Desktop/Dominik_ordner/Learning/Dicom/Testfolder");
-			// //
-			// voltab.setPath("/opt/dridder_local/TestDicoms/AllDicoms/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/15_si_gre_b0");
-			voltab.createVolume();
-			while (voltab.isCreatingVolume()) {
-				sleep(100);
+		KeyMap att1 = KeyMap.KEY_FLIP_ANGLE;
+		KeyMap att2 = KeyMap.KEY_ECHO_NUMBERS_S;
+//		KeyMap att2 = KeyMap.KEY_WINDOW_WIDTH;
+
+		int count1 = 0;
+		ArrayList<String> foundtypes1 = new ArrayList<String>();
+		int count2 = 0;
+		ArrayList<String> foundtypes2 = new ArrayList<String>();
+
+		for (int i = 0; i < vol.size(); i++) {
+			if (!foundtypes1.contains(vol.getAttribute(att2, i))) {
+				foundtypes1.add(vol.getAttribute(att2, i));
+				count1++;
 			}
-			voltab.setShape("Circle");
-			// voltab.setRoiPosition(100, 100);
-			voltab.setRoiPosition(200, 200);
-			// voltab.setShape("Circle");
-			// // voltab.actionOpenInExternal();
-			// //
-			// // while(voltab.isCreatingVolume()){
-			// // sleep(100);
-			// // }
-			// //
-			// // System.out.println("creation finished");
-			//
-			// // roitest(100, 100);
+			if (!foundtypes2.contains(vol.getAttribute(att1, i))) {
+				foundtypes2.add(vol.getAttribute(att1, i));
+				count2++;
+			}
+		}
+
+		System.out.println(count2);
+		System.out.println(count1);
+
+		ArrayList<String> data = new ArrayList<String>();
+		for (int i = 0; i < vol.size(); i++) {
+			data.add(i + "#" + toNDigits(4,vol.getAttribute(att2, i)) + "#"
+					+ toNDigits(4,vol.getAttribute(att1, i)));
+		}
+
+		data.sort((str1, str2) -> {
+			int mark11 = str1.indexOf('#');
+			int mark12 = str1.indexOf('#', mark11 + 1);
+			int mark21 = str2.indexOf('#');
+			int mark22 = str2.indexOf('#', mark21 + 1);
+
+			int comp1 = str1.substring(mark11, mark12).compareTo(
+					str2.substring(mark21, mark22));
+			if (comp1 != 0) {
+				return comp1;
+			} else {
+				return str1.substring(mark12, str1.length()).compareTo(
+						str2.substring(mark22, str2.length()));
+			}
+		});
+		
+		int firstcount = -1;
+		int nextcount = 0;
+		String lastString = data.get(0).split("#")[1];
+		
+		boolean matching = true;
+		for (String s: data){
+			if (!s.split("#")[1].equals(lastString)){
+				lastString = s.split("#")[1];
+				if (firstcount == -1){
+					firstcount = nextcount;
+				}else if (nextcount != firstcount){
+					matching = false;
+					break;
+				}
+				nextcount = 0;
+			}
+			nextcount++;
+		}
+		if (firstcount == -1){
+			firstcount = nextcount;
+		}else if (nextcount != firstcount){
+			matching = false;
+		}
+		
+		if (matching){
+			System.out.println("KeyMap combination is ok for the Dimension");
+			
+			int[][] indexes = new int[count1][];
+			
+			firstcount = -1;
+			nextcount = 0;
+			lastString = data.get(0).split("#")[1];
+			
+			int i =0; 
+			int j = 0;
+			for (String s: data){
+				if (!s.split("#")[1].equals(lastString)){
+					lastString = s.split("#")[1];
+					j++;
+					i = 0;
+				}
+				
+				indexes[j][i] = Integer.parseInt(s.split("#")[0]);
+				
+				i++;
+			}
+			
+			for (int[] a : indexes){
+				System.out.print("{ ");
+				for (int b : a) {
+					System.out.print(b+",");
+				}
+				System.out.println(" }");
+			}
+			
+		}else{
+			System.out.println("KeyMap combination is NOT ok for the Dimension");
 		}
 	}
+	
+	private static String toNDigits(int n, String number) {
+		StringBuilder digits = new StringBuilder(n);
+		for (int i = 0; i < n - number.length(); i++) {
+			digits.append("0");
+		}
+		return digits.toString() + number;
+	}
+
 
 	public static void roitest(int x, int y) {
 		voltab.setRoiPosition(x, y);

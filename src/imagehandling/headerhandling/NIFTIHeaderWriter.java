@@ -1,4 +1,4 @@
-package imagehandling;
+package imagehandling.headerhandling;
 
 import ij.ImagePlus;
 import ij.plugin.NiftiHeader;

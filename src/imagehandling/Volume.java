@@ -2,14 +2,15 @@ package imagehandling;
 
 import ij.ImagePlus;
 import ij.gui.Roi;
+import imagehandling.headerhandling.KeyMap;
+import imagehandling.headerhandling.TextOptions;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Vector;
 
 /**
- * The Volume class is a class, to work with a single volume. A Volume contains
- * multiple images.
+ * The Volume Class is a container for images.
  * 
  * @author dridder_local
  *
@@ -35,139 +36,6 @@ public abstract class Volume {
 	public static String getKeyWords(String str) {
 		return Image.getKeyWords(str);
 	}
-
-	// /**
-	// * Path to the folder, that contains the Images of the Volume.
-	// */
-	// private String path;
-	//
-	// /**
-	// * This ArrayList contains all Images, which are in the Volume.
-	// */
-	// private ArrayList<Image> slices;
-	//
-	// /**
-	// * The TextOptions are used, to decide where the wildcardmatch gonna be
-	// done
-	// * and what the getAttributes method should return.
-	// */
-	// private TextOptions topt;
-
-	// /**
-	// * This default construktur should not be used. If you use this method, it
-	// * gonna print some information into the console and call System.exit(1).
-	// */
-	// public Volume() {
-	// System.out
-	// .println("You have to use the Volume(String path) construktor to work with Volume.\nThe path should be the path of the repository, where the images are stored in.");
-	// System.exit(1);
-	// }
-	//
-	// /**
-	// * This constructor searching in the given path for files. In this folder
-	// * there should only be one type of images. If the names of the images
-	// dont
-	// * end with a known ending, the images handeld as a IMA image.
-	// *
-	// * @param path
-	// */
-	// public Volume(String path) {
-	// resetTextOptions();
-	// slices = new ArrayList<Image>();
-	// this.path = path;
-	//
-	// // getting the files inhabited in the path
-	// File file = new File(path);
-	// if (file.isDirectory()) {
-	// File[] list = file.listFiles();
-	//
-	// if (list == null) {
-	// System.out
-	// .println("The given Volume path seems to be not correct. Please check the path.");
-	// System.exit(1);
-	// }
-	//
-	// // adding the Images
-	// for (File l : list) {
-	// try {
-	// if (Image.isDicom(l.toPath())) {
-	// slices.add(new Image(l.getAbsolutePath()));
-	// }
-	// } catch (RuntimeException e) {
-	// // This was not an Image
-	// }
-	// }
-	//
-	// // sort images
-	// Collections.sort(slices);
-	// } else if (path.endsWith(".nii")) {
-	// Nifti_Reader nr = new Nifti_Reader();
-	// ImagePlus nifti = nr.load(file.getParent(), file.getName());
-	// System.out.println(nifti.getT());
-	// for (int i = 0; i < nifti.getImageStackSize(); i++) {
-	// Image img = new Image(path, "nii");
-	// ImagePlus data = new ImagePlus();
-	// nifti.setSlice(i);
-	// data.setImage(nifti.getBufferedImage());
-	// img.setData(data);
-	// slices.add(img);
-	// }
-	// }
-	//
-	// }
-	//
-	// /**
-	// * This construktur is used by the gui class. The diffence is, that the
-	// * normal construktur would call System.exit(1) if the Volume path is not
-	// * correct, while this method throws a RuntimeException.
-	// *
-	// * @param path
-	// * @param gui
-	// */
-	// public Volume(String path, VolumeTab volumetab) {
-	// resetTextOptions();
-	// slices = new ArrayList<Image>();
-	// this.path = path;
-	//
-	// // getting the files inhabited in the path
-	// File file = new File(path);
-	// if (file.isDirectory()) {
-	// File[] list = file.listFiles();
-	//
-	// if (list == null) {
-	// throw new RuntimeException(
-	// "The given Volume path seems to be not correct. Please check the path.");
-	// }
-	//
-	// // adding the Images
-	// for (File l : list) {
-	// try {
-	// slices.add(new Image(l.getAbsolutePath()));
-	// } catch (RuntimeException e) {
-	// }
-	// }
-	// } else if (file.getName().endsWith(".nii")) {
-	// Nifti_Reader nr = new Nifti_Reader();
-	// ImagePlus nifti = nr.load(file.getParent(), file.getName());
-	// System.out.println(nifti.getNFrames());
-	// for (int i = 0; i < nifti.getImageStackSize(); i++) {
-	// Image img = new Image(path, "nii");
-	// ImagePlus data = new ImagePlus();
-	// nifti.setSlice(i);
-	// data.setImage(nifti.getBufferedImage());
-	// img.setData(data);
-	// slices.add(img);
-	// }
-	// }
-	//
-	// if (size() == 0) {
-	// throw new RuntimeException(
-	// "The given Volume path seems to be not correct. Please check the path.");
-	// }
-	//
-	// // sort images
-	// Collections.sort(slices);
-	// }
 
 	public boolean isEmpty() {
 		return size() == 0;

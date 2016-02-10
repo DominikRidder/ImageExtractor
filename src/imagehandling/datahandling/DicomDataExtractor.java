@@ -1,4 +1,4 @@
-package imagehandling;
+package imagehandling.datahandling;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
