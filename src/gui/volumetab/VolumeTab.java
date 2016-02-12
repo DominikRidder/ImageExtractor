@@ -77,7 +77,7 @@ import util.ZeroEcho;
  * This class representing a Tab in the GUI window, where you can look up the
  * header and images of a Volume.
  * 
- * @author dridder_local
+ * @author Dominik Ridder
  *
  */
 public class VolumeTab extends JPanel implements ActionListener, MyTab,
@@ -248,6 +248,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private JLabel imagelabel;
 
+	/**
+	 * Label that displays the Text "Radius: <i>X</i>" where <i>X</i> is the actual radius.
+	 */
 	private JLabel radiustext;
 
 	/**
@@ -804,6 +807,291 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
+	 * Action Command, that is called, when the actual shape is changed throught
+	 * the JComboBox in the Gui.
+	 */
+	public void actionShape() {
+		if (shape.getSelectedItem().equals("Point")) {
+			sizepanel.setVisible(false);
+		} else {
+			sizepanel.setVisible(true);
+		}
+	
+		if (relativroi != null) {
+			if (relativroi instanceof PointRoi) {
+				setRoiPosition((int) relativroi.getXBase(),
+						(int) relativroi.getYBase());
+			} else {
+				java.awt.Rectangle bounds = relativroi.getBounds();
+				setRoiPosition(bounds.x + bounds.height / 2, bounds.y
+						+ bounds.height / 2);
+			}
+		}
+	}
+
+	/**
+	 * This method is called by the 5 buttons of VolumeTab.
+	 */
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource().equals(timer)) {
+			switch (creatingTextStatus) {
+			case 0:
+				parent.getStatusLabel().setText("Creating");
+				break;
+			case 1:
+				parent.getStatusLabel().setText("Creating.");
+				break;
+			case 2:
+				parent.getStatusLabel().setText("Creating..");
+				break;
+			case 3:
+				parent.getStatusLabel().setText("Creating...");
+				break;
+			}
+			creatingTextStatus += 1;
+			creatingTextStatus %= 4;
+		}
+		if (creatingVolume) {
+			return;
+		}
+		switch (e.getActionCommand()) {
+		case "Calculate Zero Echo":
+			if (ze == null) {
+				actionCalculateZeroEcho();
+			}
+			break;
+		case "Cancle":
+			if (ze != null) {
+				ze.Cancle();
+				ze = null;
+			}
+			break;
+		case "open in External":
+			actionOpenInExternal();
+			break;
+		case "browse": // searching for a volume
+			actionBrowse();
+			break;
+		case "Display all Attributes":
+			actionDisplayAttributes();
+			break;
+		case "comboBoxChanged":
+			actionShape();
+			break;
+		case "Image Changed":
+			contrastupdate = true;
+			displayImage();
+			break;
+		case "Save ZeroEcho":
+			saveZeroEcho();
+			break;
+		case "Adjust Brightness/Contrast":
+			if (volume == null) {
+				return;
+			}
+			contrast = new ContrastAdjuster();
+			contrast.setImageUpdater(this);
+			contrast.run("");
+			try {
+				ImagePlus imp = null;
+				if (getActualEcho() != 0) {
+					imp = this.volume.getSlice(actualSliceIndex()).getData();
+				} else {
+					imp = zeroecho.get(getActualSlice() - 1);
+				}
+	
+				if (contrast != null && contrast.thread != null) {
+					WindowManager.setTempCurrentImage(volume.getData().get(0));
+					WindowManager.setTempCurrentImage(contrast.thread, imp);
+					contrast.adjustmentValueChanged(new AdjustmentEvent(
+							DummyAdjuster.dummy, 0, 0, 0));
+					sleep(20); // waiting for the ContrastAdjuster
+				}
+			} catch (IOException | NullPointerException e1) {
+			}
+			break;
+		default:
+			if (e.getSource() == fittingfunction) {
+				if (relativroi != null) {
+					showROI(true);
+				}
+			}
+			break;
+		}
+	}
+
+	/**
+	 * Action command to calculate the ZeroEcho. This Method is called by the
+	 * "CalculateZeroEcho Button".
+	 */
+	public void actionCalculateZeroEcho() {
+		int degree = -1;
+		if (((String) fittingfunction.getSelectedItem())
+				.contains("Exponential")) {
+			degree = -2;
+		} else {
+			for (int i = 0; i < 5; i++) {
+				if (((String) fittingfunction.getSelectedItem()).contains(""
+						+ i)) {
+					degree = i;
+				}
+			}
+		}
+	
+		zero_echo.setText("Cancle");
+	
+		parent.getStatusLabel().setText("Calculating ZeroEcho: ");
+		parent.getProgressBar().setValue(0);
+		parent.getProgressBar().setMaximum(perEcho);
+		parent.getProgressBar().setVisible(true);
+	
+		ze = new ZeroEcho(volume, this, degree, alsolog.isSelected(), this);
+		new Thread(ze).start();
+	}
+
+	/**
+	 * ActionEvent, that is called, when the browse Button is pressed.
+	 */
+	public void actionBrowse() {
+		if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION
+				&& chooser.getSelectedFile() != null) {
+			if (chooser.getSelectedFile().isDirectory()) {
+				path.setText(chooser.getSelectedFile().toString());
+			} else if (chooser.getSelectedFile().isFile()) {
+				if (!chooser.getSelectedFile().getAbsolutePath()
+						.endsWith("nii")) {
+					path.setText(chooser.getSelectedFile().getParent()
+							.toString());
+				} else {
+					path.setText(chooser.getSelectedFile().getAbsolutePath());
+				}
+			}
+			new Thread(this).start();
+		}
+		parent.imec.setOption("LastBrowse", chooser.getCurrentDirectory()
+				.getAbsolutePath());
+		parent.imec.save();
+	}
+
+	public void actionDisplayAttributes() {
+		displayAll = true;
+		displayAttributes();
+	}
+
+	public void actionOpenInExternal() {
+		// if (volume != null) {
+		parent.imec = new ImageExtractorConfig();
+		String customExternal = null;
+		if (path.getText().endsWith(".nii")) {
+			customExternal = parent.imec.getOption("External_NITFI");
+		} else {
+			customExternal = parent.imec.getOption("External_DICOM");
+		}
+		ProcessBuilder pb;
+	
+		String commands[] = splittCommand(customExternal.replace("$FILE",
+				path.getText()));
+		pb = new ProcessBuilder(commands);
+	
+		System.out.println("\nTry to execute:");
+		for (String command : commands) {
+			System.out.print(command + " ");
+		}
+		System.out.println();
+	
+		try {
+			pb.start();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	/**
+	 * With this Method you can change the actual echo by i.
+	 * 
+	 * @param change
+	 *            the number that is added to the actual echo.
+	 */
+	public void addtoEcho(int change) {
+		try {
+			int actecho = getActualEcho();
+			int lowest = zeroecho == null ? 1 : 0;
+			if (actecho + change > lowest - 1
+					&& actecho + change <= echoNumbers) {
+				echo_index.setText(""
+						+ (Integer.parseInt(echo_index.getText()) + change));
+				checkEcho();
+			}
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	
+	}
+
+	/**
+	 * Method, that calls a JFileChooser and saves the ZeroEcho + the other
+	 * Echos as a Nifti, as the selected File. If the filename don't endswith
+	 * ".nii", than the extension ".nii" is added.
+	 */
+	public void saveZeroEcho() {
+		if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION
+				&& chooser.getSelectedFile() != null) {
+			Nifti_Writer writer = new Nifti_Writer();
+	
+			ImageStack is = null;
+			ImagePlus ip = new ImagePlus();
+	
+			double min = Double.POSITIVE_INFINITY;
+			double max = Double.NEGATIVE_INFINITY;
+	
+			ArrayList<ImagePlus> concat = new ArrayList<ImagePlus>();
+			concat.addAll(zeroecho);
+			for (int i = 0; i < volume.size(); i++) {
+				concat.add(volume.getSlice(i).getData());
+			}
+	
+			is = new ImageStack(volume.getSlice(volume.size() - 1).getData()
+					.getWidth(), volume.getSlice(volume.size() - 1).getData()
+					.getHeight());
+			ip.setCalibration(volume.getSlice(volume.size() - 1).getData()
+					.getCalibration());
+	
+			for (ImagePlus nextimp : concat) {
+	
+				min = Math.min(nextimp.getProcessor().getMin(), min);
+				max = Math.max(nextimp.getProcessor().getMax(), max);
+	
+				try {
+					is.addSlice(nextimp.getProcessor());
+				} catch (IllegalArgumentException e) {
+					continue;
+				}
+			}
+	
+			ip.setStack(is);
+			ip.getProcessor().setMinAndMax(min, max);
+			if (echoNumbers != 1) {
+				ip.setDimensions(1, is.getSize() / (echoNumbers + 1),
+						echoNumbers + 1);
+				ip.setOpenAsHyperStack(true);
+			}
+			WindowManager.setTempCurrentImage(ip);
+	
+			writer.dicom_to_nifti = false;
+			String name = chooser.getSelectedFile().getName();
+			if (!name.endsWith(".nii")) {
+				name += ".nii";
+			}
+			writer.save(ip, chooser.getSelectedFile().getParent(), name);
+		}
+		parent.imec.setOption("LastBrowse", chooser.getCurrentDirectory()
+				.getAbsolutePath());
+		parent.imec.save();
+	}
+
+	/**
 	 * Method that tries to create a Volume to the given path.
 	 */
 	public void createVolume() {
@@ -895,7 +1183,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * Sleeps for <i>int</i> milliseconds. The InterruptedException can cancle
 	 * this Method. This Method is usefull to write less code.
 	 * 
-	 * @param milisec
+	 * @param millisec
 	 *            The amount of time, that the current Thread should sleep.
 	 */
 	public void sleep(int millisec) {
@@ -903,210 +1191,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			Thread.sleep(millisec);
 		} catch (InterruptedException e1) {
 		}
-	}
-
-	/**
-	 * This method is called by the 5 buttons of VolumeTab.
-	 */
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource().equals(timer)) {
-			switch (creatingTextStatus) {
-			case 0:
-				parent.getStatusLabel().setText("Creating");
-				break;
-			case 1:
-				parent.getStatusLabel().setText("Creating.");
-				break;
-			case 2:
-				parent.getStatusLabel().setText("Creating..");
-				break;
-			case 3:
-				parent.getStatusLabel().setText("Creating...");
-				break;
-			}
-			creatingTextStatus += 1;
-			creatingTextStatus %= 4;
-		}
-		if (creatingVolume) {
-			return;
-		}
-		switch (e.getActionCommand()) {
-		case "Calculate Zero Echo":
-			if (ze == null) {
-				actionCalculateZeroEcho();
-			}
-			break;
-		case "Cancle":
-			if (ze != null) {
-				ze.Cancle();
-				ze = null;
-			}
-			break;
-		case "open in External":
-			actionOpenInExternal();
-			break;
-		case "browse": // searching for a volume
-			actionBrowse();
-			break;
-		case "Display all Attributes":
-			actionDisplayAttributes();
-			break;
-		case "comboBoxChanged":
-			actionShape();
-			break;
-		case "Image Changed":
-			contrastupdate = true;
-			displayImage();
-			break;
-		case "Save ZeroEcho":
-			saveZeroEcho();
-			break;
-		case "Adjust Brightness/Contrast":
-			if (volume == null) {
-				return;
-			}
-			contrast = new ContrastAdjuster();
-			contrast.setImageUpdater(this);
-			contrast.run("");
-			try {
-				ImagePlus imp = null;
-				if (getActualEcho() != 0) {
-					imp = this.volume.getSlice(actualSliceIndex()).getData();
-				} else {
-					imp = zeroecho.get(getActualSlice() - 1);
-				}
-
-				if (contrast != null && contrast.thread != null) {
-					WindowManager.setTempCurrentImage(volume.getData().get(0));
-					WindowManager.setTempCurrentImage(contrast.thread, imp);
-					contrast.adjustmentValueChanged(new AdjustmentEvent(
-							DummyAdjuster.dummy, 0, 0, 0));
-					sleep(20); // waiting for the ContrastAdjuster
-				}
-			} catch (IOException | NullPointerException e1) {
-			}
-			break;
-		default:
-			if (e.getSource() == fittingfunction) {
-				if (relativroi != null) {
-					showROI(true);
-				}
-			}
-			break;
-		}
-	}
-
-	/**
-	 * Method, that calls a JFileChooser and saves the ZeroEcho + the other
-	 * Echos as a Nifti, as the selected File. If the filename don't endswith
-	 * ".nii", than the extension ".nii" is added.
-	 */
-	public void saveZeroEcho() {
-		if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION
-				&& chooser.getSelectedFile() != null) {
-			Nifti_Writer writer = new Nifti_Writer();
-
-			ImageStack is = null;
-			ImagePlus ip = new ImagePlus();
-
-			double min = Double.POSITIVE_INFINITY;
-			double max = Double.NEGATIVE_INFINITY;
-
-			ArrayList<ImagePlus> concat = new ArrayList<ImagePlus>();
-			concat.addAll(zeroecho);
-			for (int i = 0; i < volume.size(); i++) {
-				concat.add(volume.getSlice(i).getData());
-			}
-
-			is = new ImageStack(volume.getSlice(volume.size() - 1).getData()
-					.getWidth(), volume.getSlice(volume.size() - 1).getData()
-					.getHeight());
-			ip.setCalibration(volume.getSlice(volume.size() - 1).getData()
-					.getCalibration());
-
-			for (ImagePlus nextimp : concat) {
-
-				min = Math.min(nextimp.getProcessor().getMin(), min);
-				max = Math.max(nextimp.getProcessor().getMax(), max);
-
-				try {
-					is.addSlice(nextimp.getProcessor());
-				} catch (IllegalArgumentException e) {
-					continue;
-				}
-			}
-
-			ip.setStack(is);
-			ip.getProcessor().setMinAndMax(min, max);
-			if (echoNumbers != 1) {
-				ip.setDimensions(1, is.getSize() / (echoNumbers + 1),
-						echoNumbers + 1);
-				ip.setOpenAsHyperStack(true);
-			}
-			WindowManager.setTempCurrentImage(ip);
-
-			writer.dicom_to_nifti = false;
-			String name = chooser.getSelectedFile().getName();
-			if (!name.endsWith(".nii")) {
-				name += ".nii";
-			}
-			writer.save(ip, chooser.getSelectedFile().getParent(), name);
-		}
-		parent.imec.setOption("LastBrowse", chooser.getCurrentDirectory()
-				.getAbsolutePath());
-		parent.imec.save();
-	}
-
-	/**
-	 * Action Command, that is called, when the actual shape is changed throught
-	 * the JComboBox in the Gui.
-	 */
-	public void actionShape() {
-		if (shape.getSelectedItem().equals("Point")) {
-			sizepanel.setVisible(false);
-		} else {
-			sizepanel.setVisible(true);
-		}
-
-		if (relativroi != null) {
-			if (relativroi instanceof PointRoi) {
-				setRoiPosition((int) relativroi.getXBase(),
-						(int) relativroi.getYBase());
-			} else {
-				java.awt.Rectangle bounds = relativroi.getBounds();
-				setRoiPosition(bounds.x + bounds.height / 2, bounds.y
-						+ bounds.height / 2);
-			}
-		}
-	}
-
-	/**
-	 * Action command to calculate the ZeroEcho. This Method is called by the
-	 * "CalculateZeroEcho Button".
-	 */
-	public void actionCalculateZeroEcho() {
-		int degree = -1;
-		if (((String) fittingfunction.getSelectedItem())
-				.contains("Exponential")) {
-			degree = -2;
-		} else {
-			for (int i = 0; i < 5; i++) {
-				if (((String) fittingfunction.getSelectedItem()).contains(""
-						+ i)) {
-					degree = i;
-				}
-			}
-		}
-
-		zero_echo.setText("Cancle");
-
-		parent.getStatusLabel().setText("Calculating ZeroEcho: ");
-		parent.getProgressBar().setValue(0);
-		parent.getProgressBar().setMaximum(perEcho);
-		parent.getProgressBar().setVisible(true);
-
-		ze = new ZeroEcho(volume, this, degree, alsolog.isSelected(), this);
-		new Thread(ze).start();
 	}
 
 	/***
@@ -1153,63 +1237,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		parent.getProgressBar().setVisible(false);
 		zero_echo.setText("Calculate Zero Echo");
 		ze = null;
-	}
-
-	/**
-	 * ActionEvent, that is called, when the browse Button is pressed.
-	 */
-	public void actionBrowse() {
-		if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION
-				&& chooser.getSelectedFile() != null) {
-			if (chooser.getSelectedFile().isDirectory()) {
-				path.setText(chooser.getSelectedFile().toString());
-			} else if (chooser.getSelectedFile().isFile()) {
-				if (!chooser.getSelectedFile().getAbsolutePath()
-						.endsWith("nii")) {
-					path.setText(chooser.getSelectedFile().getParent()
-							.toString());
-				} else {
-					path.setText(chooser.getSelectedFile().getAbsolutePath());
-				}
-			}
-			new Thread(this).start();
-		}
-		parent.imec.setOption("LastBrowse", chooser.getCurrentDirectory()
-				.getAbsolutePath());
-		parent.imec.save();
-	}
-
-	public void actionDisplayAttributes() {
-		displayAll = true;
-		displayAttributes();
-	}
-
-	public void actionOpenInExternal() {
-		// if (volume != null) {
-		parent.imec = new ImageExtractorConfig();
-		String customExternal = null;
-		if (path.getText().endsWith(".nii")) {
-			customExternal = parent.imec.getOption("External_NITFI");
-		} else {
-			customExternal = parent.imec.getOption("External_DICOM");
-		}
-		ProcessBuilder pb;
-
-		String commands[] = splittCommand(customExternal.replace("$FILE",
-				path.getText()));
-		pb = new ProcessBuilder(commands);
-
-		System.out.println("\nTry to execute:");
-		for (String command : commands) {
-			System.out.print(command + " ");
-		}
-		System.out.println();
-
-		try {
-			pb.start();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
 	}
 
 	public String[] splittCommand(String command) {
@@ -1346,22 +1373,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
-	 * This Method sets the acutal roi Shape. Actual valid shape names are:
-	 * Point, Circle and Sphere.
-	 * 
-	 * @param shape
-	 *            The String name of the Shape.
-	 */
-	public void setShape(String shape) {
-		for (int i = 0; i < this.shape.getItemCount(); i++) {
-			if (this.shape.getItemAt(i).equals(shape)) {
-				this.shape.setSelectedIndex(i);
-				break;
-			}
-		}
-	}
-
-	/**
 	 * Method that handles mouseWheel input.
 	 */
 	public void mouseWheelMoved(MouseWheelEvent e) {
@@ -1370,7 +1381,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			int change = -1 * e.getWheelRotation();
 			boolean makechange = false;
 			boolean changeEcho = false;
-
+	
 			if (obj instanceof JTextField) {
 				JTextField index = (JTextField) obj;
 				if (index.equals(slice_index) || index.equals(slice_max)
@@ -1401,9 +1412,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					makechange = true;
 					changeEcho = false;
 				}
-
+	
 			}
-
+	
 			if (makechange) {
 				if (changeEcho) {
 					addtoEcho(change);
@@ -1416,27 +1427,19 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
-	 * With this Method you can change the actual echo by i.
+	 * This Method sets the acutal roi Shape. Actual valid shape names are:
+	 * Point, Circle and Sphere.
 	 * 
-	 * @param change
-	 *            the number that is added to the actual echo.
+	 * @param shape
+	 *            The String name of the Shape.
 	 */
-	public void addtoEcho(int change) {
-		try {
-			int actecho = getActualEcho();
-			int lowest = zeroecho == null ? 1 : 0;
-			if (actecho + change > lowest - 1
-					&& actecho + change <= echoNumbers) {
-				echo_index.setText(""
-						+ (Integer.parseInt(echo_index.getText()) + change));
-				checkEcho();
+	public void setShape(String shape) {
+		for (int i = 0; i < this.shape.getItemCount(); i++) {
+			if (this.shape.getItemAt(i).equals(shape)) {
+				this.shape.setSelectedIndex(i);
+				break;
 			}
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-
 	}
 
 	public void keyPressed(KeyEvent e) {
@@ -1746,6 +1749,26 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	}
 
+	public ImagePlus getImage() {
+		try {
+			if (getActualEcho() != 0) {
+				return this.volume.getSlice(actualSliceIndex()).getData();
+			} else {
+				return zeroecho.get(getActualSlice() - 1);
+			}
+		} catch (IOException | NullPointerException e) {
+		}
+		return null;
+	}
+
+	public double getScale() {
+		return scaling;
+	}
+
+	public boolean isOutputAreaEmpty() {
+		return outputArea.getText().equals("");
+	}
+
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		if (e.getSource().equals(this.imagelabel) && volume != null) {
@@ -1755,12 +1778,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				&& e.getSource().equals(imagelabel)) {
 			float value = getImage().getProcessor().getf(
 					(int) (e.getX() / scaling), (int) (e.getY() / scaling));
-
+	
 			String val = "value = " + value;
 			String x = "x = " + e.getX();
 			String y = "y = " + e.getY();
 			String seperator = ", ";
-
+	
 			parent.getStatusLabel()
 					.setText(x + seperator + y + seperator + val);
 		}
@@ -1779,22 +1802,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			parent.getStatusLabel()
 					.setText(x + seperator + y + seperator + val);
 		}
-	}
-
-	public ImagePlus getImage() {
-		try {
-			if (getActualEcho() != 0) {
-				return this.volume.getSlice(actualSliceIndex()).getData();
-			} else {
-				return zeroecho.get(getActualSlice() - 1);
-			}
-		} catch (IOException | NullPointerException e) {
-		}
-		return null;
-	}
-
-	public double getScale() {
-		return scaling;
 	}
 
 	@Override
@@ -1817,126 +1824,17 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		}
 	}
 
-	public boolean isOutputAreaEmpty() {
-		return outputArea.getText().equals("");
-	}
-
 	/**
-	 * This Method draws the source BufferedImage into the target BufferedImage.
-	 * The source is always scaled to the needed size, using the BufferedImage
-	 * Method "getScaledInstance", with the BufferedImage.SCALE_FAST hint.
+	 * This Method calculates the actual ImageNumber with the formular: slice -
+	 * 1 + perEcho * (echo - 1).
 	 * 
-	 * @param target
-	 *            The BufferedImage, that should be copyd/scaled into another.
-	 * @param source
-	 *            The BufferedImage, that contains the scaled target
-	 *            BufferedImage.
+	 * @return The actual ImageNumber.
+	 * @throws IOException
+	 *             If the actual Textfield information (slice, echo) is not
+	 *             valid.
 	 */
-	private void drawIntoImage(BufferedImage target, BufferedImage source) {
-		java.awt.Graphics gr = target.getGraphics();
-		gr.drawImage(source.getScaledInstance(target.getWidth(),
-				target.getHeight(), BufferedImage.SCALE_FAST), 0, 0, null);
-	}
-
-	/**
-	 * This Method updates/displays the Image in the Gui.
-	 * 
-	 * @return true if the Image could be displayed correctly; false otherwiese.
-	 */
-	private boolean displayImage() {
-		try {
-			if (volume == null
-					|| (actualSliceIndex() < 0 || actualSliceIndex() >= volume
-							.size())
-					&& !(getActualEcho() == 0 && zeroecho != null)) {
-				return false;
-			}
-
-			ImagePlus imp = getImage();
-
-			imp.setPosition(1, getActualSlice(), getActualEcho());
-
-			if (contrast != null && contrast.thread != null && !contrastupdate
-					&& contrast.isVisible()) {
-				WindowManager.setTempCurrentImage(contrast.thread, imp); // dirty
-																			// solution
-				contrast.apply();
-				sleep(20); // waiting for the ContrastAdjuster
-				return true;
-			}
-
-			contrastupdate = false;
-
-			BufferedImage buff = imp.getBufferedImage();
-
-			scaling = ((double) image.getHeight()) / buff.getHeight();
-
-			image = new BufferedImage((int) (buff.getWidth() * scaling),
-					(int) (buff.getHeight() * scaling), buff.getType());
-			drawIntoImage(image, buff);
-
-			GUI.setfinalSize(imagelabel,
-					new Dimension(image.getWidth(), image.getHeight()));
-			GUI.setfinalSize(imagepanel, new Dimension(image.getWidth(),
-					imagepanel.getHeight()));
-			imgicon.setImage(image);
-			imagelabel.setIcon(imgicon);
-			GUI.setfinalSize(index_slider, new Dimension(image.getWidth(),
-					index_slider.getHeight()));
-			GUI.setfinalSize(echo_slider, new Dimension(image.getWidth(),
-					echo_slider.getHeight()));
-
-			showROI(true);
-			if (relativroi != null) {
-				if (relativroi instanceof Roi3D) {
-					((Roi3D) relativroi).draw(volume, image,
-							getActualSlice() - 1, scaling);
-				} else {
-					relativroi.draw(image.getGraphics());
-				}
-			}
-			repaint();
-			return true;
-		} catch (IOException e) {
-			return false; // couldnt read the info from the gui elements (slice
-							// or echo)
-		}
-	}
-
-	private void checkSlice() {
-		Runnable handlechange = new Runnable() {
-			public void run() {
-				int act = 0;
-				try {
-					act = Integer.parseInt(slice_index.getText());
-				} catch (NumberFormatException e) {
-					String newtext = slice_index.getText().replaceAll("[^\\d]",
-							"");
-					if (newtext.length() == 0) {
-						act = 0;
-					} else {
-						act = Integer.parseInt(newtext);
-					}
-				}
-				if (act > perEcho) {
-					act = perEcho;
-				} else if (act < 1 && volume != null) {
-					act = 1;
-				}
-				CaretListener[] listener = slice_index.getCaretListeners();
-				if (listener.length != 0) {
-					for (CaretListener l : listener) {
-						slice_index.removeCaretListener(l);
-					}
-					slice_index.setText(act + "");
-					for (CaretListener l : listener) {
-						slice_index.addCaretListener(l);
-					}
-				}
-			}
-		};
-
-		SwingUtilities.invokeLater(handlechange);
+	private int actualSliceIndex() throws IOException {
+		return getActualSlice() - 1 + perEcho * (getActualEcho() - 1);
 	}
 
 	/**
@@ -1983,21 +1881,119 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				}
 			}
 		};
-
+	
 		SwingUtilities.invokeLater(handlechange);
 	}
 
 	/**
-	 * This Method calculates the actual ImageNumber with the formular: slice -
-	 * 1 + perEcho * (echo - 1).
+	 * This Method checks, if the SliceTextfield contains a valid String. If The
+	 * String is not valid, than the actual String is set to 0. If the actual
+	 * String is a valid Number and this Number is Higher than the number of
+	 * echos, than the String is set to the number of echos. If the Number
+	 * Number is to small, than it's set to 0 or 1, whether there is a ZeroEcho
+	 * or not.
 	 * 
-	 * @return The actual ImageNumber.
-	 * @throws IOException
-	 *             If the actual Textfield information (slice, echo) is not
-	 *             valid.
+	 * If the Number in bounds, than this method won't have any effekt.
 	 */
-	private int actualSliceIndex() throws IOException {
-		return getActualSlice() - 1 + perEcho * (getActualEcho() - 1);
+	private void checkSlice() {
+		Runnable handlechange = new Runnable() {
+			public void run() {
+				int act = 0;
+				try {
+					act = Integer.parseInt(slice_index.getText());
+				} catch (NumberFormatException e) {
+					String newtext = slice_index.getText().replaceAll("[^\\d]",
+							"");
+					if (newtext.length() == 0) {
+						act = 0;
+					} else {
+						act = Integer.parseInt(newtext);
+					}
+				}
+				if (act > perEcho) {
+					act = perEcho;
+				} else if (act < 1 && volume != null) {
+					act = 1;
+				}
+				CaretListener[] listener = slice_index.getCaretListeners();
+				if (listener.length != 0) {
+					for (CaretListener l : listener) {
+						slice_index.removeCaretListener(l);
+					}
+					slice_index.setText(act + "");
+					for (CaretListener l : listener) {
+						slice_index.addCaretListener(l);
+					}
+				}
+			}
+		};
+	
+		SwingUtilities.invokeLater(handlechange);
+	}
+
+	/**
+	 * This Method updates/displays the Image in the Gui.
+	 * 
+	 * @return true if the Image could be displayed correctly; false otherwiese.
+	 */
+	private boolean displayImage() {
+		try {
+			if (volume == null
+					|| (actualSliceIndex() < 0 || actualSliceIndex() >= volume
+							.size())
+					&& !(getActualEcho() == 0 && zeroecho != null)) {
+				return false;
+			}
+	
+			ImagePlus imp = getImage();
+	
+			imp.setPosition(1, getActualSlice(), getActualEcho());
+	
+			if (contrast != null && contrast.thread != null && !contrastupdate
+					&& contrast.isVisible()) {
+				WindowManager.setTempCurrentImage(contrast.thread, imp); // dirty
+																			// solution
+				contrast.apply();
+				sleep(20); // waiting for the ContrastAdjuster
+				return true;
+			}
+	
+			contrastupdate = false;
+	
+			BufferedImage buff = imp.getBufferedImage();
+	
+			scaling = ((double) image.getHeight()) / buff.getHeight();
+	
+			image = new BufferedImage((int) (buff.getWidth() * scaling),
+					(int) (buff.getHeight() * scaling), buff.getType());
+			drawIntoImage(image, buff);
+	
+			GUI.setfinalSize(imagelabel,
+					new Dimension(image.getWidth(), image.getHeight()));
+			GUI.setfinalSize(imagepanel, new Dimension(image.getWidth(),
+					imagepanel.getHeight()));
+			imgicon.setImage(image);
+			imagelabel.setIcon(imgicon);
+			GUI.setfinalSize(index_slider, new Dimension(image.getWidth(),
+					index_slider.getHeight()));
+			GUI.setfinalSize(echo_slider, new Dimension(image.getWidth(),
+					echo_slider.getHeight()));
+	
+			showROI(true);
+			if (relativroi != null) {
+				if (relativroi instanceof Roi3D) {
+					((Roi3D) relativroi).draw(volume, image,
+							getActualSlice() - 1, scaling);
+				} else {
+					relativroi.draw(image.getGraphics());
+				}
+			}
+			repaint();
+			return true;
+		} catch (IOException e) {
+			return false; // couldnt read the info from the gui elements (slice
+							// or echo)
+		}
 	}
 
 	/**
@@ -2009,7 +2005,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				if (actualSliceIndex() < 0) {
 					return;
 				}
-
+	
 				// Is the user searching something or do we show them all?
 				if (displayAll) {
 					// getting the header of the actual slice
@@ -2017,7 +2013,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 							.getHeader();
 					// String header = volume.getSlice(getActualSlice())
 					// .getHeader();
-
+	
 					// The Document, which is used by the output is very
 					// slow
 					StringReader reader = new StringReader(header);
@@ -2044,10 +2040,27 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				}
 			}
 		} catch (NumberFormatException | NullPointerException e) {
-
+	
 		} catch (IOException e) {
 		}
+	
+	}
 
+	/**
+	 * This Method draws the source BufferedImage into the target BufferedImage.
+	 * The source is always scaled to the needed size, using the BufferedImage
+	 * Method "getScaledInstance", with the BufferedImage.SCALE_FAST hint.
+	 * 
+	 * @param target
+	 *            The BufferedImage, that should be copyd/scaled into another.
+	 * @param source
+	 *            The BufferedImage, that contains the scaled target
+	 *            BufferedImage.
+	 */
+	private void drawIntoImage(BufferedImage target, BufferedImage source) {
+		java.awt.Graphics gr = target.getGraphics();
+		gr.drawImage(source.getScaledInstance(target.getWidth(),
+				target.getHeight(), BufferedImage.SCALE_FAST), 0, 0, null);
 	}
 
 }

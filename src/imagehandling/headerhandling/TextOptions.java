@@ -6,10 +6,10 @@ import java.util.HashSet;
  * The TextOptions are used to define the Search and Return options for the
  * getAttribute methods of volume and Image.
  * <p>
- * The Static int values, are 7,8,9. If you use the returnexpression, than you should
- * evoid these values.
+ * The Static int values, are 7,8,9. If you use the returnexpression, than you
+ * should evoid these values.
  * 
- * @author dridder_local
+ * @author Dominik Ridder
  *
  */
 public class TextOptions {
@@ -68,6 +68,7 @@ public class TextOptions {
 	/**
 	 * This method returns the String, which defines the output of a
 	 * getAttribute method.
+	 * @return
 	 * 
 	 */
 	public String getReturnExpression() {
@@ -77,6 +78,7 @@ public class TextOptions {
 	/**
 	 * This method returns the searchoptions. The HashSet is not copyd.
 	 * 
+	 * @return The Options, listed in a HashSet&lt;Integer&gt;
 	 */
 	public HashSet<Integer> getSearchOptions() {
 		return searchoptions;
@@ -99,6 +101,7 @@ public class TextOptions {
 	 * This method adds a searchoption to the searchoption HashSet.
 	 * 
 	 * @param textoptionvalue
+	 *            The option that should be added to the searchoptions.
 	 */
 	public void addSearchOption(int textoptionvalue) {
 		searchoptions.add(textoptionvalue);
@@ -109,6 +112,7 @@ public class TextOptions {
 	 * HashSet.
 	 * 
 	 * @param textoptionvalue
+	 *            The option that should be removed from the searchoptions.
 	 */
 	public void removeSearchOption(int textoptionvalue) {
 		searchoptions.remove(textoptionvalue);

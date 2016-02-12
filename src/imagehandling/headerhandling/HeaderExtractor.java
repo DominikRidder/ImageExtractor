@@ -1,11 +1,10 @@
 package imagehandling.headerhandling;
 
-
 /**
  * This interface defines, how an HeaderExtractor can be called, to extract
  * informations out of a given Image type.
  * 
- * @author dridder_local
+ * @author Dominik Ridder
  *
  */
 public interface HeaderExtractor {
@@ -14,6 +13,7 @@ public interface HeaderExtractor {
 	 * Returns the header to the given image path.
 	 * 
 	 * @param path
+	 *            The Filesource, that containing the header information.
 	 * @return The Header, as a String
 	 */
 	public String getHeader(String path);
@@ -23,8 +23,10 @@ public interface HeaderExtractor {
 	 * to find the Attribute.
 	 * 
 	 * @param path
+	 *            The Filepath of the File, that contains the header
 	 * @param item
-	 * @return A single Attribute
+	 *            The value, that should be searched in the header
+	 * @return A single Attribute.
 	 */
 	public String getInfo(String path, String item);
 
@@ -33,7 +35,9 @@ public interface HeaderExtractor {
 	 * be loaded multiple times.
 	 * 
 	 * @param path
+	 *            The Filepath of the file, that contains the header
 	 * @param items
+	 *            The value, for which is searched for in the header
 	 * @return Mutliple Attributes in a String array
 	 */
 	String[] getInfo(String path, String items[]);
@@ -44,8 +48,12 @@ public interface HeaderExtractor {
 	 * String.
 	 * 
 	 * @param path
+	 *            The Path of the File, that contains the header.
 	 * @param regularExpression
+	 *            A String for which is searched in the header.
 	 * @param topt
+	 *            The TextOptions, that determinate, how the header lines are
+	 *            returned
 	 * @return The Header information, that matches the regularExpression in the
 	 *         Header combined by the rules of the TextOptions
 	 */
@@ -56,7 +64,10 @@ public interface HeaderExtractor {
 	 * Extracting the header of a given image path, to the outputdir folder.
 	 * 
 	 * @param path
+	 *            The Filesourcedestionation, where the header should be readed
+	 *            from.
 	 * @param outputdir
+	 *            The Filedestination of the header files.
 	 */
 	public void extractHeader(String path, String outputdir);
 }

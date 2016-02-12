@@ -11,7 +11,8 @@ import ij.plugin.DICOM;
 
 /**
  * Implementation of the interface DataExtractor, which is used for dicoms.
- * @author dridder_local
+ * 
+ * @author Dominik Ridder
  *
  */
 public class DicomDataExtractor implements DataExtractor {

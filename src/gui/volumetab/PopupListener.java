@@ -7,6 +7,10 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JPopupMenu;
 
+/**
+ * @author Dominik Ridder
+ *
+ */
 class PopupListener extends MouseAdapter {
 	JPopupMenu popup;
 

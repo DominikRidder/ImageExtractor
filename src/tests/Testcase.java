@@ -1,4 +1,4 @@
-package tests; 
+package tests;
 
 import static org.junit.Assert.assertTrue; // checking the values
 import gui.GUI;
@@ -14,15 +14,19 @@ import org.junit.runner.notification.Failure; // printing the failures
 
 /**
  * Test Class for some simple stuff.
- *  
+ * 
  * @author Dominik Ridder
  *
  */
 public class Testcase {
 
 	/**
-	 * Main class for executing the JUnit Testcases. This main is normally not used, 
-	 * because there is a better way for running all Tests with an build.xml and ant.
+	 * Main class for executing the JUnit Testcases. This main is normally not
+	 * used, because there is a better way for running all Tests with an
+	 * build.xml and ant.
+	 * 
+	 * @param agrs
+	 *            This parameter is currently unused.
 	 */
 	public static void main(String[] agrs) {
 		Result rc = new Result();
@@ -41,13 +45,19 @@ public class Testcase {
 	}
 
 	/**
-	 * Tests if the Attributes are displayed after opening a Volume.<p>
-	 * These are the steps of the tests:<p>
-	 * - Create GUI <p>
-	 * - Select VolumeTab <p>
-	 * - Set Path and create Volume <p>
-	 * (Wait max 5 seconds for opening the Volume) <p>
-	 * - Check if the OutputArea is empty <p>
+	 * Tests if the Attributes are displayed after opening a Volume.
+	 * <p>
+	 * These are the steps of the tests:
+	 * <p>
+	 * - Create GUI
+	 * <p>
+	 * - Select VolumeTab
+	 * <p>
+	 * - Set Path and create Volume
+	 * <p>
+	 * (Wait max 5 seconds for opening the Volume)
+	 * <p>
+	 * - Check if the OutputArea is empty
 	 */
 	@Test
 	public void VisibleAttributes() {
@@ -56,21 +66,22 @@ public class Testcase {
 
 		voltab.setPath("/opt/dridder_local/TestDicoms/AllDicoms/B0092/14_wm_gre_rx=PA");
 		voltab.createVolume();
-		
+
 		double start = System.currentTimeMillis();
-		
-		while (voltab.isCreatingVolume()) { // wait max 5 sec for open the volume
-			if (System.currentTimeMillis()-start > 5000) {
+
+		while (voltab.isCreatingVolume()) { // wait max 5 sec for open the
+											// volume
+			if (System.currentTimeMillis() - start > 5000) {
 				break;
-			}else{
-				try{
+			} else {
+				try {
 					Thread.sleep(300);
-				}catch(InterruptedException e){
+				} catch (InterruptedException e) {
 					// do nothing
 				}
 			}
 		}
-		
+
 		assertTrue(!voltab.isOutputAreaEmpty());
 	}
 

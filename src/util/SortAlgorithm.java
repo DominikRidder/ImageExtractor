@@ -31,12 +31,45 @@ import java.util.Stack;
 public class SortAlgorithm {
 
 	/**
-	 * Default Values, in case, the given file don't have one.
+	 * The Default value for the PatientID, that is used, in case that the
+	 * PatientID wasn't saved in the file.
 	 */
-	public final static String DEFAULT_PATIENTID = "NO_ID",
-			DEFAULT_PROCOLNAME = "NO_PROT_NAME", DEFAULT_IMAGENUMBER = "0",
-			DEFAULT_BIRTHDATE = "NO_BIRTH_DATE", DEFAULT_ECHONUMBERS = "1",
-			DEFAULT_SERIES_NUMBERS = "1", DEFAULT_INSTANCE_UID = "1";
+	public final static String DEFAULT_PATIENTID = "NO_ID";
+	
+	/**
+	 * The Default value for the Protocolname, that is used, in case that the
+	 * Protocolname wasn't saved in the file.
+	 */
+	public final static String DEFAULT_PROCOLNAME = "NO_PROT_NAME";
+	
+	/**
+	 * The Default value for the Imagenumber, that is used, in case that the
+	 * Imagenumber wasn't saved in the file.
+	 */
+	public final static String DEFAULT_IMAGENUMBER = "0";
+
+	/**
+	 * The Default value for the Birth date, that is used, in case that the
+	 * Birth date wasn't saved in the file.
+	 */
+	public final static String DEFAULT_BIRTHDATE = "NO_BIRTH_DATE";
+	/**
+	 * The Default value for the number of echos, that is used, in case that the
+	 * number of echos wasn't saved in the file.
+	 */
+	public final static String DEFAULT_ECHONUMBERS = "1";
+
+	/**
+	 * The Default value for the series number, that is used, in case that the
+	 * series number wasn't saved in the file.
+	 */
+	public final static String DEFAULT_SERIES_NUMBERS = "1";
+
+	/**
+	 * The Default value for the instance uid, that is used, in case that the
+	 * instance uid wasn't saved in the file.
+	 */
+	public final static String DEFAULT_INSTANCE_UID = "1";
 
 	/**
 	 * This boolean is used to print a error Message, when curropt data was
@@ -208,6 +241,9 @@ public class SortAlgorithm {
 	/**
 	 * This method is used, to decide, wether the Names of the files gonna be
 	 * changened to their Image Number or if their keep their names.
+	 * 
+	 * @param keepit
+	 *            true if the image name should not change; else false
 	 */
 	public void setKeepImageName(boolean keepit) {
 		keepImgName = keepit;
@@ -216,6 +252,10 @@ public class SortAlgorithm {
 	/**
 	 * The setPrinStream method can be used, to catch the output or the place,
 	 * where it is printed.
+	 * 
+	 * @param out
+	 *            the printstream, that should be used, for printing the
+	 *            progress
 	 */
 	public void setPrintStream(PrintStream out) {
 		this.out = out;
@@ -226,6 +266,9 @@ public class SortAlgorithm {
 	 * the image number of a DICOM in the file name. If the image number of a
 	 * DICOM is larger than the imgDigits number, than the image number of the
 	 * DICOM is taken.
+	 * 
+	 * @param i
+	 *            the amout of digits, that a Image Name should contain at least
 	 */
 	public void setImgDigits(int i) {
 		img_digits = i;
@@ -237,6 +280,9 @@ public class SortAlgorithm {
 	 * information for the number of digits for the subfolder of a protocol name
 	 * folder. Else, the protocolDigits contains the information, how many
 	 * digits are used as a Praefix of a protocol folder.
+	 * 
+	 * @param i
+	 *            The Number of Protocol digits that should be used at least.
 	 */
 	public void setProtocolDigits(int i) {
 		protocol_digits = i;
@@ -247,9 +293,13 @@ public class SortAlgorithm {
 	 * different angel of the scans are sorted in subfolders in the protocol
 	 * name directorys or the different angel are save as the protocol name with
 	 * a certain praefix.
+	 * 
+	 * @param useSubfolders
+	 *            The boolean that indicates, whether the Algorithm should use
+	 *            Subfolders or not.
 	 */
-	public void useSubfolders(boolean b) {
-		subfolders = b;
+	public void useSubfolders(boolean useSubfolders) {
+		subfolders = useSubfolders;
 	}
 
 	/**
@@ -268,6 +318,10 @@ public class SortAlgorithm {
 
 	/**
 	 * Defines, if the dicoms transefered as a dicom or as a nifti.
+	 * 
+	 * @param createniftis
+	 *            true, if the found dicoms should be saved as a nifti; false
+	 *            otherwiese
 	 */
 	public void setCreateNiftis(boolean createniftis) {
 		this.createNiftis = createniftis;
@@ -330,6 +384,8 @@ public class SortAlgorithm {
 	/**
 	 * This tells you, if someone forced the SortAlgorithm to stop the sort,
 	 * with the stopSort() method.
+	 * 
+	 * @return True, if the algorithm was stopped; else false
 	 */
 	public boolean gotStopped() {
 		return stopsort;
@@ -362,6 +418,7 @@ public class SortAlgorithm {
 	 *            The Folder, where the Algorithm search for DICOMs.
 	 * @param sortInDir
 	 *            The Folder, where the Algorithm move and sort the DICOMs.
+	 * @return True if sort algorithm wasn't stopped; else otherwiese
 	 */
 	public boolean searchAndSortIn(String searchin, String sortInDir) {
 		// a list of found dicoms is needed, if nifti should be used

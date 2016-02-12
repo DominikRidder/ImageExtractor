@@ -3,14 +3,348 @@ package imagehandling.headerhandling;
 /**
  * The KeyMap is used for some of the methods get Attribute in the classes image
  * and volume.
+ * 
+ * @author Dominik Ridder
  */
 public enum KeyMap {
-	KEY_MEDIA_STORAGE_SOP_CLASS_UID, KEY_MEDIA_STORAGE_SOP_INST_UID, KEY_TRANSFER_SYNTAX_UID, KEY_IMPLEMENTATION_CLASS_UID, KEY_IMPLEMENTATION_VERSION_NAME, KEY_SPECIFIC_CHARACTER_SET, KEY_IMAGE_TYPE, KEY_INSTANCE_CREATION_DATE, KEY_INSTANCE_CREATION_TIME, KEY_SOP_CLASS_UID, KEY_SOP_INSTANCE_UID, KEY_STUDY_DATE, KEY_SERIES_DATE, KEY_ACQUISITION_DATE, KEY_IMAGE_DATE, KEY_STUDY_TIME, KEY_SERIES_TIME, KEY_ACQUISITION_TIME, KEY_IMAGE_TIME, KEY_ACCESSION_NUMBER, KEY_MODALITY, KEY_MANUFACTURER, KEY_INSTITUTION_NAME, KEY_INSTITUTION_ADDRESS, KEY_REFERRING_PHYSICIANS_NAME, KEY_STATION_NAME, KEY_STUDY_DESCRIPTION, KEY_SERIES_DESCRIPTION, KEY_INSTITUTIONAL_DEPARTMENT_NAME, KEY_ATTENDING_PHYSICIANS_NAME, KEY_OPERATORS_NAME, KEY_MANUFACTURERS_MODEL_NAME, KEY_REFERENCED_IMAGE_SEQUENCE, KEY_REFERENCED_SOP_CLASS_UID, KEY_REFERENCED_SOP_INSTANCE_UID, KEY_PATIENTS_NAME, KEY_PATIENT_ID, KEY_PATIENTS_BIRTH_DATE, KEY_PATIENTS_SEX, KEY_PATIENTS_AGE, KEY_PATIENTS_SIZE, KEY_PATIENTS_WEIGHT, KEY_BODY_PART_EXAMINED, KEY_SCANNING_SEQUENCE, KEY_SEQUENCE_VARIANT, KEY_SCAN_OPTIONS, KEY_MR_ACQUISITION_TYPE, KEY_SEQUENCE_NAME, KEY_ANGIO_FLAG, KEY_SLICE_THICKNESS, KEY_REPETITION_TIME, KEY_ECHO_TIME, KEY_NUMBER_OF_AVERAGES, KEY_IMAGING_FREQUENCY, KEY_IMAGED_NUCLEUS, KEY_ECHO_NUMBERS_S, KEY_MAGNETIC_FIELD_STRENGTH, KEY_SPACING_BETWEEN_SLICES, KEY_NUMBER_OF_PHASE_ENCODING_STEPS, KEY_ECHO_TRAIN_LENGTH, KEY_PERCENT_SAMPLING, KEY_PERCENT_PHASE_FIELD_OF_VIEW, KEY_PIXEL_BANDWIDTH, KEY_DEVICE_SERIAL_NUMBER, KEY_SOFTWARE_VERSIONS_S, KEY_PROTOCOL_NAME, KEY_DATE_OF_LAST_CALIBRATION, KEY_TIME_OF_LAST_CALIBRATION, KEY_TRANSMITTING_COIL, KEY_ACQUISITION_MATRIX, KEY_PHASE_ENCODING_DIRECTION, KEY_FLIP_ANGLE, KEY_VARIABLE_FLIP_ANGLE_FLAG, KEY_SAR, KEY_DB_DT, KEY_PATIENT_POSITION, KEY_STUDY_INSTANCE_UID, KEY_SERIES_INSTANCE_UID, KEY_STUDY_ID, KEY_SERIES_NUMBER, KEY_ACQUISITION_NUMBER, KEY_IMAGE_NUMBER, KEY_IMAGE_POSITION_PATIENT, KEY_IMAGE_ORIENTATION_PATIENT, KEY_FRAME_OF_REFERENCE_UID, KEY_POSITION_REFERENCE_INDICATOR, KEY_SLICE_LOCATION, KEY_SAMPLES_PER_PIXEL, KEY_PHOTOMETRIC_INTERPRETATION, KEY_ROWS, KEY_COLUMNS, KEY_PIXEL_SPACING, KEY_BITS_ALLOCATED, KEY_BITS_STORED, KEY_HIGH_BIT, KEY_PIXEL_REPRESENTATION, KEY_SMALLEST_IMAGE_PIXEL_VALUE, KEY_LARGEST_IMAGE_PIXEL_VALUE, KEY_WINDOW_CENTER, KEY_WINDOW_WIDTH, KEY_WINDOW_CENTER_AND_WIDTH_EXPLANATION, KEY_REQUESTED_PROCEDURE_DESCRIPTION, KEY_PERFORMED_PROCEDURE_STEP_START_DATE, KEY_PERFORMED_PROCEDURE_STEP_START_TIME, KEY_PERFORMED_PROCEDURE_STEP_ID, KEY_PERFORMED_PROCEDURE_STEP_DESCRIPTION, KEY_COMMENTS_ON_THE_PERFORMED_PROCEDURE_STEPS, KEY_PIXEL_DATA;
+	/**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_MEDIA_STORAGE_SOP_CLASS_UID,
+	/**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_MEDIA_STORAGE_SOP_INST_UID,
+	/**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_TRANSFER_SYNTAX_UID,
+	/**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_IMPLEMENTATION_CLASS_UID,
+	/**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_IMPLEMENTATION_VERSION_NAME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SPECIFIC_CHARACTER_SET, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_IMAGE_TYPE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_INSTANCE_CREATION_DATE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_INSTANCE_CREATION_TIME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SOP_CLASS_UID, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SOP_INSTANCE_UID, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_STUDY_DATE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SERIES_DATE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_ACQUISITION_DATE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_IMAGE_DATE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_STUDY_TIME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SERIES_TIME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_ACQUISITION_TIME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_IMAGE_TIME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_ACCESSION_NUMBER, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_MODALITY, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_MANUFACTURER, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_INSTITUTION_NAME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_INSTITUTION_ADDRESS, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_REFERRING_PHYSICIANS_NAME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_STATION_NAME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_STUDY_DESCRIPTION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SERIES_DESCRIPTION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_INSTITUTIONAL_DEPARTMENT_NAME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_ATTENDING_PHYSICIANS_NAME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_OPERATORS_NAME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_MANUFACTURERS_MODEL_NAME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_REFERENCED_IMAGE_SEQUENCE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_REFERENCED_SOP_CLASS_UID, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_REFERENCED_SOP_INSTANCE_UID, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PATIENTS_NAME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PATIENT_ID, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PATIENTS_BIRTH_DATE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PATIENTS_SEX, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PATIENTS_AGE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PATIENTS_SIZE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PATIENTS_WEIGHT, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_BODY_PART_EXAMINED, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SCANNING_SEQUENCE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SEQUENCE_VARIANT, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SCAN_OPTIONS, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_MR_ACQUISITION_TYPE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SEQUENCE_NAME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_ANGIO_FLAG, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SLICE_THICKNESS, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_REPETITION_TIME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_ECHO_TIME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_NUMBER_OF_AVERAGES, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_IMAGING_FREQUENCY, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_IMAGED_NUCLEUS, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_ECHO_NUMBERS_S, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_MAGNETIC_FIELD_STRENGTH, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SPACING_BETWEEN_SLICES, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_NUMBER_OF_PHASE_ENCODING_STEPS, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_ECHO_TRAIN_LENGTH, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PERCENT_SAMPLING, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PERCENT_PHASE_FIELD_OF_VIEW, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PIXEL_BANDWIDTH, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_DEVICE_SERIAL_NUMBER, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SOFTWARE_VERSIONS_S, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PROTOCOL_NAME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_DATE_OF_LAST_CALIBRATION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_TIME_OF_LAST_CALIBRATION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_TRANSMITTING_COIL, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_ACQUISITION_MATRIX, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PHASE_ENCODING_DIRECTION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_FLIP_ANGLE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_VARIABLE_FLIP_ANGLE_FLAG, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SAR, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_DB_DT, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PATIENT_POSITION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_STUDY_INSTANCE_UID, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SERIES_INSTANCE_UID, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_STUDY_ID, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SERIES_NUMBER, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_ACQUISITION_NUMBER, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_IMAGE_NUMBER, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_IMAGE_POSITION_PATIENT, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_IMAGE_ORIENTATION_PATIENT, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_FRAME_OF_REFERENCE_UID, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_POSITION_REFERENCE_INDICATOR, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SLICE_LOCATION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SAMPLES_PER_PIXEL, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PHOTOMETRIC_INTERPRETATION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_ROWS, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_COLUMNS, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PIXEL_SPACING, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_BITS_ALLOCATED, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_BITS_STORED, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_HIGH_BIT, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PIXEL_REPRESENTATION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_SMALLEST_IMAGE_PIXEL_VALUE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_LARGEST_IMAGE_PIXEL_VALUE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_WINDOW_CENTER, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_WINDOW_WIDTH, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_WINDOW_CENTER_AND_WIDTH_EXPLANATION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_REQUESTED_PROCEDURE_DESCRIPTION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PERFORMED_PROCEDURE_STEP_START_DATE, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PERFORMED_PROCEDURE_STEP_START_TIME, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PERFORMED_PROCEDURE_STEP_ID, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_PERFORMED_PROCEDURE_STEP_DESCRIPTION, /**
+	 * TODO:JAVADOC field description.
+	 */
+	KEY_COMMENTS_ON_THE_PERFORMED_PROCEDURE_STEPS, /**
+	 * TODO:JAVADOC field
+	 * description.
+	 */
+	KEY_PIXEL_DATA;
 
 	/**
 	 * This method returns the value of an Enum. If the given type is equal to
 	 * "dcm" or "IMA", than the value is a String, which contains 8 numbers
 	 * like: "0002,0002".
+	 * 
+	 * @param type
+	 * @return
 	 */
 	public String getValue(String type) {
 		String str = "";

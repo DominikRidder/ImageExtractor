@@ -9,11 +9,22 @@ import imagehandling.headerhandling.TextOptions;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
-
+/**
+ * This class is used for smaller testcases or for new methods.
+ * 
+ * @author Dominik Ridder
+ *
+ */
 public class Debug {
 	private static GUI gui;
 	private static VolumeTab voltab;
- 
+
+	/**
+	 * This main method executes some written tests of furture implementations.
+	 * 
+	 * @param agrs
+	 *            This paramater is unused.
+	 */
 	public static void main(String[] agrs) {
 		String filepath = "/opt/dridder_local/TestDicoms/AllDicoms/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/11_gre_t2star";
 		Volume vol = Volume.createVolume(filepath);
@@ -22,7 +33,7 @@ public class Debug {
 
 		KeyMap att1 = KeyMap.KEY_FLIP_ANGLE;
 		KeyMap att2 = KeyMap.KEY_ECHO_NUMBERS_S;
-//		KeyMap att2 = KeyMap.KEY_WINDOW_WIDTH;
+		// KeyMap att2 = KeyMap.KEY_WINDOW_WIDTH;
 
 		int count1 = 0;
 		ArrayList<String> foundtypes1 = new ArrayList<String>();
@@ -45,8 +56,8 @@ public class Debug {
 
 		ArrayList<String> data = new ArrayList<String>();
 		for (int i = 0; i < vol.size(); i++) {
-			data.add(i + "#" + toNDigits(4,vol.getAttribute(att2, i)) + "#"
-					+ toNDigits(4,vol.getAttribute(att1, i)));
+			data.add(i + "#" + toNDigits(4, vol.getAttribute(att2, i)) + "#"
+					+ toNDigits(4, vol.getAttribute(att1, i)));
 		}
 
 		data.sort((str1, str2) -> {
@@ -64,18 +75,18 @@ public class Debug {
 						str2.substring(mark22, str2.length()));
 			}
 		});
-		
+
 		int firstcount = -1;
 		int nextcount = 0;
 		String lastString = data.get(0).split("#")[1];
-		
+
 		boolean matching = true;
-		for (String s: data){
-			if (!s.split("#")[1].equals(lastString)){
+		for (String s : data) {
+			if (!s.split("#")[1].equals(lastString)) {
 				lastString = s.split("#")[1];
-				if (firstcount == -1){
+				if (firstcount == -1) {
 					firstcount = nextcount;
-				}else if (nextcount != firstcount){
+				} else if (nextcount != firstcount) {
 					matching = false;
 					break;
 				}
@@ -83,48 +94,49 @@ public class Debug {
 			}
 			nextcount++;
 		}
-		if (firstcount == -1){
+		if (firstcount == -1) {
 			firstcount = nextcount;
-		}else if (nextcount != firstcount){
+		} else if (nextcount != firstcount) {
 			matching = false;
 		}
-		
-		if (matching){
+
+		if (matching) {
 			System.out.println("KeyMap combination is ok for the Dimension");
-			
+
 			int[][] indexes = new int[count1][];
-			
+
 			firstcount = -1;
 			nextcount = 0;
 			lastString = data.get(0).split("#")[1];
-			
-			int i =0; 
+
+			int i = 0;
 			int j = 0;
-			for (String s: data){
-				if (!s.split("#")[1].equals(lastString)){
+			for (String s : data) {
+				if (!s.split("#")[1].equals(lastString)) {
 					lastString = s.split("#")[1];
 					j++;
 					i = 0;
 				}
-				
+
 				indexes[j][i] = Integer.parseInt(s.split("#")[0]);
-				
+
 				i++;
 			}
-			
-			for (int[] a : indexes){
+
+			for (int[] a : indexes) {
 				System.out.print("{ ");
 				for (int b : a) {
-					System.out.print(b+",");
+					System.out.print(b + ",");
 				}
 				System.out.println(" }");
 			}
-			
-		}else{
-			System.out.println("KeyMap combination is NOT ok for the Dimension");
+
+		} else {
+			System.out
+					.println("KeyMap combination is NOT ok for the Dimension");
 		}
 	}
-	
+
 	private static String toNDigits(int n, String number) {
 		StringBuilder digits = new StringBuilder(n);
 		for (int i = 0; i < n - number.length(); i++) {
@@ -133,17 +145,32 @@ public class Debug {
 		return digits.toString() + number;
 	}
 
-
+	/**
+	 * @param x
+	 *            The x coordinate of the roi, that should be set.
+	 * @param y
+	 *            The y coordinate of the roi, that should be set.
+	 */
 	public static void roitest(int x, int y) {
 		voltab.setRoiPosition(x, y);
 		voltab.showROI(true);
 	}
 
+	/**
+	 * This method calls the "calculate Zero Echo" method of the VolumeTab by
+	 * using the Actionperformed Method.
+	 */
 	public static void zeroEcho() {
 		ActionEvent ae = new ActionEvent(gui, 0, "calc Zero Echo");
 		voltab.actionPerformed(ae);
 	}
 
+	/**
+	 * This Method is used to wait an amount of Time.
+	 * 
+	 * @param milli
+	 *            The Time that this thread should sleep.
+	 */
 	public static void sleep(int milli) {
 		try {
 			Thread.sleep(milli);

@@ -17,6 +17,12 @@ import java.util.ArrayList;
 
 import polyfitter.Polyfitter;
 
+/**
+ * This Class is used, to calculate fittingfunctions between a number of Echos.
+ * 
+ * @author Dominik Ridder
+ *
+ */
 public class VolumeFitter {
 
 	private Polyfitter fitter;
@@ -29,6 +35,21 @@ public class VolumeFitter {
 
 	private boolean useproccessor;
 
+	/**
+	 * This Method calculates one slice of the Zero Echo.
+	 * 
+	 * @param vol
+	 *            The Volume, that contains the other Echos
+	 * @param slice
+	 *            The Number of the slice, that should be calculated
+	 * @param degree
+	 *            The degree indicates the function
+	 * @param logScale
+	 *            True means, that the values from the Image taken logarithmic
+	 * @param processor
+	 *            The Processor of the new Image/Slice
+	 * @return The RGB values of the calculated Image/Slice
+	 */
 	public int[] getZeroValues(Volume vol, int slice, int degree,
 			boolean logScale, ImageProcessor processor) {
 		if (fitter == null) {
@@ -70,7 +91,7 @@ public class VolumeFitter {
 		int rgb[] = new int[width * height];
 
 		ImageProcessor ip[] = new ImageProcessor[echo_numbers];
-		for (int i = 0; i<echo_numbers; i++){
+		for (int i = 0; i < echo_numbers; i++) {
 			ip[i] = buffimg.get(i).getProcessor();
 		}
 
@@ -93,81 +114,112 @@ public class VolumeFitter {
 		fitter.removeBadPoints();
 		fitter.fit();
 		float nullrgb = (float) fitter.getValue(0);
-		
-		if (GUI.DEBUG){
+
+		if (GUI.DEBUG) {
 			nullrgb = 3000;
 		}
 
-		boolean[][] background = new boolean[buffimg.get(0).getWidth()][ buffimg.get(0).getHeight()];
-		
+		boolean[][] background = new boolean[buffimg.get(0).getWidth()][buffimg
+				.get(0).getHeight()];
+
 		for (int x = 0; x < buffimg.get(0).getWidth(); x++) {
-			Yloop: for (int y = 0; y < buffimg.get(0).getHeight()/2; y++) {
-					pointcloud = new float[echo_numbers][3];
-					boolean possback = true;
-					for (int i = 0; i < buffimg.size(); i++) {
-						iArray = ip[i].getf(x, y);
+			Yloop: for (int y = 0; y < buffimg.get(0).getHeight() / 2; y++) {
+				pointcloud = new float[echo_numbers][3];
+				boolean possback = true;
+				for (int i = 0; i < buffimg.size(); i++) {
+					iArray = ip[i].getf(x, y);
 
-						if (iArray >= backgroundmax){
-							possback = false;
-						}
-						if (possback && i == buffimg.size()-1 && ((x>0? background[x-1][y] : true) || (y>0? background[x][y-1] : true))) {
-							processor.setf(x,y,nullrgb);
-							background[x][y] = true;
-							continue Yloop;
-						}
-						
-						pointcloud[i][0] = i + 1;
-						if (logScale) {
-							pointcloud[i][1] = (float) Math.log1p(iArray);
-						} else {
-							pointcloud[i][1] = iArray;
-						}
+					if (iArray >= backgroundmax) {
+						possback = false;
 					}
-					
-					fitter.setPoints(pointcloud);
-					fitter.fit();
-					fitter.removeBadPoints();
-					fitter.fit();
+					if (possback
+							&& i == buffimg.size() - 1
+							&& ((x > 0 ? background[x - 1][y] : true) || (y > 0 ? background[x][y - 1]
+									: true))) {
+						processor.setf(x, y, nullrgb);
+						background[x][y] = true;
+						continue Yloop;
+					}
 
-					processor.setf(x,y,(float)fitter.getValue(0));
+					pointcloud[i][0] = i + 1;
+					if (logScale) {
+						pointcloud[i][1] = (float) Math.log1p(iArray);
+					} else {
+						pointcloud[i][1] = iArray;
+					}
+				}
+
+				fitter.setPoints(pointcloud);
+				fitter.fit();
+				fitter.removeBadPoints();
+				fitter.fit();
+
+				processor.setf(x, y, (float) fitter.getValue(0));
 			}
 		}
-		
+
 		for (int x = 0; x < buffimg.get(0).getWidth(); x++) {
-			Yloop: for (int y = buffimg.get(0).getHeight()-1; y >= buffimg.get(0).getHeight()/2; y--) {
-					pointcloud = new float[echo_numbers][3];
-					boolean possback = true;
-					for (int i = 0; i < buffimg.size(); i++) {
-						iArray = ip[i].getf(x, y);
+			Yloop: for (int y = buffimg.get(0).getHeight() - 1; y >= buffimg
+					.get(0).getHeight() / 2; y--) {
+				pointcloud = new float[echo_numbers][3];
+				boolean possback = true;
+				for (int i = 0; i < buffimg.size(); i++) {
+					iArray = ip[i].getf(x, y);
 
-						if (iArray >= backgroundmax){
-							possback = false;
-						}
-						if (possback && i == buffimg.size()-1 && ((x>0? background[x-1][y] : true) || (y !=  buffimg.get(0).getHeight()-1? background[x][y+1] : true))) {
-							processor.setf(x,y,nullrgb);
-							background[x][y] = true;
-							continue Yloop;
-						}
-						
-						pointcloud[i][0] = i + 1;
-						if (logScale) {
-							pointcloud[i][1] = (float) Math.log1p(iArray);
-						} else {
-							pointcloud[i][1] = iArray;
-						}
+					if (iArray >= backgroundmax) {
+						possback = false;
 					}
-					
-					fitter.setPoints(pointcloud);
-					fitter.fit();
-					fitter.removeBadPoints();
-					fitter.fit();
+					if (possback
+							&& i == buffimg.size() - 1
+							&& ((x > 0 ? background[x - 1][y] : true) || (y != buffimg
+									.get(0).getHeight() - 1 ? background[x][y + 1]
+									: true))) {
+						processor.setf(x, y, nullrgb);
+						background[x][y] = true;
+						continue Yloop;
+					}
 
-					processor.setf(x,y,(float)fitter.getValue(0));
+					pointcloud[i][0] = i + 1;
+					if (logScale) {
+						pointcloud[i][1] = (float) Math.log1p(iArray);
+					} else {
+						pointcloud[i][1] = iArray;
+					}
+				}
+
+				fitter.setPoints(pointcloud);
+				fitter.fit();
+				fitter.removeBadPoints();
+				fitter.fit();
+
+				processor.setf(x, y, (float) fitter.getValue(0));
 			}
 		}
 		return rgb;
 	}
 
+	/**
+	 * This Method calculates a fitting function to a given ROI in a Volume.
+	 * 
+	 * @param vol
+	 *            The Volume, that contains the Echos
+	 * @param relativroi
+	 *            The roi that should be used for the calculation
+	 * @param slice
+	 *            The Slice that should be taken from the Echos
+	 * @param degree
+	 *            The Degree indicates the fittingfunction
+	 * @param logScale
+	 *            True means, that the image values taken logarithmic
+	 * @param wwidth
+	 *            The width of the Graphic
+	 * @param wheight
+	 *            The height of the Graphic
+	 * @param echonr
+	 *            The current Echo nr, that is displayed in a diffent color
+	 * @return The Graph of the fitting function, including the taken grayvalues
+	 *         of the pointcloud
+	 */
 	public BufferedImage getPlot(Volume vol, Roi relativroi, int slice,
 			int degree, boolean logScale, int wwidth, int wheight, int echonr) {
 		data = vol.getData();
@@ -235,6 +287,15 @@ public class VolumeFitter {
 		return fitter.plotVolume(logScale, wwidth, wheight, echonr);
 	}
 
+	/**
+	 * Returns the Minvalue of an Image in a given ROI.
+	 * 
+	 * @param imp
+	 *            The Data, that contains the Imageprocessor
+	 * @param roi
+	 *            The shape, where the min value is needed
+	 * @return The least value in the roi
+	 */
 	public int getMin(ImagePlus imp, Roi roi) {
 		int value = 0;
 		int minvalue = Integer.MAX_VALUE;
@@ -262,6 +323,15 @@ public class VolumeFitter {
 		return minvalue;
 	}
 
+	/**
+	 * Returns the minvalue of a ROI in a Volume and echo number.
+	 * 
+	 * @param vol
+	 *            The Volume, that contains the ROI and Image Data.
+	 * @param echon
+	 *            The Echo nr that is searched throught.
+	 * @return The min value of the roi
+	 */
 	public int getMin(Volume vol, int echon) {
 		int minvalue = 500;
 		int nextmin = 0;

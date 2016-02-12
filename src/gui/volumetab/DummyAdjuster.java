@@ -3,9 +3,19 @@ package gui.volumetab;
 import java.awt.Adjustable;
 import java.awt.event.AdjustmentListener;
 
+/**
+ * A class that can be used, to avoid nullpointer.
+ * 
+ * @author Dominik Ridder
+ *
+ */
 public class DummyAdjuster implements Adjustable {
 
+	/**
+	 * Adjuster that can be used, if a Adjustable object is needed.
+	 */
 	public static DummyAdjuster dummy = new DummyAdjuster();
+
 	@Override
 	public int getOrientation() {
 		// TODO Auto-generated method stub
@@ -15,7 +25,7 @@ public class DummyAdjuster implements Adjustable {
 	@Override
 	public void setMinimum(int min) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -27,7 +37,7 @@ public class DummyAdjuster implements Adjustable {
 	@Override
 	public void setMaximum(int max) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -39,7 +49,7 @@ public class DummyAdjuster implements Adjustable {
 	@Override
 	public void setUnitIncrement(int u) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -51,7 +61,7 @@ public class DummyAdjuster implements Adjustable {
 	@Override
 	public void setBlockIncrement(int b) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -63,7 +73,7 @@ public class DummyAdjuster implements Adjustable {
 	@Override
 	public void setVisibleAmount(int v) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -75,7 +85,7 @@ public class DummyAdjuster implements Adjustable {
 	@Override
 	public void setValue(int v) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -87,13 +97,13 @@ public class DummyAdjuster implements Adjustable {
 	@Override
 	public void addAdjustmentListener(AdjustmentListener l) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void removeAdjustmentListener(AdjustmentListener l) {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 }

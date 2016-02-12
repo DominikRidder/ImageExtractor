@@ -16,6 +16,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Vector;
 
+/**
+ * @author Dominik Ridder
+ *
+ */
 public class NIFTIVolume extends Volume {
 
 	private ImagePlus nifti;

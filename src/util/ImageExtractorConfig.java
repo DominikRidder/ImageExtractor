@@ -8,13 +8,22 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
 
+/**
+ * This class is used to save and load the config of the gui.
+ * 
+ * @author Dominik Ridder
+ *
+ */
 public class ImageExtractorConfig {
 
 	private HashMap<String, String> options = new HashMap<String, String>();
 
+	/**
+	 * Constructor that loads the Config of the ImageExtractor.
+	 */
 	public ImageExtractorConfig() {
 		File file = new File("ImageExtractor.config");
-		System.out.println("Config: "+file.getAbsolutePath());
+		System.out.println("Config: " + file.getAbsolutePath());
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -36,14 +45,34 @@ public class ImageExtractorConfig {
 		}
 	}
 
+	/**
+	 * Returns the value to a given option Name.
+	 * 
+	 * @param optionname
+	 *            The Name of the Options
+	 * @return The value of the Option or null if the option don't exist
+	 */
 	public String getOption(String optionname) {
 		return options.get(optionname);
 	}
-	
-	public void setOption(String optionname, String value){
+
+	/**
+	 * This Method sets the parameter of an Option. If the option exist, than
+	 * the value is updated. Otherwiese the option is created with the given
+	 * value.
+	 * 
+	 * @param optionname
+	 *            The Name of the Option
+	 * @param value
+	 *            The value, that should be saved for the option
+	 */
+	public void setOption(String optionname, String value) {
 		options.put(optionname, value);
 	}
 
+	/**
+	 * Saves the Options, that are currently in this objekt.
+	 */
 	public void save() {
 		File file = new File("ImageExtractor.config");
 		StringBuffer text = new StringBuffer();
@@ -55,7 +84,7 @@ public class ImageExtractorConfig {
 				}
 				if (line.length() > 0 && Character.isAlphabetic(line.charAt(0))) {
 					String parts[] = line.split("=", 2);
-					text.append(parts[0] + "=" + options.get(parts[0])+"\n");
+					text.append(parts[0] + "=" + options.get(parts[0]) + "\n");
 				} else if (line.replace("\n", "").replace(" ", "").length() == 0) {
 					text.append("\n");
 					continue;

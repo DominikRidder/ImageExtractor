@@ -32,9 +32,11 @@ import util.SortAlgorithm;
 
 /**
  * Tab of the GUI class. Used to represent a Tab, which is usefull to sort
- * Dicoms.
+ * Dicoms. These Dicoms can also be converted and renamed while Sorting them,
+ * using this Class. For more information take a look that the class
+ * util.SortAlgorithm.
  * 
- * @author dridder_local
+ * @author Dominik Ridder
  *
  */
 public class SorterTab extends JPanel implements ActionListener, MyTab,
@@ -44,9 +46,18 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * This fields should make the Code more Readable and typesafe. These values
+	 * are used to get and Cast the right element out of the left TableRows.
+	 */
 	private static final int L_STATUS = 0, L_INPUT = 1, L_OPTION = 2,
 			L_OUTPUT_NR = 3, L_BROWSE = 4, L_NIFTI = 5;
 
+	/**
+	 * This fields should make the Code more Readable and typesafe. These values
+	 * are used to get and Cast the right element out of the right TableRows.
+	 */
+	@SuppressWarnings("unused")
 	private static final int R_STATUS = 0, R_OUTPUT = 1, R_IMAGE_DIGITS = 2,
 			R_BROWSE = 3;
 
@@ -123,10 +134,18 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private GUI parent;
 
+	/**
+	 * Default Height of a row.
+	 */
 	private int rowheight;
 
 	/**
 	 * Default Constructur.
+	 * 
+	 * @param filechooser
+	 *            The Filechooser, that is used to choose Directorys.
+	 * @param gui
+	 *            The Gui that contains the SorterTab.
 	 */
 	public SorterTab(JFileChooser filechooser, GUI gui) {
 		parent = gui;
@@ -290,105 +309,6 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
-	 * This method creating a table row for the input table
-	 */
-	private JPanel createInputRow(int index) {
-		// Button for searching a dir
-		JButton browseButton = new JButton();
-		// the number at the start is used to know, where the browsed
-		// directory have to be set. The ":" is important for the splitt. At
-		// the end you will just see the a "..." in the button.
-		browseButton.setText("...");
-		GUI.setfinalSize(browseButton, new Dimension(rowheight, rowheight));
-		browseButton.setMargin(new Insets(0, 0, 0, 0));
-		browseButton.addActionListener(this);
-
-		JCheckBox tonifti = new JCheckBox();
-		GUI.setfinalSize(tonifti, new Dimension(rowheight, rowheight));
-		tonifti.addActionListener(this);
-
-		// File transfer options
-		String[] options = { "Copy", "Move" };
-		JComboBox<String> jc = new JComboBox<String>(options);
-		GUI.setfinalSize(jc, new Dimension((int) (parent.width / 13.75),
-				rowheight));
-
-		/*	private static final int L_STATUS = 0, L_INPUT = 1, L_OPTION = 2,
-			L_OUTPUT_NR = 3, L_BROWSE = 4, L_NIFTI = 5;*/
-		
-		JPanel rowPanel = new JPanel();
-		rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.LINE_AXIS));
-		// Status
-		rowPanel.add(createText("Undefined", parent.width / 11, rowheight, // L_STATUS
-				false));
-		// Input dir
-		rowPanel.add(createText("", (int) (parent.width / 7), rowheight, true)); // L_INPUT
-		// File transfer option
-		rowPanel.add(jc); // L_OPTION
-		// Output Nr field
-		rowPanel.add(createText("" + 1, 3 * rowheight, rowheight, true)); // L_OUTPUT_NR
-		// browse dir button
-		rowPanel.add(browseButton); // L_BROWSE
-		// to make it fit
-		// option for niftis
-		rowPanel.add(tonifti); // L_NIFTI
-
-		int neededwidth = 0;
-		for (Component c : rowPanel.getComponents()) {
-			neededwidth += c.getWidth();
-		}
-
-		GUI.setfinalSize(rowPanel, new Dimension(neededwidth, rowheight));
-
-		return rowPanel;
-	}
-
-	/**
-	 * This method creating a table row for the output table
-	 */
-	private JPanel createOutputRow(int index) {
-		// Button for searching a dir
-		JButton browseButton = new JButton();
-		// at the end you will just the a "..." in the button.
-		browseButton.setText("...");
-		GUI.setfinalSize(browseButton, new Dimension(rowheight, rowheight));
-		browseButton.setMargin(new Insets(0, 0, 0, 0));
-		browseButton.addActionListener(this);
-
-		JPanel rowPanel = new JPanel();
-		rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.LINE_AXIS));
-		// index field
-		rowPanel.add(createText("" + index, parent.width / 22, rowheight, false));
-		// output dir field
-		rowPanel.add(createText("", (int) (parent.width / 5.5), rowheight, true));
-		// image digits field
-		JTextField imgdigits = createText("0", parent.width / 11, rowheight,
-				true);
-		imgdigits.setToolTipText(image_digits_tooltip);
-		rowPanel.add(imgdigits);
-		// browse dir button
-		rowPanel.add(browseButton);
-		GUI.setfinalSize(rowPanel, new Dimension((int) (parent.width / 11)
-				+ (int) (parent.width / 5.5) + (int) (parent.width / 22)
-				+ rowheight, rowheight));
-		return rowPanel;
-	}
-
-	/**
-	 * Fast method for creating JTextField classes.
-	 */
-	private JTextField createText(String text, int width, int height,
-			boolean editable) {
-		JTextField textfield = new JTextField(text);
-		textfield.setEditable(editable);
-		if (!editable) {
-			textfield.setBackground(null);
-		}
-		GUI.setfinalSize(textfield, new Dimension(width, height));
-		return textfield;
-	}
-
-	/**
 	 * This method is called by the buttons of SorterTab.
 	 */
 	@SuppressWarnings("unchecked")
@@ -476,12 +396,17 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		}
 	}
 
+	/**
+	 * Method that keep updating the TextArea, as long as needed.
+	 */
 	public void updateTextArea() {
 		this.outputArea.setText(this.sortListener.toString());
 		int i = this.outputScroller.getVerticalScrollBar().getMaximum();
 		this.outputScroller.getVerticalScrollBar().setValue(i);
 		this.repaint();
 
+		// TODO: Using other way of updating, because this way you can produce a
+		// MemoryLeak in Java!
 		if (currentSortThread != null) {
 			new java.util.Timer().schedule(new java.util.TimerTask() {
 				public void run() {
@@ -494,6 +419,8 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 	/**
 	 * This method is usefull for the GUI class to decide what kind of Tab is in
 	 * the focus.
+	 * 
+	 * @return The Name of this Tab
 	 */
 	public String getClassName() {
 		return "SorterTab";
@@ -516,6 +443,134 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 							"The Output Dir is empty. Should I sort the Dicoms to the Input folder?\nChoosing yes, setting the Image Digits to 0.\n(After 10 Seconds yes is picked automatically.)",
 							"The Outputdir is empty", JOptionPane.YES_NO_OPTION);
 		}
+	}
+
+	/**
+	 * Request the preferedWidth of this Tab in the Gui.
+	 */
+	public void neededSize() {
+		parent.requestWidth(preferedWidth(), this);
+	}
+
+	/**
+	 * The PreferedWith of this Tab.
+	 * 
+	 * @return the prefferedWidth of this Tab
+	 */
+	public int preferedWidth() {
+		return parent.width;
+	}
+
+	@Override
+	public void onFocus() {
+		parent.requestWidth(preferedWidth(), this);
+		parent.getJMenuBar().repaint();
+	}
+
+	@Override
+	public void onExit() {
+
+	}
+
+	/**
+	 * This method creating a table row for the input table
+	 */
+	private JPanel createInputRow(int index) {
+		// Button for searching a dir
+		JButton browseButton = new JButton();
+		// the number at the start is used to know, where the browsed
+		// directory have to be set. The ":" is important for the splitt. At
+		// the end you will just see the a "..." in the button.
+		browseButton.setText("...");
+		GUI.setfinalSize(browseButton, new Dimension(rowheight, rowheight));
+		browseButton.setMargin(new Insets(0, 0, 0, 0));
+		browseButton.addActionListener(this);
+
+		JCheckBox tonifti = new JCheckBox();
+		GUI.setfinalSize(tonifti, new Dimension(rowheight, rowheight));
+		tonifti.addActionListener(this);
+
+		// File transfer options
+		String[] options = { "Copy", "Move" };
+		JComboBox<String> jc = new JComboBox<String>(options);
+		GUI.setfinalSize(jc, new Dimension((int) (parent.width / 13.75),
+				rowheight));
+
+		/*
+		 * private static final int L_STATUS = 0, L_INPUT = 1, L_OPTION = 2,
+		 * L_OUTPUT_NR = 3, L_BROWSE = 4, L_NIFTI = 5;
+		 */
+
+		JPanel rowPanel = new JPanel();
+		rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.LINE_AXIS));
+		// Status
+		rowPanel.add(createText("Undefined", parent.width / 11, rowheight, // L_STATUS
+				false));
+		// Input dir
+		rowPanel.add(createText("", (int) (parent.width / 7), rowheight, true)); // L_INPUT
+		// File transfer option
+		rowPanel.add(jc); // L_OPTION
+		// Output Nr field
+		rowPanel.add(createText("" + 1, 3 * rowheight, rowheight, true)); // L_OUTPUT_NR
+		// browse dir button
+		rowPanel.add(browseButton); // L_BROWSE
+		// to make it fit
+		// option for niftis
+		rowPanel.add(tonifti); // L_NIFTI
+
+		int neededwidth = 0;
+		for (Component c : rowPanel.getComponents()) {
+			neededwidth += c.getWidth();
+		}
+
+		GUI.setfinalSize(rowPanel, new Dimension(neededwidth, rowheight));
+
+		return rowPanel;
+	}
+
+	/**
+	 * This method creating a table row for the output table
+	 */
+	private JPanel createOutputRow(int index) {
+		// Button for searching a dir
+		JButton browseButton = new JButton();
+		// at the end you will just the a "..." in the button.
+		browseButton.setText("...");
+		GUI.setfinalSize(browseButton, new Dimension(rowheight, rowheight));
+		browseButton.setMargin(new Insets(0, 0, 0, 0));
+		browseButton.addActionListener(this);
+
+		JPanel rowPanel = new JPanel();
+		rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.LINE_AXIS));
+		// index field
+		rowPanel.add(createText("" + index, parent.width / 22, rowheight, false));
+		// output dir field
+		rowPanel.add(createText("", (int) (parent.width / 5.5), rowheight, true));
+		// image digits field
+		JTextField imgdigits = createText("0", parent.width / 11, rowheight,
+				true);
+		imgdigits.setToolTipText(image_digits_tooltip);
+		rowPanel.add(imgdigits);
+		// browse dir button
+		rowPanel.add(browseButton);
+		GUI.setfinalSize(rowPanel, new Dimension((int) (parent.width / 11)
+				+ (int) (parent.width / 5.5) + (int) (parent.width / 22)
+				+ rowheight, rowheight));
+		return rowPanel;
+	}
+
+	/**
+	 * Fast method for creating JTextField classes.
+	 */
+	private JTextField createText(String text, int width, int height,
+			boolean editable) {
+		JTextField textfield = new JTextField(text);
+		textfield.setEditable(editable);
+		if (!editable) {
+			textfield.setBackground(null);
+		}
+		GUI.setfinalSize(textfield, new Dimension(width, height));
+		return textfield;
 	}
 
 	/**
@@ -678,25 +733,6 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		// things that have to be done, so the next sort can be called
 		currentSortThread = null;
 		startOrCancelSort.setText("Start Sort");
-	}
-
-	public void neededSize() {
-		parent.requestWidth(preferedWidth(), this);
-	}
-
-	public int preferedWidth() {
-		return parent.width;
-	}
-
-	@Override
-	public void onFocus() {
-		parent.requestWidth(preferedWidth(), this);
-		parent.getJMenuBar().repaint();
-	}
-
-	@Override
-	public void onExit() {
-
 	}
 
 }

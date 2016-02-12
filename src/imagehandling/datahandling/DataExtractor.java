@@ -6,7 +6,7 @@ import ij.ImagePlus;
  * This interface defines the methods, that can be called, to get the data of an
  * image.
  * 
- * @author dridder_local
+ * @author Dominik Ridder
  *
  */
 public interface DataExtractor {

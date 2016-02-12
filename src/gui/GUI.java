@@ -47,14 +47,27 @@ import util.ImageExtractorConfig;
 public class GUI extends JFrame implements ActionListener, ChangeListener,
 		Runnable, WindowListener {
 
+	/**
+	 * Boolean Value that can be used for Test's. Note that conditions like if
+	 * (DEBUG) {...} can be optimised by the compiler in that way, that there is
+	 * no if condition at this place.
+	 */
 	public static final boolean DEBUG = false;
-	
+
+	/**
+	 * Temporary boolean that was used, to test a new size System on other
+	 * Operating Systems. In case that this new way of sizing would have caused
+	 * problems, it could be dissabled quickly and easy with this boolean.
+	 * Nevertheless this boolean should be removed in future.
+	 */
+	@Deprecated
 	public static boolean testnewsize = true;
-	
+
 	/**
 	 * Main method, to start the GUI.
 	 * 
 	 * @param agrs
+	 *            This value is currently ignored.
 	 */
 	public static void main(String[] agrs) {
 		new GUI(true, true);
@@ -66,10 +79,14 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * Int values that are used, to make code more readable.
+	 * Int value that represents the right click Button on the Mouse.
 	 */
-	public static final int RIGHT_CLICK = MouseEvent.BUTTON3,
-			LEFT_CLICK = MouseEvent.BUTTON1;
+	public static final int RIGHT_CLICK = MouseEvent.BUTTON3;
+	
+	/**
+	 * Int value that represents the left click Button on the Mouse.
+	 */
+	public static final int LEFT_CLICK = MouseEvent.BUTTON1;
 
 	/**
 	 * The tabber managing the Tabs.
@@ -120,17 +137,41 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 */
 	public int height;
 
-	JMenuBar menuBar;
+	/**
+	 * MenuBar, that contains the MenueOptions of the Gui displayed in the head
+	 * of the Gui. The MenuBar containing options like creating a new Tab or a
+	 * new Window.
+	 */
+	private JMenuBar menuBar;
 
-	MyTab currentTab;
+	/**
+	 * The Tab in the Tabbar, that is currently displayed in the Gui.
+	 */
+	private MyTab currentTab;
 
+	/**
+	 * The Panel of the Gui, that contains a Label for displaying Text and a
+	 * Progressbar, that can show a Progress of a prozess as a bar.
+	 */
 	private JPanel statusPanel;
+
+	/**
+	 * This Label can be used, to displaying the Text in the Statusbar.
+	 */
 	private JLabel statusLabel;
+
+	/**
+	 * This Progressbar can be used to visualize the progress of a task at the
+	 * Buttom of the Gui.
+	 */
 	private JProgressBar progressBar;
-	
+
+	/**
+	 * This boolean is true, if the underlying System is a linux based OS.
+	 */
 	public static boolean islinux = System.getProperty("os.name").toLowerCase()
 			.contains("linux");
-	
+
 	/**
 	 * Constructs a new GUI. The GUI can be controlled with a Mouse or even
 	 * based on Java code.
@@ -147,7 +188,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension d = tk.getScreenSize();
-//		System.out.println("Dots per inch: "+tk.getScreenResolution());
+		// System.out.println("Dots per inch: "+tk.getScreenResolution());
 		System.out.println("Screen width " + d.width);
 		System.out.println("Screen height " + d.height);
 		width = (int) (((double) d.width) / 2.5);
@@ -156,9 +197,9 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		width = width < 1100 ? width : 1100;
 		height = height < 550 ? height : 550;
 
-		width = (islinux ? width : (int)(width*1.5));
-//		System.out.println(System.getProperty("os.name"));
-		
+		width = (islinux ? width : (int) (width * 1.5));
+		// System.out.println(System.getProperty("os.name"));
+
 		setfinalSize(this, new Dimension(width, height));
 
 		filechooser = new JFileChooser();
@@ -208,16 +249,16 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		setLocationRelativeTo(null);
 		setTitle("ImageExtractor");
 		setResizable(true);
-		
+
 		statusPanel = new JPanel();
-//		statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
+		// statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
 		this.add(statusPanel, BorderLayout.SOUTH);
 		statusPanel.setPreferredSize(new Dimension(this.getWidth(), 20));
 		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
 		statusLabel = new JLabel("");
 		statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		statusPanel.add(statusLabel);
-		
+
 		progressBar = new JProgressBar();
 		progressBar.setVisible(false);
 		progressBar.setStringPainted(true);
@@ -227,11 +268,11 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		statusPanel.add(progressBar);
 
 		statusPanel.setVisible(true);
-		
+
 		setVisible(visible);
 
 		height -= statusPanel.getHeight();
-		
+
 		currentTab = (MyTab) tabber.getSelectedComponent();
 		currentTab.onFocus();
 
@@ -247,28 +288,26 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		lifeupdate();
 	}
 
-//	public void StatusBarVisible(boolean visible) {
-//		if (visible) {
-//			if (!statusPanel.isVisible()){
-//				statusPanel.setVisible(visible);
-////				this.setSize(this.getWidth(), this.getHeight()+statusPanel.getHeight());
-//			}
-//		} else{
-//			if (statusPanel.isVisible()){
-//				statusPanel.setVisible(visible);
-////				this.setSize(this.getWidth(), this.getHeight()-statusPanel.getHeight());
-//			}
-//		}
-//	}
-	
+	/**
+	 * Getter for the StatusLabel. The StatusLabel can be used to print any text
+	 * information at the Bottom of the Gui into the Statusbar.
+	 * 
+	 * @return The StatusLabel of the Gui.
+	 */
 	public JLabel getStatusLabel() {
 		return statusLabel;
 	}
-	
+
+	/**
+	 * Getter for the ProgressBar. The Progressbar can be use to display the
+	 * progress of a Task in the Statusbar.
+	 * 
+	 * @return The ProgressBar of the Gui.
+	 */
 	public JProgressBar getProgressBar() {
 		return progressBar;
 	}
-	
+
 	/**
 	 * Method, to find, if the GUI is running.
 	 * 
@@ -407,7 +446,8 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	public void requestWidth(int width, MyTab requester) {
 		if (tabber.getComponentAt(tabber.getSelectedIndex()).equals(requester)) {
 			if (width != this.getWidth()) {
-				setfinalSize(this, new Dimension(width, height+statusPanel.getHeight()));
+				setfinalSize(this,
+						new Dimension(width, height + statusPanel.getHeight()));
 			}
 		}
 	}
@@ -448,18 +488,33 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	class MyCloseActionHandler implements ActionListener {
 
 		/**
-		 * Important for the Tab, to find itself.
+		 * Important to track the Tab, that should be Observed.
 		 */
 		private String tabName;
 
+		/**
+		 * Construkutur, that initialize a new MyCloseActionHandler Object to
+		 * the given Tab Name.
+		 * 
+		 * @param tabName
+		 *            The Name of the Tab, that uses this CloseActionHandler.
+		 */
 		public MyCloseActionHandler(String tabName) {
 			this.tabName = tabName;
 		}
 
+		/**
+		 * Getter for the tabName.
+		 * 
+		 * @return The Name of the Tab, that is observed by this object.
+		 */
 		public String getTabName() {
 			return tabName;
 		}
 
+		/**
+		 * Simple ActionListener Method for close actions.
+		 */
 		public void actionPerformed(ActionEvent evt) {
 			// check if the is a Tab to close
 			int index = tabber.indexOfTab(getTabName());
@@ -478,6 +533,11 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 	}
 
+	/**
+	 * This Method detects changes in the Tabbar. The Method onExit() gets
+	 * called on the old Tab, if there was a old tab. Also the Method onFocus()
+	 * is called at the new Tab.
+	 */
 	public void stateChanged(ChangeEvent e) {
 		if (e.getSource() == tabber) {
 			if (currentTab != null) {
@@ -494,10 +554,20 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		}
 	}
 
+	/**
+	 * Getter for the JMenuBar of this Gui.
+	 * 
+	 * @return The JMenuBar at the bottom of the Gui.
+	 */
 	public JMenuBar getJMenueBar() {
 		return menuBar;
 	}
 
+	/**
+	 * This Method returns the current Tab.
+	 * 
+	 * @return The Current Tab if there is a Tab; null otherwiese.
+	 */
 	public MyTab getCurrentTab() {
 		Component current = tabber.getSelectedComponent();
 		if (current != null) {
@@ -507,11 +577,19 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		}
 	}
 
+	/**
+	 * This Method is used, to keep the number of Windows up to date.
+	 */
 	@Override
 	public void windowOpened(WindowEvent e) {
 		windows++;
 	}
 
+	/**
+	 * This Method is used, to keep the number of Windows up to date. If all
+	 * windows are closed and GUI constructur was called with GUI(true, x), than
+	 * System.exit(1) is executed to make sure that this thread terminates.
+	 */
 	@Override
 	public void windowClosing(WindowEvent e) {
 		windows--;
@@ -520,25 +598,40 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		}
 	}
 
+	/**
+	 * Unused.
+	 */
 	@Override
 	public void windowClosed(WindowEvent e) {
 	}
 
+	/**
+	 * Unused.
+	 */
 	@Override
 	public void windowIconified(WindowEvent e) {
 
 	}
 
+	/**
+	 * Unused.
+	 */
 	@Override
 	public void windowDeiconified(WindowEvent e) {
 
 	}
 
+	/**
+	 * Unused.
+	 */
 	@Override
 	public void windowActivated(WindowEvent e) {
 
 	}
 
+	/**
+	 * Unused.
+	 */
 	@Override
 	public void windowDeactivated(WindowEvent e) {
 

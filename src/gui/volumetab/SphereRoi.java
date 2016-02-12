@@ -8,6 +8,10 @@ import imagehandling.headerhandling.KeyMap;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
+/**
+ * @author Dominik Ridder
+ *
+ */
 public class SphereRoi extends Roi implements Roi3D {
 
 	/**
@@ -16,6 +20,18 @@ public class SphereRoi extends Roi implements Roi3D {
 	private static final long serialVersionUID = 1L;
 	private int z;
 
+	/**
+	 * Creates a new SphereRoi to the given Position and with the given radius.
+	 * 
+	 * @param x
+	 *            The x coordinate of the roi
+	 * @param y
+	 *            The y coordinate of the roi
+	 * @param z
+	 *            The z coordinate of the roi
+	 * @param radius
+	 *            The radius of the roi
+	 */
 	public SphereRoi(double x, double y, int z, double radius) {
 		super(x, y, z, 2 * radius);
 		this.z = z;

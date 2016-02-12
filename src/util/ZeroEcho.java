@@ -10,8 +10,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
+/**
+ * This class calculates to a given Volume the estimated Zero Echo.
+ * 
+ * @author Dominik Ridder
+ *
+ */
 public class ZeroEcho implements Runnable {
 
+	/**
+	 * This ArrayList contains the slices of the Zero Echo.
+	 */
 	public ArrayList<ImagePlus> echo0;
 	private Volume vol;
 	private VolumeTab parent;
@@ -27,6 +36,21 @@ public class ZeroEcho implements Runnable {
 
 	private PropertyChangeListener progresslistener;
 
+	/**
+	 * This Method calculates to the given parameter a Zero Echo.
+	 * 
+	 * @param vol
+	 *            The Volume, that contains the other Echos
+	 * @param volumeTab
+	 *            The VolumeTab, that calls this function (this is used to
+	 *            return the ZeroEcho)
+	 * @param fittingfunction
+	 *            The Fittingfunction, that sshould be used
+	 * @param log
+	 *            If true, than the values of the Image taken logarithmic
+	 * @param progress
+	 *            The Listener, to display the Progress
+	 */
 	public ZeroEcho(Volume vol, VolumeTab volumeTab, int fittingfunction,
 			boolean log, PropertyChangeListener progress) {
 		this.progresslistener = progress;
@@ -36,10 +60,17 @@ public class ZeroEcho implements Runnable {
 		takelog = log;
 	}
 
+	/**
+	 * Method to cancle the Algorithmen (thread save).
+	 */
 	public void Cancle() {
 		canceld = true;
 	}
 
+	/**
+	 * Starts the calculation of the ZeroEcho. Called by the thread method
+	 * start.
+	 */
 	public void run() {
 		canceld = false;
 		int cores = Runtime.getRuntime().availableProcessors();
@@ -141,6 +172,15 @@ public class ZeroEcho implements Runnable {
 		}
 	}
 
+	/**
+	 * Privat method, that is used to splitt the Task into smaller task. This is
+	 * used for multi threading.
+	 * 
+	 * @param todo
+	 *            The amount of slices, that should be calculated.
+	 * @param offset
+	 *            The start of the first slice, that should be calculated.
+	 */
 	private void CalculateZeroEcho(int todo, int offset) {
 		try {
 			VolumeFitter volfit = new VolumeFitter();
@@ -152,11 +192,12 @@ public class ZeroEcho implements Runnable {
 				echo0.get(s).setProcessor(
 						vol.getSlice(s).getData().getProcessor()
 								.createProcessor(width, height));
-				volfit.getZeroValues(vol, s, degree, takelog, echo0.get(s).getProcessor());
-				
-//				BufferedImage next = echo0.get(s).getBufferedImage();
-//				next.setRGB(0, 0, width, height, rgbArray, 0, width);
-//				echo0.get(s).setImage(next);
+				volfit.getZeroValues(vol, s, degree, takelog, echo0.get(s)
+						.getProcessor());
+
+				// BufferedImage next = echo0.get(s).getBufferedImage();
+				// next.setRGB(0, 0, width, height, rgbArray, 0, width);
+				// echo0.get(s).setImage(next);
 				solvedtasks++;
 			}
 		} catch (Exception e) {

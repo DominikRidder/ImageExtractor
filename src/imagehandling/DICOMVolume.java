@@ -15,6 +15,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Vector;
 
+/**
+ * @author Dominik Ridder
+ *
+ */
 public class DICOMVolume extends Volume {
 	/**
 	 * This method calls the Image.getKeyWords() method. Take a look at the
@@ -30,6 +34,8 @@ public class DICOMVolume extends Volume {
 	 * This method calls the Image.getKeyWords(str) method. Take a look at the
 	 * Java-doc of Image.getKeyWords(String str) for more informations.
 	 * 
+	 * @param str
+	 *            An easy Wildcard string.
 	 * @return Attribute Names, that matches to the given String
 	 */
 	public static String getKeyWords(String str) {
@@ -119,6 +125,7 @@ public class DICOMVolume extends Volume {
 	 * correct, while this method throws a RuntimeException.
 	 * 
 	 * @param path
+	 * @param volumetab 
 	 */
 	public DICOMVolume(String path, VolumeTab volumetab) {
 		resetTextOptions();
@@ -197,6 +204,7 @@ public class DICOMVolume extends Volume {
 	 * information of the Images.
 	 * 
 	 * @param outputdir
+	 *            The Destinationfolder of the header files.
 	 */
 	public void extractHeader(String outputdir) {
 		int excounter = 0;
@@ -269,7 +277,9 @@ public class DICOMVolume extends Volume {
 	 * 0, for the first slice.
 	 *
 	 * @param en
+	 *            The KeyMap enum, that represents the searched value.
 	 * @param slice
+	 *            The Slice, which Attribute should be returned.
 	 * @return The Attribute of the Image with the Image number slice (-1) if
 	 *         the enum is not null; "&lt;&lt;no key given&gt;&gt;" else
 	 */
@@ -287,7 +297,9 @@ public class DICOMVolume extends Volume {
 	 * which contains the indizies of the slices, which should be used.
 	 * 
 	 * @param en
+	 *            The KeyMap enum, that represents the searched value.
 	 * @param slices
+	 *            The slices, where the header should be searched for the en.
 	 * @return The Attribute that Matches the enum. For each slice one array
 	 *         element.
 	 */
@@ -307,6 +319,7 @@ public class DICOMVolume extends Volume {
 	 * console. This method always returns the attribute of the last image.
 	 * 
 	 * @param key
+	 *            An String, that should be searched in the Header.
 	 * @return The Information in the Header, that matches the key
 	 */
 	public String getAttribute(String key) {
@@ -368,7 +381,9 @@ public class DICOMVolume extends Volume {
 	 * which contains the indizies of the slices, which should be used.
 	 * 
 	 * @param key
+	 *            The KeyMap enum, that represents the searched value.
 	 * @param slices
+	 *            The slices, which value you need.
 	 */
 	public String[] getAttribute(String key, Vector<Integer> slices) {
 		Integer[] a = new Integer[0];
@@ -385,6 +400,7 @@ public class DICOMVolume extends Volume {
 	 * ArrayList.
 	 *
 	 * @param en
+	 *            The KeyMap enum, that represents the searched value.
 	 */
 	public String[] getAttributeForEachSlice(KeyMap en) {
 		if (en == null) {
@@ -406,6 +422,7 @@ public class DICOMVolume extends Volume {
 	 * searchparameter.
 	 * 
 	 * @param key
+	 *            The String, that should be searched in the header lines.
 	 */
 	public String[] getAttributeForEachSlice(String key) {
 		if (key == null) {
@@ -431,7 +448,10 @@ public class DICOMVolume extends Volume {
 	 * Returning a one dimensional array, with the informations inside.
 	 * 
 	 * @param key
+	 *            The String, that should be searched in the header lines.
 	 * @param slice
+	 *            The Slice, which header should be searched throught for the
+	 *            given key.
 	 */
 	public String[] getAttributeList(String key, int slice) {
 		return getAttribute(key, slice).split("\n");
@@ -441,7 +461,10 @@ public class DICOMVolume extends Volume {
 	 * Returning a two dimensional array, with the informations inside.
 	 * 
 	 * @param key
+	 *            The String, that should be searched in the header lines.
 	 * @param slices
+	 *            The Slices, which header should be searched throught for the
+	 *            given key.
 	 */
 	public String[][] getAttributeList(String key, Vector<Integer> slices) {
 		String[][] str = new String[size()][];
@@ -456,6 +479,7 @@ public class DICOMVolume extends Volume {
 	 * Returning a two dimensional array, with the informations inside.
 	 * 
 	 * @param key
+	 *            The String, that should be searched in the header lines.
 	 */
 	public String[][] getAttributeListForEachSlice(String key) {
 		String[][] str = new String[size()][];
@@ -503,6 +527,7 @@ public class DICOMVolume extends Volume {
 	 * Returns the specific Image, starting with int i = 0.
 	 *
 	 * @param i
+	 *            The number of the Slice, that should be returned.
 	 */
 	public Image getSlice(int i) {
 		int size = slices.size();

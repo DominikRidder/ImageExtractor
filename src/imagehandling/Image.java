@@ -22,11 +22,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * The Image class is at the moment used for Dicoms and Niftis. You can use it to get
- * informations about the image, to test if you have a Dicom and to exctract the
- * Image of a file or the header of the file.
+ * The Image class is at the moment used for Dicoms and Niftis. You can use it
+ * to get informations about the image, to test if you have a Dicom and to
+ * exctract the Image of a file or the header of the file.
  * 
- * @author dridder_local
+ * @author Dominik Ridder
  *
  */
 public class Image implements Comparable<Image> {
@@ -56,6 +56,9 @@ public class Image implements Comparable<Image> {
 	 */
 	private ImagePlus data;
 
+	/**
+	 * @param data
+	 */
 	public void setData(ImagePlus data) {
 		this.data = data;
 	}
@@ -64,6 +67,8 @@ public class Image implements Comparable<Image> {
 	 * Simple constructor. The path should be the path of the image.If the name
 	 * of the image dont end with a known ending, the images handeld as a IMA
 	 * image.
+	 * 
+	 * @param path
 	 */
 	public Image(String path) {
 		String type = "";
@@ -106,6 +111,8 @@ public class Image implements Comparable<Image> {
 	 * Returning all Implemented KeyWords in a String, where one line is one
 	 * Attribute Name.
 	 * 
+	 * @return
+	 * 
 	 */
 	public static String getKeyWords() {
 		ArrayList<String> words = new ArrayList<String>();
@@ -131,6 +138,7 @@ public class Image implements Comparable<Image> {
 	 * regular expression.
 	 * 
 	 * @param regularExpression
+	 * @return
 	 */
 	public static String getKeyWords(String regularExpression) {
 		ArrayList<String> words = new ArrayList<String>();
@@ -356,6 +364,12 @@ public class Image implements Comparable<Image> {
 		data = de.getData(path);
 	}
 
+	/**
+	 * This Method sets and saves the Roi on an Image.
+	 * 
+	 * @param roi
+	 *            The Roi that should be save at this Image.
+	 */
 	public void setROI(Roi roi) {
 		this.roi = roi;
 		if (data == null) {
@@ -364,6 +378,22 @@ public class Image implements Comparable<Image> {
 		data.setRoi(roi);
 	}
 
+	/**
+	 * Creates, sets and saves a Roi on the Image.
+	 * 
+	 * @param roitype
+	 *            the roi type
+	 * @param x
+	 *            coordinate from the upperleft corner of the rectanlge, that
+	 *            contains the Roi
+	 * @param y
+	 *            coordinate from the upperleft corner of the rectanlge, that
+	 *            contains the Roi
+	 * @param width
+	 *            of the rectangle, that contains the Roi
+	 * @param height
+	 *            of the rectangle, that contains the Roi
+	 */
 	public void setROI(int roitype, int x, int y, int width, int height) {
 		switch (roitype) {
 		case ROI_RECTANGLE:
@@ -423,27 +453,12 @@ public class Image implements Comparable<Image> {
 		KeyMap testdata[] = { KeyMap.KEY_PROTOCOL_NAME, KeyMap.KEY_PATIENT_ID,
 				KeyMap.KEY_IMAGE_NUMBER };
 
-		// PrintStream stdout = System.out;
-		// try {
-		// System.setOut(new PrintStream(new
-		// File("/opt/dridder_local/Test/Syntaxfehler")){
-		// // public void print(String s){}
-		// // public void println(String s){}
-		// // public void print(char c){}
-		// // public PrintStream append(CharSequence cs){return null;}
-		// });
-		// } catch (FileNotFoundException e) {
-		//
-		// }
-
 		for (KeyMap test : testdata) {
 			String k = DicomTools.getTag(imp, test.getValue("IMA"));
 			if (k == null) {
-				// System.setOut(stdout);
 				return false;
 			}
 		}
-		// System.setOut(stdout);
 		return true;
 	}
 
@@ -535,6 +550,7 @@ public class Image implements Comparable<Image> {
 	 * Returns Dicom attributes, to a given enum of the KeyMap.
 	 * 
 	 * @param en
+	 *            The KeyMap enum, that descripes the needed header value.
 	 * 
 	 */
 	public String getAttributeDicom(KeyMap en) {
@@ -542,6 +558,13 @@ public class Image implements Comparable<Image> {
 		return new DicomHeaderExtractor().getInfo(this.path, key);
 	}
 
+	/**
+	 * Returns Dicom attributes, to a given enum of the KeyMap.
+	 * 
+	 * @param en
+	 *            The KeyMap enum, that descripes the needed header value.
+	 * 
+	 */
 	public String[] getAttributesDicom(KeyMap en[]) {
 		return Image.getAttributesDicom(path, en);
 	}
@@ -552,7 +575,9 @@ public class Image implements Comparable<Image> {
 	 * initializing Images.
 	 * 
 	 * @param path
+	 *            The Path of the Dicom, that contains the needed informations.
 	 * @param en
+	 *            The KeyMap enums, that descripes the needed header values.
 	 * 
 	 */
 	public static String[] getAttributesDicom(String path, KeyMap en[]) {

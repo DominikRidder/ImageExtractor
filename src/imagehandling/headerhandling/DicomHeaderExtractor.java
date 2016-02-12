@@ -14,7 +14,7 @@ import ij.util.WildcardMatch;
  * Implemtation of the interface HeaderExtractor for the image type "dcm"
  * ("IMA").
  * 
- * @author dridder_local
+ * @author Dominik Ridder
  *
  */
 public class DicomHeaderExtractor implements HeaderExtractor {

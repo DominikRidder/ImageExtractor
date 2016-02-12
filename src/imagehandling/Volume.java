@@ -12,17 +12,22 @@ import java.util.Vector;
 /**
  * The Volume Class is a container for images.
  * 
- * @author dridder_local
+ * @author Dominik Ridder
  *
  */
 public abstract class Volume {
 
+	/**
+	 * The location of the Volume in the Filesystem of the Operating System.
+	 */
 	protected String path;
 
 	/**
 	 * This method calls the Image.getKeyWords() method. Take a look at the
 	 * Java-doc of Image.getKeyWords() for more informations.
 	 * 
+	 * @return The diffent known Value Names seperated by a newline, that can be
+	 *         in a Dicom header.
 	 */
 	public static String getKeyWords() {
 		return Image.getKeyWords();
@@ -32,6 +37,7 @@ public abstract class Volume {
 	 * This method calls the Image.getKeyWords(str) method. Take a look at the
 	 * Java-doc of Image.getKeyWords(String str) for more informations.
 	 * 
+	 * @return The KeyWords, that contains the string.
 	 */
 	public static String getKeyWords(String str) {
 		return Image.getKeyWords(str);

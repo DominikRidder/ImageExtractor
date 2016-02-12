@@ -3,10 +3,18 @@ package imagehandling.headerhandling;
 import ij.ImagePlus;
 import ij.plugin.NiftiHeader;
 
+/**
+ * @author Dominik Ridder
+ *
+ */
 public class NIFTIHeaderWriter {
 
 	private StringBuilder header;
 
+	/**
+	 * @param data
+	 * @return
+	 */
 	public String writeHeader(ImagePlus data) {
 		header = new StringBuilder();
 		NiftiHeader info = (NiftiHeader) data.getProperty("nifti");
