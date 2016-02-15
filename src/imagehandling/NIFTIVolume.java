@@ -30,6 +30,12 @@ public class NIFTIVolume extends Volume {
 
 	NiftiHeader nifti_hdr;
 
+	/**
+	 * Creates a new Nifti Volume.
+	 * 
+	 * @param path
+	 *            The path of the Volume
+	 */
 	public NIFTIVolume(String path) {
 		Nifti_Reader nr = new Nifti_Reader();
 		nr.run(path);
@@ -57,20 +63,6 @@ public class NIFTIVolume extends Volume {
 		fi.fileName = file.getName();
 
 		nifti.setFileInfo(fi);
-	}
-
-	@Deprecated
-	private ImagePlus createImageData(int imagenumber) {
-		nifti.setSlice(imagenumber);
-		FileInfo origfi = nifti.getOriginalFileInfo();
-
-		ImagePlus data = new ImagePlus("image " + imagenumber,
-				nifti.getBufferedImage());
-		data.setFileInfo(origfi);
-		data.setCalibration(nifti.getCalibration());
-
-		data.setProperty("nifti", nifti.getProperty("nifti"));
-		return data;
 	}
 
 	@Override
@@ -298,6 +290,13 @@ public class NIFTIVolume extends Volume {
 
 	}
 
+	/**
+	 * Creates a header to the given Nifti data.
+	 * 
+	 * @param data
+	 *            The Nifti data
+	 * @return The header extracted out of the Data
+	 */
 	public static String createHeader(ImagePlus data) {
 		NIFTIHeaderWriter nhw = new NIFTIHeaderWriter();
 

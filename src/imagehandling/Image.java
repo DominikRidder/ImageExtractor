@@ -31,6 +31,7 @@ import java.util.Collections;
  */
 public class Image implements Comparable<Image> {
 
+	@SuppressWarnings("javadoc")
 	public static final int ROI_RECTANGLE = 1, ROI_POINT = 2, ROI_OVAL = 3,
 			ROI_POLYGON = 4, ROI_FREEHAND = 5;
 
@@ -182,6 +183,8 @@ public class Image implements Comparable<Image> {
 	/**
 	 * This method returns the current roi.
 	 * 
+	 * @return The current roi
+	 * 
 	 * 
 	 */
 	public Roi getRoi() {
@@ -191,6 +194,8 @@ public class Image implements Comparable<Image> {
 	/**
 	 * Returns the Image typ. Known Implementation in this class: IMA and dcm.
 	 * 
+	 * @return The Image typ
+	 * 
 	 */
 	public String getType() {
 		return type;
@@ -198,6 +203,8 @@ public class Image implements Comparable<Image> {
 
 	/**
 	 * Returns the path of the Image as a String.
+	 * 
+	 * @return The path of the Image as a String.
 	 * 
 	 */
 	public String getPath() {
@@ -211,6 +218,7 @@ public class Image implements Comparable<Image> {
 	 * Else you only have 1 row and 1 value.
 	 * 
 	 * @param key
+	 * @return One or more Attriubtes, to a given String.
 	 */
 	public String getAttribute(String key) {
 		TextOptions topt = new TextOptions();
@@ -236,6 +244,7 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @param key
 	 * @param topt
+	 * @return The information ,to the given key, and the given textoptions
 	 */
 	public String getAttribute(String key, TextOptions topt) {
 		if (!key.contains("*") && !key.contains("?")) {
@@ -257,6 +266,10 @@ public class Image implements Comparable<Image> {
 
 	/**
 	 * Returns the attribute of the Image to the given key.
+	 * 
+	 * @param en
+	 *            The enum, that represents the Information in the header
+	 * @return The attribute of the Image to the given key.
 	 */
 	public String getAttribute(KeyMap en) {
 		TextOptions topt = new TextOptions();
@@ -269,12 +282,14 @@ public class Image implements Comparable<Image> {
 	}
 
 	/**
-	 * Returns the a information from the header of the Image to the given enum
+	 * Returns the information from the header of the Image to the given enum
 	 * and the given Textoption. The searchoptions of the Textoptions are
 	 * ignored in this case.
 	 * 
 	 * @param en
 	 * @param topt
+	 * @return The information from the header of the Image to the given enum
+	 *         and the given Textoption.
 	 */
 	public String getAttribute(KeyMap en, TextOptions topt) {
 		TextOptions to = new TextOptions();
@@ -303,6 +318,9 @@ public class Image implements Comparable<Image> {
 	 * Returns all key matching sepperated in an array.
 	 * 
 	 * @param key
+	 *            The key to search for in the values.
+	 * 
+	 * @return The lines, that containes the key
 	 */
 	public String[] getAttributeList(String key) {
 		return getAttribute(key).split("\n");
@@ -313,6 +331,7 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @param key
 	 * @param topt
+	 * @return The formated lines to the gives key
 	 * 
 	 */
 	public String[] getAttributeList(String key, TextOptions topt) {
@@ -321,6 +340,8 @@ public class Image implements Comparable<Image> {
 
 	/**
 	 * Returns the Header of the Image, given by the path.
+	 * 
+	 * @return The Header information of this Image
 	 */
 	public String getHeader() {
 		HeaderExtractor he = null;
@@ -343,6 +364,8 @@ public class Image implements Comparable<Image> {
 
 	/**
 	 * Return the Image, that is in the data of this file, as a BufferedImage.
+	 * 
+	 * @return The Data of this Image
 	 */
 	public ImagePlus getData() {
 		if (data == null) {
@@ -351,6 +374,9 @@ public class Image implements Comparable<Image> {
 		return data;
 	}
 
+	/**
+	 * Method for loading the data.
+	 */
 	public void loadData() {
 		DataExtractor de = null;
 		switch (type) {
@@ -418,33 +444,28 @@ public class Image implements Comparable<Image> {
 		setROI(roi);
 	}
 
+	/**
+	 * Sets the roi, with the given position. If the Roi take any with or
+	 * height, than this height is set to 10.
+	 * 
+	 * @param roitype
+	 *            The integer that indicates the roi
+	 * @param x
+	 *            The x coordinate of the Roi
+	 * @param y
+	 *            The y coordinate of the Roi
+	 */
 	public void setROI(int roitype, int x, int y) {
-		switch (roitype) {
-		case 1:
-			roi = new Roi(x, y, 10, 10);
-			break;
-		case 2:
-			roi = new OvalRoi(x, y, 10, 10);
-			break;
-		case 3:
-			roi = new PointRoi(x, y);
-			break;
-		case 4:
-			roi = new FreehandRoi(x, y, null);
-			break;
-		case 5:
-			roi = new PolygonRoi(new Polygon(), PolygonRoi.POLYGON);
-			break;
-		default:
-			roi = null;
-			break;
-		}
-		setROI(roi);
+		setROI(roitype, x, y, 10, 10);
 	}
 
 	/**
 	 * This method trys to find out, if the Initialized path can be handeld as a
 	 * Dicom.
+	 * 
+	 * @param path
+	 *            The path of the potential Dicom
+	 * @return True if the file can may be handled as a Dicom; false otherwiese
 	 * 
 	 */
 	public static boolean isDicom(Path path) {
@@ -538,6 +559,7 @@ public class Image implements Comparable<Image> {
 	 * Return a String, which contains the Absolute path name of the folder,
 	 * which is above this image.
 	 * 
+	 * @return The Folder, that contains this Image
 	 * 
 	 */
 	public String getParentFolder() {
@@ -551,6 +573,7 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @param en
 	 *            The KeyMap enum, that descripes the needed header value.
+	 * @return The Dicom attribute, that belong to the enum
 	 * 
 	 */
 	public String getAttributeDicom(KeyMap en) {
@@ -563,6 +586,7 @@ public class Image implements Comparable<Image> {
 	 * 
 	 * @param en
 	 *            The KeyMap enum, that descripes the needed header value.
+	 * @return The Dicom attributes as a String, that belong to the enums.
 	 * 
 	 */
 	public String[] getAttributesDicom(KeyMap en[]) {
@@ -578,6 +602,7 @@ public class Image implements Comparable<Image> {
 	 *            The Path of the Dicom, that contains the needed informations.
 	 * @param en
 	 *            The KeyMap enums, that descripes the needed header values.
+	 * @return The needed information of the dicom header
 	 * 
 	 */
 	public static String[] getAttributesDicom(String path, KeyMap en[]) {

@@ -37,16 +37,31 @@ public abstract class Volume {
 	 * This method calls the Image.getKeyWords(str) method. Take a look at the
 	 * Java-doc of Image.getKeyWords(String str) for more informations.
 	 * 
+	 * @param str
+	 *            The str, that should be searched in the KeyWords
+	 * 
 	 * @return The KeyWords, that contains the string.
 	 */
 	public static String getKeyWords(String str) {
 		return Image.getKeyWords(str);
 	}
 
+	/**
+	 * This method, tells you if this volume is empty.
+	 * 
+	 * @return true, if the volume don't contain any Image; false otherwiese
+	 */
 	public boolean isEmpty() {
 		return size() == 0;
 	}
 
+	/**
+	 * Creates a Volume to the given path.
+	 * 
+	 * @param path
+	 *            The path of the Volume
+	 * @return The new Volume or null if failed
+	 */
 	public static Volume createVolume(String path) {
 		try {
 			if (path.endsWith(".nii")) {
@@ -105,7 +120,8 @@ public abstract class Volume {
 	 * Attribute for the given Key, this method will return the Attribute of the
 	 * first slice.
 	 *
-	 * @param en
+	 * @param en The needed value
+	 * @return The String, that matches belong to the enum
 	 */
 	public abstract String getAttribute(KeyMap en);
 
@@ -113,8 +129,9 @@ public abstract class Volume {
 	 * returning the Attribute of the given key + slice number. Use int slice =
 	 * 0, for the first slice.
 	 *
-	 * @param en
-	 * @param slice
+	 * @param en The needed value
+	 * @param slice The slice, that should be used for this operation
+	 * @return The String, that matches belong to the enum
 	 */
 	public abstract String getAttribute(KeyMap en, int slice);
 
@@ -122,8 +139,8 @@ public abstract class Volume {
 	 * Returning a Attribute value, to a given enum and a Vector named slices,
 	 * which contains the indizies of the slices, which should be used.
 	 * 
-	 * @param en
-	 * @param slices
+	 * @param en The needed value
+	 * @param slices The number of the Slices, to search throught
 	 * @return A String array, where each value is the result of the call:
 	 *         <p>
 	 *         Image.getAttribute(en)
@@ -135,10 +152,24 @@ public abstract class Volume {
 	 * given key are not the same in all slices, a message is printed into the
 	 * console. This method always returns the attribute of the last image.
 	 * 
+	 * @param key
+	 *            The key, that should be searched in the header
+	 * 
 	 * @return The Information in the volume, that matches the key
 	 */
 	public abstract String getAttribute(String key);
 
+	/**
+	 * This method is used to get Attributes of a Volume. If the Values to a
+	 * given key are not the same in all slices, a message is printed into the
+	 * console. This method always returns the attribute of the last image.
+	 * 
+	 * @param key
+	 *            The Key, that should be searched
+	 * @param slice The slice, that should be used for this operation
+	 *            The slice number
+	 * @return The values, that contains the key
+	 */
 	public abstract String getAttribute(String key, int slice);
 
 	/**
@@ -146,7 +177,9 @@ public abstract class Volume {
 	 * which contains the indizies of the slices, which should be used.
 	 * 
 	 * @param key
-	 * @param slices
+	 * @param slices The number of the Slices, to search throught
+	 * @return a Attribute value, to a given key and a Vector named slices,
+	 *         which contains the indizies of the slices, which should be used.
 	 */
 	public abstract String[] getAttribute(String key, Vector<Integer> slices);
 
@@ -154,7 +187,8 @@ public abstract class Volume {
 	 * This method returning the specific Attribute of all Slices in a
 	 * ArrayList.
 	 *
-	 * @param en
+	 * @param en The needed value
+	 * @return The Attributes for each slice, that matches the enum
 	 */
 	public abstract String[] getAttributeForEachSlice(KeyMap en);
 
@@ -163,25 +197,35 @@ public abstract class Volume {
 	 * String may contain more rows, if the given key matches to more than one
 	 * searchparameter.
 	 * 
-	 * @param key
+	 * @param key The needed Value or a part of it
+	 * @return The Attribute for each Slice, that contains the key
 	 */
 	public abstract String[] getAttributeForEachSlice(String key);
 
+	/**
+	 * This method returns the Lines, that contains the key.
+	 * 
+	 * @param key The needed Value or a part of it
+	 *            The key, that should be searched for
+	 * @return The lines, that contains the keys
+	 */
 	public abstract String[] getAttributeList(String key);
 
 	/**
 	 * Returning a one dimensional array, with the informations inside.
 	 * 
-	 * @param key
-	 * @param slice
+	 * @param key The needed Value or a part of it
+	 * @param slice The slice, that should be used for this operation
+	 * @return a one dimensional array, with the informations inside.
 	 */
 	public abstract String[] getAttributeList(String key, int slice);
 
 	/**
 	 * Returning a two dimensional array, with the informations inside.
 	 * 
-	 * @param key
-	 * @param slices
+	 * @param key The needed Value or a part of it
+	 * @param slices The number of the Slices, to search throught
+	 * @return The Lines of the choosed slices, that contains the key
 	 */
 	public abstract String[][] getAttributeList(String key,
 			Vector<Integer> slices);
@@ -189,12 +233,15 @@ public abstract class Volume {
 	/**
 	 * Returning a two dimensional array, with the informations inside.
 	 * 
-	 * @param key
+	 * @param key The needed Value or a part of it
+	 * @return The Lines of each Image, that contains the key
 	 */
 	public abstract String[][] getAttributeListForEachSlice(String key);
 
 	/**
 	 * Returning the Data of an Image.
+	 * 
+	 * @return A List of the Data elementss
 	 * 
 	 */
 	public abstract ArrayList<ImagePlus> getData();
@@ -202,9 +249,16 @@ public abstract class Volume {
 	/**
 	 * Returning the headers of all images separated in a ArrayList
 	 * 
+	 * @return The List of the Headers
+	 * 
 	 */
 	public abstract ArrayList<String> getHeader();
 
+	/**
+	 * Getter for the Path of this Volume.
+	 * 
+	 * @return The Path of the Volume
+	 */
 	public String getPath() {
 		return path;
 	}
@@ -213,6 +267,8 @@ public abstract class Volume {
 	 * Returning the type of the first image in the slice. This type should be
 	 * the same type of the other i
 	 * 
+	 * @return The ImageTyp as an String
+	 * 
 	 */
 	public abstract String getImageType();
 
@@ -220,15 +276,52 @@ public abstract class Volume {
 	 * Returns the specific Image, starting with int i = 0.
 	 *
 	 * @param i
+	 *            The number of the slice
+	 * @return The Slice as an Image
 	 */
 	public abstract Image getSlice(int i);
 
+	/**
+	 * Getter for the TextOptions.
+	 * 
+	 * @return The current TextOptions
+	 */
 	public abstract TextOptions getTextOptions();
 
+	/**
+	 * Sets the specified roi.
+	 * 
+	 * @param realroi
+	 *            The roi
+	 */
 	public abstract void setRoi(Roi realroi);
 
+	/**
+	 * Creates and sets the needed Roi.
+	 * 
+	 * @param roitype
+	 *            The Roi type
+	 * @param x
+	 *            The x coordinate of the Roi
+	 * @param y
+	 *            The y coordinate of the Roi
+	 */
 	public abstract void setRoi(int roitype, int x, int y);
 
+	/**
+	 * Creates and sets the needed Roi.
+	 * 
+	 * @param roitype
+	 *            The Roi type
+	 * @param x
+	 *            The x coordinate of the Roi
+	 * @param y
+	 *            The y coordinate of the Roi
+	 * @param width
+	 *            The width of the Roi
+	 * @param height
+	 *            The height of the Roi
+	 */
 	public abstract void setRoi(int roitype, int x, int y, int width, int height);
 
 	/**
@@ -236,13 +329,24 @@ public abstract class Volume {
 	 */
 	public abstract void resetTextOptions();
 
+	/**
+	 * Sets the Textoptions of this Volume.
+	 * 
+	 * @param topt
+	 *            The Textoptions that change the header.
+	 */
 	public abstract void setTextOptions(TextOptions topt);
 
 	/**
 	 * Returning the number of Images, which are contained in the Volume.
+	 * 
+	 * @return The size of this Volume
 	 */
 	public abstract int size();
 
+	/**
+	 * Loads the Volume data.
+	 */
 	public abstract void loadData();
 
 }
