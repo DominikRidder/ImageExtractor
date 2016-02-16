@@ -49,7 +49,7 @@ public abstract class Volume {
 	/**
 	 * This method, tells you if this volume is empty.
 	 * 
-	 * @return true, if the volume don't contain any Image; false otherwiese
+	 * @return true, if the volume don't contain any Image; false otherwise
 	 */
 	public boolean isEmpty() {
 		return size() == 0;
@@ -97,20 +97,22 @@ public abstract class Volume {
 	 * Creates png files of the images, in the outputdir folder.
 	 * 
 	 * @param Outputdir
+	 *            The Location, where the Data is saved to
 	 */
 	public abstract void extractData(String Outputdir);
 
 	/**
-	 * Creates ***.header txt document in the given path with the header
+	 * Creates ***.header text document in the given path with the header
 	 * information of the Images.
 	 */
 	public abstract void extractHeader();
 
 	/**
-	 * Creates ***.header txt documents in the outputdir with the header
+	 * Creates ***.header text documents in the outputdir with the header
 	 * information of the Images.
 	 * 
 	 * @param outputdir
+	 *            The Location, where the Header is saved to
 	 */
 	public abstract void extractHeader(String outputdir);
 
@@ -120,7 +122,8 @@ public abstract class Volume {
 	 * Attribute for the given Key, this method will return the Attribute of the
 	 * first slice.
 	 *
-	 * @param en The needed value
+	 * @param en
+	 *            The needed value
 	 * @return The String, that matches belong to the enum
 	 */
 	public abstract String getAttribute(KeyMap en);
@@ -129,18 +132,22 @@ public abstract class Volume {
 	 * returning the Attribute of the given key + slice number. Use int slice =
 	 * 0, for the first slice.
 	 *
-	 * @param en The needed value
-	 * @param slice The slice, that should be used for this operation
+	 * @param en
+	 *            The needed value
+	 * @param slice
+	 *            The slice, that should be used for this operation
 	 * @return The String, that matches belong to the enum
 	 */
 	public abstract String getAttribute(KeyMap en, int slice);
 
 	/**
 	 * Returning a Attribute value, to a given enum and a Vector named slices,
-	 * which contains the indizies of the slices, which should be used.
+	 * which contains the indices of the slices, which should be used.
 	 * 
-	 * @param en The needed value
-	 * @param slices The number of the Slices, to search throught
+	 * @param en
+	 *            The needed value
+	 * @param slices
+	 *            The number of the Slices, to search throught
 	 * @return A String array, where each value is the result of the call:
 	 *         <p>
 	 *         Image.getAttribute(en)
@@ -166,20 +173,23 @@ public abstract class Volume {
 	 * 
 	 * @param key
 	 *            The Key, that should be searched
-	 * @param slice The slice, that should be used for this operation
-	 *            The slice number
+	 * @param slice
+	 *            The slice, that should be used for this operation The slice
+	 *            number
 	 * @return The values, that contains the key
 	 */
 	public abstract String getAttribute(String key, int slice);
 
 	/**
 	 * Returning a Attribute value, to a given key and a Vector named slices,
-	 * which contains the indizies of the slices, which should be used.
+	 * which contains the indices of the slices, which should be used.
 	 * 
 	 * @param key
-	 * @param slices The number of the Slices, to search throught
+	 *            The Key, that should be searched
+	 * @param slices
+	 *            The number of the Slices, to search through
 	 * @return a Attribute value, to a given key and a Vector named slices,
-	 *         which contains the indizies of the slices, which should be used.
+	 *         which contains the indices of the slices, which should be used.
 	 */
 	public abstract String[] getAttribute(String key, Vector<Integer> slices);
 
@@ -187,7 +197,8 @@ public abstract class Volume {
 	 * This method returning the specific Attribute of all Slices in a
 	 * ArrayList.
 	 *
-	 * @param en The needed value
+	 * @param en
+	 *            The needed value
 	 * @return The Attributes for each slice, that matches the enum
 	 */
 	public abstract String[] getAttributeForEachSlice(KeyMap en);
@@ -197,7 +208,8 @@ public abstract class Volume {
 	 * String may contain more rows, if the given key matches to more than one
 	 * searchparameter.
 	 * 
-	 * @param key The needed Value or a part of it
+	 * @param key
+	 *            The needed Value or a part of it
 	 * @return The Attribute for each Slice, that contains the key
 	 */
 	public abstract String[] getAttributeForEachSlice(String key);
@@ -205,8 +217,9 @@ public abstract class Volume {
 	/**
 	 * This method returns the Lines, that contains the key.
 	 * 
-	 * @param key The needed Value or a part of it
-	 *            The key, that should be searched for
+	 * @param key
+	 *            The needed Value or a part of it The key, that should be
+	 *            searched for
 	 * @return The lines, that contains the keys
 	 */
 	public abstract String[] getAttributeList(String key);
@@ -214,8 +227,10 @@ public abstract class Volume {
 	/**
 	 * Returning a one dimensional array, with the informations inside.
 	 * 
-	 * @param key The needed Value or a part of it
-	 * @param slice The slice, that should be used for this operation
+	 * @param key
+	 *            The needed Value or a part of it
+	 * @param slice
+	 *            The slice, that should be used for this operation
 	 * @return a one dimensional array, with the informations inside.
 	 */
 	public abstract String[] getAttributeList(String key, int slice);
@@ -223,9 +238,11 @@ public abstract class Volume {
 	/**
 	 * Returning a two dimensional array, with the informations inside.
 	 * 
-	 * @param key The needed Value or a part of it
-	 * @param slices The number of the Slices, to search throught
-	 * @return The Lines of the choosed slices, that contains the key
+	 * @param key
+	 *            The needed Value or a part of it
+	 * @param slices
+	 *            The number of the Slices, to search through
+	 * @return The Lines of the chosen slices, that contains the key
 	 */
 	public abstract String[][] getAttributeList(String key,
 			Vector<Integer> slices);
@@ -233,7 +250,8 @@ public abstract class Volume {
 	/**
 	 * Returning a two dimensional array, with the informations inside.
 	 * 
-	 * @param key The needed Value or a part of it
+	 * @param key
+	 *            The needed Value or a part of it
 	 * @return The Lines of each Image, that contains the key
 	 */
 	public abstract String[][] getAttributeListForEachSlice(String key);
@@ -241,7 +259,7 @@ public abstract class Volume {
 	/**
 	 * Returning the Data of an Image.
 	 * 
-	 * @return A List of the Data elementss
+	 * @return A List of the Data elements
 	 * 
 	 */
 	public abstract ArrayList<ImagePlus> getData();

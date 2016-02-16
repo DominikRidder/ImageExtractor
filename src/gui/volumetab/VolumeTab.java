@@ -1041,64 +1041,60 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
-	 * Method, that calls a JFileChooser and saves the ZeroEcho + the other
-	 * Echos as a Nifti, as the selected File. If the filename don't endswith
-	 * ".nii", than the extension ".nii" is added.
+	 * With this Method you can change the actual slice by i.
+	 * 
+	 * @param change
+	 *            the number that is added to the actual slice.
 	 */
-	public void saveZeroEcho() {
-		if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION
-				&& chooser.getSelectedFile() != null) {
-			Nifti_Writer writer = new Nifti_Writer();
-
-			ImageStack is = null;
-			ImagePlus ip = new ImagePlus();
-
-			double min = Double.POSITIVE_INFINITY;
-			double max = Double.NEGATIVE_INFINITY;
-
-			ArrayList<ImagePlus> concat = new ArrayList<ImagePlus>();
-			concat.addAll(zeroecho);
-			for (int i = 0; i < volume.size(); i++) {
-				concat.add(volume.getSlice(i).getData());
+	public void addtoSlice(int change) {
+		try {
+			if (!(getActualSlice() + change < 1 || getActualSlice() + change > perEcho)) {
+				slice_index.setText(""
+						+ (Integer.parseInt(slice_index.getText()) + change));
+				checkSlice();
 			}
-
-			is = new ImageStack(volume.getSlice(volume.size() - 1).getData()
-					.getWidth(), volume.getSlice(volume.size() - 1).getData()
-					.getHeight());
-			ip.setCalibration(volume.getSlice(volume.size() - 1).getData()
-					.getCalibration());
-
-			for (ImagePlus nextimp : concat) {
-
-				min = Math.min(nextimp.getProcessor().getMin(), min);
-				max = Math.max(nextimp.getProcessor().getMax(), max);
-
-				try {
-					is.addSlice(nextimp.getProcessor());
-				} catch (IllegalArgumentException e) {
-					continue;
-				}
-			}
-
-			ip.setStack(is);
-			ip.getProcessor().setMinAndMax(min, max);
-			if (echoNumbers != 1) {
-				ip.setDimensions(1, is.getSize() / (echoNumbers + 1),
-						echoNumbers + 1);
-				ip.setOpenAsHyperStack(true);
-			}
-			WindowManager.setTempCurrentImage(ip);
-
-			writer.dicom_to_nifti = false;
-			String name = chooser.getSelectedFile().getName();
-			if (!name.endsWith(".nii")) {
-				name += ".nii";
-			}
-			writer.save(ip, chooser.getSelectedFile().getParent(), name);
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		parent.imec.setOption("LastBrowse", chooser.getCurrentDirectory()
-				.getAbsolutePath());
-		parent.imec.save();
+	}
+
+	/**
+	 * This method calculates the radius of the roi. This value depends on the
+	 * given radius and the given unit.
+	 * 
+	 * @return the radius of the roi in pixels
+	 */
+	public int calculateRadius() {
+		if (unit.getSelectedItem().equals("mm")) {
+			return radius.getValue();
+		} else {
+			try {
+				return (int) ((double) radius.getValue() / volume.getSlice(0)
+						.getData().getFileInfo().pixelWidth);
+			} catch (NumberFormatException | NullPointerException e) {
+				return 1;
+			}
+		}
+	}
+
+	public void caretUpdate(CaretEvent e) {
+		Object source = e.getSource();
+		if (source == slice_index) {
+			checkSlice();
+			displayImage();
+		} else if (source == echo_index) {
+			checkEcho();
+			displayImage();
+		} else if (source == filter) {
+			if (!filter.getText().equals(lastfilter)) {
+				lastfilter = filter.getText();
+				displayAll = false;
+				displayAttributes();
+			}
+		}
+		displayAttributes();
 	}
 
 	/**
@@ -1175,121 +1171,50 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		}
 	}
 
-	/**
-	 * This method set's the Path in the Textfield, that indicates the Path.
-	 * 
-	 * @param path
-	 *            The path to a file or directory of a volume
-	 */
-	public void setPath(String path) {
-		this.path.setText(path);
+	@Override
+	public void dragEnter(DropTargetDragEvent dtde) {
+		dtde.acceptDrag(dtde.getDropAction());
 	}
 
-	/**
-	 * This Method returns an intern boolean, that contains the Information, if
-	 * a volume is in creation or not.
-	 * 
-	 * @return true if volume is in creation; false otherwiese
-	 */
-	public boolean isCreatingVolume() {
-		return creatingVolume;
+	@Override
+	public void dragOver(DropTargetDragEvent dtde) {
+	
 	}
 
-	/**
-	 * Sleeps for <i>int</i> milliseconds. The InterruptedException can cancle
-	 * this Method. This Method is usefull to write less code.
-	 * 
-	 * @param millisec
-	 *            The amount of time, that the current Thread should sleep.
-	 */
-	public void sleep(int millisec) {
+	@Override
+	public void dropActionChanged(DropTargetDragEvent dtde) {
+	
+	}
+
+	@Override
+	public void dragExit(DropTargetEvent dte) {
+	
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void drop(DropTargetDropEvent dtde) {
 		try {
-			Thread.sleep(millisec);
-		} catch (InterruptedException e1) {
-		}
-	}
-
-	/***
-	 * This Method checks if a ZeroEcho slice is calculated already to a given
-	 * Fitting function. This Method also sets a litte "+ 0" to the max_echo
-	 * field, so that the user get informed, about the additional slice.
-	 * 
-	 * @return if there is a ZeroEcho slice to show.
-	 */
-	public boolean zeroEchoCheck() {
-		try {
-			if (zeroecho.get(this.getActualSlice() + shape.getSelectedIndex()) != null) {
-				max_echo.setText(max_echo.getText().replace("+ 0", "") + "+ 0");
-				return true;
+			dtde.acceptDrop(dtde.getDropAction());
+			List<File> dropppedFiles = (List<File>) dtde.getTransferable()
+					.getTransferData(DataFlavor.javaFileListFlavor);
+			for (File file : dropppedFiles) {
+				if (file.isDirectory()) {
+					path.setText(file.getAbsolutePath());
+				} else {
+					if (file.getName().endsWith(".nii")) {
+						path.setText(file.getAbsolutePath());
+					} else {
+						path.setText(file.getParent());
+					}
+				}
+				new Thread(this).start();
+				break;
 			}
-		} catch (IOException e) {
-
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		max_echo.setText(max_echo.getText().replace("+ 0", ""));
-		return false;
-	}
-
-	/***
-	 * This Method gets called, whenever the ZeroEcho Class finished an ZeroEcho
-	 * slice.
-	 * 
-	 * @param zeroecho
-	 *            The computed ZeroEcho of the of the volume
-	 * @param fittingfunction
-	 *            The Function, that was used
-	 */
-	public void setZeroEcho(ArrayList<ImagePlus> zeroecho,
-			String fittingfunction) {
-		this.zeroecho = zeroecho;
-		if (zeroecho == null) {
-			max_echo.setText(max_echo.getText().replace(" + 0", ""));
-		} else {
-			max_echo.setText(max_echo.getText().replace(" + 0", "") + " + 0");
-
-			int i = 0;
-			for (ImagePlus imp : zeroecho) {
-				imp.setCalibration(volume.getSlice(i).getData()
-						.getCalibration());
-			}
-
-			save.setEnabled(true);
-		}
-		parent.getStatusLabel().setText("");
-		parent.getProgressBar().setVisible(false);
-		zero_echo.setText("Calculate Zero Echo");
-		ze = null;
-	}
-
-	/**
-	 * This method is used, to splitt a command, before executing it.
-	 * 
-	 * @param command
-	 *            The Command, that should be executed
-	 * @return The array, that can be executed than
-	 */
-	public String[] splittCommand(String command) {
-		ArrayList<String> commands = new ArrayList<String>();
-		String[] forreturn = new String[0];
-
-		boolean ignore = false;
-
-		StringBuilder next = new StringBuilder();
-		for (char c : command.toCharArray()) {
-			if (c == '\'') {
-				ignore = !ignore;
-			} else if (c == ' ' && !ignore) {
-				commands.add(next.toString());
-				next.delete(0, next.length());
-			} else {
-				next.append(c);
-			}
-		}
-
-		if (next.length() != 0) {
-			commands.add(next.toString());
-		}
-
-		return commands.toArray(forreturn);
+	
 	}
 
 	/**
@@ -1329,58 +1254,29 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
-	 * Listener Method, that handles changes of some Gui Components.
+	 * Returns the current Image.
+	 * 
+	 * @return The current Image.
 	 */
-	public void stateChanged(ChangeEvent e) {
-		if (volume == null) { // This field shouldn't do anything if there is no
-								// data.
-			return;
+	public ImagePlus getImage() {
+		try {
+			if (getActualEcho() != 0) {
+				return this.volume.getSlice(actualSliceIndex()).getData();
+			} else {
+				return zeroecho.get(getActualSlice() - 1);
+			}
+		} catch (IOException | NullPointerException e) {
 		}
-
-		if (e.getSource() == alsolog) {
-			// Checkbox for logarithmic fitting
-			showROI(true);
-
-		} else if (e.getSource() == radius) {
-			// Slider, that changes the roi radius
-			radiustext.setText("Radius: " + radius.getValue());
-			resizeROI();
-
-		} else if (e.getSource() == unit) {
-			// JComboBox, that decides the Unit of the roi radius
-			resizeROI();
-
-		} else if (e.getSource() == index_slider) {
-			// Slider below the Image
-			slice_index.setText("" + index_slider.getValue());
-			displayImage();
-
-		} else if (e.getSource() == echo_slider) {
-			// Slider below the Image
-			echo_index.setText("" + echo_slider.getValue());
-			displayImage();
-
-		}
+		return null;
 	}
 
 	/**
-	 * With this Method you can change the actual slice by i.
+	 * The Scale, that had been used, to scale the Image.
 	 * 
-	 * @param change
-	 *            the number that is added to the actual slice.
+	 * @return The scale for the width and height of the Image.
 	 */
-	public void addtoSlice(int change) {
-		try {
-			if (!(getActualSlice() + change < 1 || getActualSlice() + change > perEcho)) {
-				slice_index.setText(""
-						+ (Integer.parseInt(slice_index.getText()) + change));
-				checkSlice();
-			}
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public double getScale() {
+		return scaling;
 	}
 
 	/**
@@ -1394,80 +1290,22 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
-	 * This Method is used, to request the needed size by the GUI.
-	 */
-	public void neededSize() {
-		parent.requestWidth(preferedWidth(), this);
-	}
-
-	/**
-	 * Method that handles mouseWheel input.
-	 */
-	public void mouseWheelMoved(MouseWheelEvent e) {
-		if (System.currentTimeMillis() - lastpressed > 50) {
-			Object obj = e.getSource();
-			int change = -1 * e.getWheelRotation();
-			boolean makechange = false;
-			boolean changeEcho = false;
-
-			if (obj instanceof JTextField) {
-				JTextField index = (JTextField) obj;
-				if (index.equals(slice_index) || index.equals(slice_max)
-						|| index.getText().equals("Slice:")) {
-					makechange = true;
-					changeEcho = false;
-				} else {
-					makechange = true;
-					changeEcho = true;
-				}
-			} else if (obj instanceof JLabel) {
-				JLabel img = (JLabel) obj;
-				if (img.equals(imagelabel)) {
-					if (echo_index.hasFocus()) {
-						makechange = true;
-						changeEcho = true;
-					} else {
-						makechange = true;
-						changeEcho = false;
-					}
-				}
-			} else if (obj instanceof JPanel) {
-				JPanel arrow = (JPanel) obj;
-				if (!arrow.equals(arrows_slice)) {
-					makechange = true;
-					changeEcho = true;
-				} else {
-					makechange = true;
-					changeEcho = false;
-				}
-
-			}
-
-			if (makechange) {
-				if (changeEcho) {
-					addtoEcho(change);
-				} else {
-					addtoSlice(change);
-				}
-			}
-			lastpressed = System.currentTimeMillis();
-		}
-	}
-
-	/**
-	 * This Method sets the acutal roi Shape. Actual valid shape names are:
-	 * Point, Circle and Sphere.
+	 * This Method returns an intern boolean, that contains the Information, if
+	 * a volume is in creation or not.
 	 * 
-	 * @param shape
-	 *            The String name of the Shape.
+	 * @return true if volume is in creation; false otherwiese
 	 */
-	public void setShape(String shape) {
-		for (int i = 0; i < this.shape.getItemCount(); i++) {
-			if (this.shape.getItemAt(i).equals(shape)) {
-				this.shape.setSelectedIndex(i);
-				break;
-			}
-		}
+	public boolean isCreatingVolume() {
+		return creatingVolume;
+	}
+
+	/**
+	 * Returns, if the outputarea is empty.
+	 * 
+	 * @return True if the outputarea is empty; false otherwiese
+	 */
+	public boolean isOutputAreaEmpty() {
+		return outputArea.getText().equals("");
 	}
 
 	public void keyPressed(KeyEvent e) {
@@ -1501,10 +1339,217 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
+	 * This Method is used, to request the needed size by the GUI.
+	 */
+	public void neededSize() {
+		parent.requestWidth(preferedWidth(), this);
+	}
+
+	/**
+	 * Method that handles mouseWheel input.
+	 */
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		if (System.currentTimeMillis() - lastpressed > 50) {
+			Object obj = e.getSource();
+			int change = -1 * e.getWheelRotation();
+			boolean makechange = false;
+			boolean changeEcho = false;
+	
+			if (obj instanceof JTextField) {
+				JTextField index = (JTextField) obj;
+				if (index.equals(slice_index) || index.equals(slice_max)
+						|| index.getText().equals("Slice:")) {
+					makechange = true;
+					changeEcho = false;
+				} else {
+					makechange = true;
+					changeEcho = true;
+				}
+			} else if (obj instanceof JLabel) {
+				JLabel img = (JLabel) obj;
+				if (img.equals(imagelabel)) {
+					if (echo_index.hasFocus()) {
+						makechange = true;
+						changeEcho = true;
+					} else {
+						makechange = true;
+						changeEcho = false;
+					}
+				}
+			} else if (obj instanceof JPanel) {
+				JPanel arrow = (JPanel) obj;
+				if (!arrow.equals(arrows_slice)) {
+					makechange = true;
+					changeEcho = true;
+				} else {
+					makechange = true;
+					changeEcho = false;
+				}
+	
+			}
+	
+			if (makechange) {
+				if (changeEcho) {
+					addtoEcho(change);
+				} else {
+					addtoSlice(change);
+				}
+			}
+			lastpressed = System.currentTimeMillis();
+		}
+	}
+
+	public void mouseClicked(MouseEvent e) {
+		if (e.getSource() == this.imagelabel && volume != null) {
+			setRoiPosition(e.getX(), e.getY());
+		}
+	}
+
+	public void mousePressed(MouseEvent e) {
+
+	}
+
+	public void mouseReleased(MouseEvent e) {
+
+	}
+
+	public void mouseEntered(MouseEvent e) {
+
+	}
+
+	public void mouseExited(MouseEvent e) {
+		if (volume != null && !creatingVolume && ze == null) {
+			parent.getStatusLabel().setText("");
+		}
+	}
+
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		if (e.getSource().equals(this.imagelabel) && volume != null) {
+			setRoiPosition(e.getX(), e.getY());
+		}
+		if (volume != null && !creatingVolume && ze == null
+				&& e.getSource().equals(imagelabel)) {
+			float value = getImage().getProcessor().getf(
+					(int) (e.getX() / scaling), (int) (e.getY() / scaling));
+	
+			String val = "value = " + value;
+			String x = "x = " + e.getX();
+			String y = "y = " + e.getY();
+			String seperator = ", ";
+	
+			parent.getStatusLabel()
+					.setText(x + seperator + y + seperator + val);
+		}
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		if (volume != null && !creatingVolume && ze == null
+				&& e.getSource().equals(imagelabel)) {
+			float value = getImage().getProcessor().getf(
+					(int) (e.getX() / scaling), (int) (e.getY() / scaling));
+			String val = "value = " + value;
+			String x = "x = " + e.getX();
+			String y = "y = " + e.getY();
+			String seperator = ", ";
+			parent.getStatusLabel()
+					.setText(x + seperator + y + seperator + val);
+		}
+	}
+
+	@Override
+	public void onFocus() {
+		parent.requestWidth(preferedWidth(), this);
+		parent.getJMenuBar().add(imagemenu);
+		parent.getJMenuBar().repaint();
+	}
+
+	@Override
+	public void onExit() {
+		parent.getJMenuBar().remove(imagemenu);
+		parent.getJMenuBar().repaint();
+	}
+
+	/**
+	 * This method returns the preferedWidth of this Tab.
+	 * 
+	 * @return the preferedWidth of this Tab
+	 */
+	public int preferedWidth() {
+		if (volume == null) {
+			return parent.width;
+		} else {
+			int neededwidth = image.getWidth() + (int) (parent.width / 1.6923)
+					+ 20;
+			if (relativroi != null) {
+				neededwidth += (int) (parent.width * roitabwidth);
+			}
+			return neededwidth;
+		}
+	}
+
+	@Override
+	public void propertyChange(PropertyChangeEvent evt) {
+		if (evt.getSource() instanceof ZeroEcho) {
+			parent.getProgressBar().setValue((int) evt.getNewValue());
+		}
+	}
+
+	/**
 	 * Creating Volumes this way, so the window wont freeze.
 	 */
 	public void run() {
 		createVolume();
+	}
+
+	/**
+	 * This method resizing the roi.
+	 */
+	public void resizeROI() {
+		Roi realroi = null;
+		if (shape.getSelectedItem().equals("Point")) {
+		} else if (shape.getSelectedItem().equals("Circle")) {
+			double x = relativroi.getXBase();
+			double y = relativroi.getYBase();
+			double calrad = relativroi.getBounds().getWidth() / 2;
+	
+			double radius = this.radius.getValue();
+	
+			if (unit.getSelectedItem().equals("pixel")) {
+				radius /= volume.getSlice(0).getData().getFileInfo().pixelWidth;
+			}
+	
+			double newr = (int) (radius * scaling);
+	
+			x += calrad - newr;
+			y += calrad - newr;
+	
+			relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
+			realroi = new OvalRoi(((double) x) / scaling, ((double) y)
+					/ scaling, radius * 2, radius * 2);
+		} else if (shape.getSelectedItem().equals("Sphere")) {
+			double x = relativroi.getXBase();
+			double y = relativroi.getYBase();
+			int z = ((Roi3D) relativroi).getZ();
+			double calrad = relativroi.getBounds().getHeight() / 2;
+	
+			double radius = this.radius.getValue();
+	
+			if (unit.getSelectedItem().equals("pixel")) {
+				radius /= volume.getSlice(0).getData().getFileInfo().pixelWidth;
+			}
+			double newr = (int) (radius * scaling);
+			x += calrad - newr;
+			y += calrad - newr;
+			relativroi = new SphereRoi((int) x, (int) y, z, newr);
+			realroi = new SphereRoi(((double) x) / scaling, ((double) y)
+					/ scaling, z, radius);
+		}
+		relativroi.setProperty("unit", (String) unit.getSelectedItem());
+		realroi.setProperty("unit", (String) unit.getSelectedItem());
+		volume.setRoi(realroi);
+		this.displayImage();
 	}
 
 	/**
@@ -1518,7 +1563,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			parent.requestWidth(preferedWidth(), this);
 			GUI.setfinalSize(toppanel, new Dimension(preferedWidth(),
 					parent.height));
-
+	
 			if (vf == null) {
 				vf = new VolumeFitter();
 			}
@@ -1558,8 +1603,193 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			ownExtended = false;
 			parent.requestWidth(preferedWidth(), this);
 		}
-
+	
 		this.repaint();
+	}
+
+	/**
+	 * This Method sets the acutal roi Shape. Actual valid shape names are:
+	 * Point, Circle and Sphere.
+	 * 
+	 * @param shape
+	 *            The String name of the Shape.
+	 */
+	public void setShape(String shape) {
+		for (int i = 0; i < this.shape.getItemCount(); i++) {
+			if (this.shape.getItemAt(i).equals(shape)) {
+				this.shape.setSelectedIndex(i);
+				break;
+			}
+		}
+	}
+
+	/**
+	 * Method, that calls a JFileChooser and saves the ZeroEcho + the other
+	 * Echos as a Nifti, as the selected File. If the filename don't endswith
+	 * ".nii", than the extension ".nii" is added.
+	 */
+	public void saveZeroEcho() {
+		if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION
+				&& chooser.getSelectedFile() != null) {
+			Nifti_Writer writer = new Nifti_Writer();
+	
+			ImageStack is = null;
+			ImagePlus ip = new ImagePlus();
+	
+			double min = Double.POSITIVE_INFINITY;
+			double max = Double.NEGATIVE_INFINITY;
+	
+			ArrayList<ImagePlus> concat = new ArrayList<ImagePlus>();
+			concat.addAll(zeroecho);
+			for (int i = 0; i < volume.size(); i++) {
+				concat.add(volume.getSlice(i).getData());
+			}
+	
+			is = new ImageStack(volume.getSlice(volume.size() - 1).getData()
+					.getWidth(), volume.getSlice(volume.size() - 1).getData()
+					.getHeight());
+			ip.setCalibration(volume.getSlice(volume.size() - 1).getData()
+					.getCalibration());
+	
+			for (ImagePlus nextimp : concat) {
+	
+				min = Math.min(nextimp.getProcessor().getMin(), min);
+				max = Math.max(nextimp.getProcessor().getMax(), max);
+	
+				try {
+					is.addSlice(nextimp.getProcessor());
+				} catch (IllegalArgumentException e) {
+					continue;
+				}
+			}
+	
+			ip.setStack(is);
+			ip.getProcessor().setMinAndMax(min, max);
+			if (echoNumbers != 1) {
+				ip.setDimensions(1, is.getSize() / (echoNumbers + 1),
+						echoNumbers + 1);
+				ip.setOpenAsHyperStack(true);
+			}
+			WindowManager.setTempCurrentImage(ip);
+	
+			writer.dicom_to_nifti = false;
+			String name = chooser.getSelectedFile().getName();
+			if (!name.endsWith(".nii")) {
+				name += ".nii";
+			}
+			writer.save(ip, chooser.getSelectedFile().getParent(), name);
+		}
+		parent.imec.setOption("LastBrowse", chooser.getCurrentDirectory()
+				.getAbsolutePath());
+		parent.imec.save();
+	}
+
+	/**
+	 * Listener Method, that handles changes of some Gui Components.
+	 */
+	public void stateChanged(ChangeEvent e) {
+		if (volume == null) { // This field shouldn't do anything if there is no
+								// data.
+			return;
+		}
+	
+		if (e.getSource() == alsolog) {
+			// Checkbox for logarithmic fitting
+			showROI(true);
+	
+		} else if (e.getSource() == radius) {
+			// Slider, that changes the roi radius
+			radiustext.setText("Radius: " + radius.getValue());
+			resizeROI();
+	
+		} else if (e.getSource() == unit) {
+			// JComboBox, that decides the Unit of the roi radius
+			resizeROI();
+	
+		} else if (e.getSource() == index_slider) {
+			// Slider below the Image
+			slice_index.setText("" + index_slider.getValue());
+			displayImage();
+	
+		} else if (e.getSource() == echo_slider) {
+			// Slider below the Image
+			echo_index.setText("" + echo_slider.getValue());
+			displayImage();
+	
+		}
+	}
+
+	/**
+	 * This method set's the Path in the Textfield, that indicates the Path.
+	 * 
+	 * @param path
+	 *            The path to a file or directory of a volume
+	 */
+	public void setPath(String path) {
+		this.path.setText(path);
+	}
+
+	/***
+	 * This Method gets called, whenever the ZeroEcho Class finished an ZeroEcho
+	 * slice.
+	 * 
+	 * @param zeroecho
+	 *            The computed ZeroEcho of the of the volume
+	 * @param fittingfunction
+	 *            The Function, that was used
+	 */
+	public void setZeroEcho(ArrayList<ImagePlus> zeroecho,
+			String fittingfunction) {
+		this.zeroecho = zeroecho;
+		if (zeroecho == null) {
+			max_echo.setText(max_echo.getText().replace(" + 0", ""));
+		} else {
+			max_echo.setText(max_echo.getText().replace(" + 0", "") + " + 0");
+	
+			int i = 0;
+			for (ImagePlus imp : zeroecho) {
+				imp.setCalibration(volume.getSlice(i).getData()
+						.getCalibration());
+			}
+	
+			save.setEnabled(true);
+		}
+		parent.getStatusLabel().setText("");
+		parent.getProgressBar().setVisible(false);
+		zero_echo.setText("Calculate Zero Echo");
+		ze = null;
+	}
+
+	/**
+	 * This method is used, to splitt a command, before executing it.
+	 * 
+	 * @param command
+	 *            The Command, that should be executed
+	 * @return The array, that can be executed than
+	 */
+	public String[] splittCommand(String command) {
+		ArrayList<String> commands = new ArrayList<String>();
+		String[] forreturn = new String[0];
+	
+		boolean ignore = false;
+	
+		StringBuilder next = new StringBuilder();
+		for (char c : command.toCharArray()) {
+			if (c == '\'') {
+				ignore = !ignore;
+			} else if (c == ' ' && !ignore) {
+				commands.add(next.toString());
+				next.delete(0, next.length());
+			} else {
+				next.append(c);
+			}
+		}
+	
+		if (next.length() != 0) {
+			commands.add(next.toString());
+		}
+	
+		return commands.toArray(forreturn);
 	}
 
 	/**
@@ -1573,21 +1803,21 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	public void setRoiPosition(int x, int y) {
 		try {
 			Roi realroi = null;
-
+	
 			switch ((String) shape.getSelectedItem()) {
 			case "Point":
 				relativroi = new PointRoi(x, y);
-
+	
 				realroi = new PointRoi(((double) x) / scaling, ((double) y)
 						/ scaling);
 				break;
 			case "Circle":
 				double radius = calculateRadius();
 				double newr = (int) (radius * scaling);
-
+	
 				x -= newr;
 				y -= newr;
-
+	
 				relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
 				realroi = new OvalRoi(((double) x) / scaling, ((double) y)
 						/ scaling, radius * 2, radius * 2);
@@ -1596,7 +1826,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				setRoiPosition(x, y, getActualSlice() - 1);
 				return;
 			}
-
+	
 			relativroi.setProperty("unit", (String) unit.getSelectedItem());
 			realroi.setProperty("unit", (String) unit.getSelectedItem());
 			volume.setRoi(realroi);
@@ -1618,7 +1848,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	public void setRoiPosition(int x, int y, int z) {
 		Roi realroi = null;
-
+	
 		switch ((String) shape.getSelectedItem()) {
 		case "Point":
 		case "Circle":
@@ -1632,7 +1862,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			relativroi = new SphereRoi(x, y, z, newr);
 			realroi = new SphereRoi(((double) x) / scaling, ((double) y)
 					/ scaling, z, radius);
-
+	
 			break;
 		}
 		relativroi.setProperty("unit", (String) unit.getSelectedItem());
@@ -1642,267 +1872,37 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
-	 * This method resizing the roi.
-	 */
-	public void resizeROI() {
-		Roi realroi = null;
-		if (shape.getSelectedItem().equals("Point")) {
-		} else if (shape.getSelectedItem().equals("Circle")) {
-			double x = relativroi.getXBase();
-			double y = relativroi.getYBase();
-			double calrad = relativroi.getBounds().getWidth() / 2;
-
-			double radius = this.radius.getValue();
-
-			if (unit.getSelectedItem().equals("pixel")) {
-				radius /= volume.getSlice(0).getData().getFileInfo().pixelWidth;
-			}
-
-			double newr = (int) (radius * scaling);
-
-			x += calrad - newr;
-			y += calrad - newr;
-
-			relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
-			realroi = new OvalRoi(((double) x) / scaling, ((double) y)
-					/ scaling, radius * 2, radius * 2);
-		} else if (shape.getSelectedItem().equals("Sphere")) {
-			double x = relativroi.getXBase();
-			double y = relativroi.getYBase();
-			int z = ((Roi3D) relativroi).getZ();
-			double calrad = relativroi.getBounds().getHeight() / 2;
-
-			double radius = this.radius.getValue();
-
-			if (unit.getSelectedItem().equals("pixel")) {
-				radius /= volume.getSlice(0).getData().getFileInfo().pixelWidth;
-			}
-			double newr = (int) (radius * scaling);
-			x += calrad - newr;
-			y += calrad - newr;
-			relativroi = new SphereRoi((int) x, (int) y, z, newr);
-			realroi = new SphereRoi(((double) x) / scaling, ((double) y)
-					/ scaling, z, radius);
-		}
-		relativroi.setProperty("unit", (String) unit.getSelectedItem());
-		realroi.setProperty("unit", (String) unit.getSelectedItem());
-		volume.setRoi(realroi);
-		this.displayImage();
-	}
-
-	public void mouseClicked(MouseEvent e) {
-		if (e.getSource() == this.imagelabel && volume != null) {
-			setRoiPosition(e.getX(), e.getY());
-		}
-	}
-
-	public void mousePressed(MouseEvent e) {
-
-	}
-
-	public void mouseReleased(MouseEvent e) {
-
-	}
-
-	public void mouseEntered(MouseEvent e) {
-
-	}
-
-	public void mouseExited(MouseEvent e) {
-		if (volume != null && !creatingVolume && ze == null) {
-			parent.getStatusLabel().setText("");
-		}
-	}
-
-	public void caretUpdate(CaretEvent e) {
-		Object source = e.getSource();
-		if (source == slice_index) {
-			checkSlice();
-			displayImage();
-		} else if (source == echo_index) {
-			checkEcho();
-			displayImage();
-		} else if (source == filter) {
-			if (!filter.getText().equals(lastfilter)) {
-				lastfilter = filter.getText();
-				displayAll = false;
-				displayAttributes();
-			}
-		}
-		displayAttributes();
-	}
-
-	/**
-	 * This method returns the preferedWidth of this Tab.
+	 * Sleeps for <i>int</i> milliseconds. The InterruptedException can cancle
+	 * this Method. This Method is usefull to write less code.
 	 * 
-	 * @return the preferedWidth of this Tab
+	 * @param millisec
+	 *            The amount of time, that the current Thread should sleep.
 	 */
-	public int preferedWidth() {
-		if (volume == null) {
-			return parent.width;
-		} else {
-			int neededwidth = image.getWidth() + (int) (parent.width / 1.6923)
-					+ 20;
-			if (relativroi != null) {
-				neededwidth += (int) (parent.width * roitabwidth);
-			}
-			return neededwidth;
-		}
-	}
-
-	/**
-	 * This method calculates the radius of the roi. This value depends on the
-	 * given radius and the given unit.
-	 * 
-	 * @return the radius of the roi in pixels
-	 */
-	public int calculateRadius() {
-		if (unit.getSelectedItem().equals("mm")) {
-			return radius.getValue();
-		} else {
-			try {
-				return (int) ((double) radius.getValue() / volume.getSlice(0)
-						.getData().getFileInfo().pixelWidth);
-			} catch (NumberFormatException | NullPointerException e) {
-				return 1;
-			}
-		}
-	}
-
-	@Override
-	public void dragEnter(DropTargetDragEvent dtde) {
-		dtde.acceptDrag(dtde.getDropAction());
-	}
-
-	@Override
-	public void dragOver(DropTargetDragEvent dtde) {
-
-	}
-
-	@Override
-	public void dropActionChanged(DropTargetDragEvent dtde) {
-
-	}
-
-	@Override
-	public void dragExit(DropTargetEvent dte) {
-
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public void drop(DropTargetDropEvent dtde) {
+	public void sleep(int millisec) {
 		try {
-			dtde.acceptDrop(dtde.getDropAction());
-			List<File> dropppedFiles = (List<File>) dtde.getTransferable()
-					.getTransferData(DataFlavor.javaFileListFlavor);
-			for (File file : dropppedFiles) {
-				if (file.isDirectory()) {
-					path.setText(file.getAbsolutePath());
-				} else {
-					if (file.getName().endsWith(".nii")) {
-						path.setText(file.getAbsolutePath());
-					} else {
-						path.setText(file.getParent());
-					}
-				}
-				new Thread(this).start();
-				break;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+			Thread.sleep(millisec);
+		} catch (InterruptedException e1) {
 		}
-
 	}
 
-	/**
-	 * Returns the current Image.
+	/***
+	 * This Method checks if a ZeroEcho slice is calculated already to a given
+	 * Fitting function. This Method also sets a litte "+ 0" to the max_echo
+	 * field, so that the user get informed, about the additional slice.
 	 * 
-	 * @return The current Image.
+	 * @return if there is a ZeroEcho slice to show.
 	 */
-	public ImagePlus getImage() {
+	public boolean zeroEchoCheck() {
 		try {
-			if (getActualEcho() != 0) {
-				return this.volume.getSlice(actualSliceIndex()).getData();
-			} else {
-				return zeroecho.get(getActualSlice() - 1);
+			if (zeroecho.get(this.getActualSlice() + shape.getSelectedIndex()) != null) {
+				max_echo.setText(max_echo.getText().replace("+ 0", "") + "+ 0");
+				return true;
 			}
-		} catch (IOException | NullPointerException e) {
+		} catch (IOException e) {
+	
 		}
-		return null;
-	}
-
-	/**
-	 * The Scale, that had been used, to scale the Image.
-	 * 
-	 * @return The scale for the width and height of the Image.
-	 */
-	public double getScale() {
-		return scaling;
-	}
-
-	/**
-	 * Returns, if the outputarea is empty.
-	 * 
-	 * @return True if the outputarea is empty; false otherwiese
-	 */
-	public boolean isOutputAreaEmpty() {
-		return outputArea.getText().equals("");
-	}
-
-	@Override
-	public void mouseDragged(MouseEvent e) {
-		if (e.getSource().equals(this.imagelabel) && volume != null) {
-			setRoiPosition(e.getX(), e.getY());
-		}
-		if (volume != null && !creatingVolume && ze == null
-				&& e.getSource().equals(imagelabel)) {
-			float value = getImage().getProcessor().getf(
-					(int) (e.getX() / scaling), (int) (e.getY() / scaling));
-
-			String val = "value = " + value;
-			String x = "x = " + e.getX();
-			String y = "y = " + e.getY();
-			String seperator = ", ";
-
-			parent.getStatusLabel()
-					.setText(x + seperator + y + seperator + val);
-		}
-	}
-
-	@Override
-	public void mouseMoved(MouseEvent e) {
-		if (volume != null && !creatingVolume && ze == null
-				&& e.getSource().equals(imagelabel)) {
-			float value = getImage().getProcessor().getf(
-					(int) (e.getX() / scaling), (int) (e.getY() / scaling));
-			String val = "value = " + value;
-			String x = "x = " + e.getX();
-			String y = "y = " + e.getY();
-			String seperator = ", ";
-			parent.getStatusLabel()
-					.setText(x + seperator + y + seperator + val);
-		}
-	}
-
-	@Override
-	public void onFocus() {
-		parent.requestWidth(preferedWidth(), this);
-		parent.getJMenuBar().add(imagemenu);
-		parent.getJMenuBar().repaint();
-	}
-
-	@Override
-	public void onExit() {
-		parent.getJMenuBar().remove(imagemenu);
-		parent.getJMenuBar().repaint();
-	}
-
-	@Override
-	public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getSource() instanceof ZeroEcho) {
-			parent.getProgressBar().setValue((int) evt.getNewValue());
-		}
+		max_echo.setText(max_echo.getText().replace("+ 0", ""));
+		return false;
 	}
 
 	/**

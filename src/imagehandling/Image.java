@@ -22,9 +22,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 /**
- * The Image class is at the moment used for Dicoms and Niftis. You can use it
+ * The Image class is at the moment used for Dicoms and Nifties. You can use it
  * to get informations about the image, to test if you have a Dicom and to
- * exctract the Image of a file or the header of the file.
+ * Extract the Image of a file or the header of the file.
  * 
  * @author Dominik Ridder
  *
@@ -59,6 +59,7 @@ public class Image implements Comparable<Image> {
 
 	/**
 	 * @param data
+	 *            The Data of the Image
 	 */
 	public void setData(ImagePlus data) {
 		this.data = data;
@@ -66,10 +67,11 @@ public class Image implements Comparable<Image> {
 
 	/**
 	 * Simple constructor. The path should be the path of the image.If the name
-	 * of the image dont end with a known ending, the images handeld as a IMA
+	 * of the image don't end with a known ending, the images handled as a IMA
 	 * image.
 	 * 
 	 * @param path
+	 *            The Location of the Image
 	 */
 	public Image(String path) {
 		String type = "";
@@ -97,11 +99,13 @@ public class Image implements Comparable<Image> {
 	}
 
 	/**
-	 * With this Constructur, you can tell the Image class, which type of Image,
+	 * With this Constructor, you can tell the Image class, which type of Image,
 	 * belong to this file.
 	 * 
 	 * @param path
+	 *            The Location of the Image
 	 * @param type
+	 *            The Image extension
 	 */
 	public Image(String path, String type) {
 		this.type = type;
@@ -112,7 +116,7 @@ public class Image implements Comparable<Image> {
 	 * Returning all Implemented KeyWords in a String, where one line is one
 	 * Attribute Name.
 	 * 
-	 * @return
+	 * @return The name of all existing KeyMap enumerations
 	 * 
 	 */
 	public static String getKeyWords() {
@@ -139,7 +143,9 @@ public class Image implements Comparable<Image> {
 	 * regular expression.
 	 * 
 	 * @param regularExpression
-	 * @return
+	 *            A regular expression, that determinates the form of the
+	 *            searched KeyWord
+	 * @return The KeyWords, that matches the regular expression
 	 */
 	public static String getKeyWords(String regularExpression) {
 		ArrayList<String> words = new ArrayList<String>();
@@ -192,9 +198,9 @@ public class Image implements Comparable<Image> {
 	}
 
 	/**
-	 * Returns the Image typ. Known Implementation in this class: IMA and dcm.
+	 * Returns the Image type. Known Implementation in this class: IMA and dcm.
 	 * 
-	 * @return The Image typ
+	 * @return The Image type
 	 * 
 	 */
 	public String getType() {
@@ -212,13 +218,14 @@ public class Image implements Comparable<Image> {
 	}
 
 	/**
-	 * Returning one or more Attriubtes, to a given String. If this String
+	 * Returning one or more Attributes, to a given String. If this String
 	 * contains "*" or "?" a wildcard match is used to find all matching
 	 * Attributes. In this case you have in each row of the String one value.
 	 * Else you only have 1 row and 1 value.
 	 * 
 	 * @param key
-	 * @return One or more Attriubtes, to a given String.
+	 *            A Part of the line, that your are searching in the header
+	 * @return One or more Attributes, to a given String.
 	 */
 	public String getAttribute(String key) {
 		TextOptions topt = new TextOptions();
@@ -243,7 +250,10 @@ public class Image implements Comparable<Image> {
 	 * Returning the information ,to the given key, and the given textoptions.
 	 * 
 	 * @param key
+	 *            A Part of the line, that your are searching in the header
 	 * @param topt
+	 *            The Options, for searching and returning the header or a part
+	 *            of it
 	 * @return The information ,to the given key, and the given textoptions
 	 */
 	public String getAttribute(String key, TextOptions topt) {
@@ -287,7 +297,10 @@ public class Image implements Comparable<Image> {
 	 * ignored in this case.
 	 * 
 	 * @param en
+	 *            The enum, that represents the Information in the header
 	 * @param topt
+	 *            The Options, for searching and returning the header or a part
+	 *            of it
 	 * @return The information from the header of the Image to the given enum
 	 *         and the given Textoption.
 	 */
@@ -315,22 +328,25 @@ public class Image implements Comparable<Image> {
 	}
 
 	/**
-	 * Returns all key matching sepperated in an array.
+	 * Returns all key matching separated in an array.
 	 * 
 	 * @param key
-	 *            The key to search for in the values.
+	 *            A Part of the line, that your are searching in the header
 	 * 
-	 * @return The lines, that containes the key
+	 * @return The lines, that contains the key
 	 */
 	public String[] getAttributeList(String key) {
 		return getAttribute(key).split("\n");
 	}
 
 	/**
-	 * Returns all key matching sepperated in an array.
+	 * Returns all key matching separated in an array.
 	 * 
 	 * @param key
+	 *            A Part of the line, that your are searching in the header
 	 * @param topt
+	 *            The Options, for searching and returning the header or a part
+	 *            of it
 	 * @return The formated lines to the gives key
 	 * 
 	 */
@@ -410,10 +426,10 @@ public class Image implements Comparable<Image> {
 	 * @param roitype
 	 *            the roi type
 	 * @param x
-	 *            coordinate from the upperleft corner of the rectanlge, that
+	 *            coordinate from the upper left corner of the rectangle, that
 	 *            contains the Roi
 	 * @param y
-	 *            coordinate from the upperleft corner of the rectanlge, that
+	 *            coordinate from the upper left corner of the rectangle, that
 	 *            contains the Roi
 	 * @param width
 	 *            of the rectangle, that contains the Roi
@@ -484,7 +500,7 @@ public class Image implements Comparable<Image> {
 	}
 
 	/**
-	 * Creates ***.header txt document in the given path with the header
+	 * Creates ***.header text document in the given path with the header
 	 * information of the Image.
 	 */
 	public void extractHeader() {
@@ -492,10 +508,11 @@ public class Image implements Comparable<Image> {
 	}
 
 	/**
-	 * Creates ***.header txt document in the outputdir with the header
+	 * Creates ***.header text document in the outputdir with the header
 	 * information of the Image.
 	 * 
 	 * @param outputdir
+	 *            The Location, where the header files are saved to
 	 */
 	public void extractHeader(String outputdir) {
 		extractHeader(false, outputdir);
@@ -513,6 +530,7 @@ public class Image implements Comparable<Image> {
 	 * Creates png files of the image, in the outputdir folder.
 	 * 
 	 * @param outputdir
+	 *            The Location, where the Data is saved to
 	 */
 	public void extractData(String outputdir) {
 		DataExtractor de = null;
@@ -572,7 +590,7 @@ public class Image implements Comparable<Image> {
 	 * Returns Dicom attributes, to a given enum of the KeyMap.
 	 * 
 	 * @param en
-	 *            The KeyMap enum, that descripes the needed header value.
+	 *            The KeyMap enum, that describes the needed header value.
 	 * @return The Dicom attribute, that belong to the enum
 	 * 
 	 */
@@ -585,7 +603,7 @@ public class Image implements Comparable<Image> {
 	 * Returns Dicom attributes, to a given enum of the KeyMap.
 	 * 
 	 * @param en
-	 *            The KeyMap enum, that descripes the needed header value.
+	 *            The KeyMap enum, that describes the needed header value.
 	 * @return The Dicom attributes as a String, that belong to the enums.
 	 * 
 	 */
@@ -601,7 +619,7 @@ public class Image implements Comparable<Image> {
 	 * @param path
 	 *            The Path of the Dicom, that contains the needed informations.
 	 * @param en
-	 *            The KeyMap enums, that descripes the needed header values.
+	 *            The KeyMap enums, that describes the needed header values.
 	 * @return The needed information of the dicom header
 	 * 
 	 */

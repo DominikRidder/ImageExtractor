@@ -10,8 +10,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicArrowButton;
 
 /**
- * ArrowButton represents a JButton, that has an Arrow as an Image. Additionaly
- * this class contains a good solution, in case you need a Behaivior as long as
+ * ArrowButton represents a JButton, that has an Arrow as an Image. Additionally
+ * this class contains a good solution, in case you need a behavior as long as
  * the Button is pressed, like a counter that is increased.
  * 
  * @author Dominik Ridder
@@ -34,7 +34,7 @@ public class ArrowButton extends BasicArrowButton implements ActionListener {
 	public static final int ECHO_ARROW = 2;
 
 	/**
-	 * The change is the value, that is added repeadly to a value, while the
+	 * The change is the value, that is added repeatedly to a value, while the
 	 * Button is pressed.
 	 */
 	private int change;
@@ -50,13 +50,13 @@ public class ArrowButton extends BasicArrowButton implements ActionListener {
 	private VolumeTab tocall;
 
 	/**
-	 * The frequenzy of value changing, that is processed, while the Button is
+	 * The frequency of value changing, that is processed, while the Button is
 	 * pressed.
 	 */
 	private final int timerDelay = 100;
 
 	/**
-	 * Timer, that repeadly calls the method, that changes the needed value in a
+	 * Timer, that repeatedly calls the method, that changes the needed value in a
 	 * period of time.
 	 */
 	final Timer timer = new Timer(timerDelay, this);
@@ -65,6 +65,8 @@ public class ArrowButton extends BasicArrowButton implements ActionListener {
 	 * Constructor that creates a new ArrowButton with the given direction.
 	 * 
 	 * @param direction
+	 *            The direction, that determinate, whether the Arrow showing up
+	 *            or down
 	 */
 	public ArrowButton(int direction) {
 		super(direction);
@@ -119,7 +121,7 @@ public class ArrowButton extends BasicArrowButton implements ActionListener {
 	}
 
 	/**
-	 * Performing the onclick action. This Method changing the slice or echo
+	 * Performing the on click action. This Method changing the slice or echo
 	 * field of the Textfield.
 	 */
 	@Override

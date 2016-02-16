@@ -1,11 +1,9 @@
 package imagehandling;
 
 import gui.volumetab.Roi3D;
-import gui.volumetab.VolumeTab;
 import ij.ImagePlus;
 import ij.gui.OvalRoi;
 import ij.gui.Roi;
-import ij.plugin.Nifti_Reader;
 import imagehandling.headerhandling.KeyMap;
 import imagehandling.headerhandling.TextOptions;
 
@@ -54,7 +52,7 @@ public class DICOMVolume extends Volume {
 	private TextOptions topt;
 
 	/**
-	 * This default construktur should not be used. If you use this method, it
+	 * This default constructor should not be used. If you use this method, it
 	 * gonna print some information into the console and call System.exit(1).
 	 */
 	public DICOMVolume() {
@@ -65,10 +63,11 @@ public class DICOMVolume extends Volume {
 
 	/**
 	 * This constructor searching in the given path for files. In this folder
-	 * there should only be one type of images. If the names of the images dont
-	 * end with a known ending, the images handeld as a IMA image.
+	 * there should only be one type of images. If the names of the images don't
+	 * end with a known ending, the images handled as a IMA image.
 	 *
 	 * @param path
+	 *            The Location, of the Dicom Volume
 	 */
 	public DICOMVolume(String path) {
 		resetTextOptions();
@@ -103,74 +102,7 @@ public class DICOMVolume extends Volume {
 			// sort images
 			Collections.sort(slices);
 		}
-		// } else if (path.endsWith(".nii")) {
-		// Nifti_Reader nr = new Nifti_Reader();
-		// ImagePlus nifti = nr.load(file.getParent(), file.getName());
-		// System.out.println(nifti.getT());
-		// for (int i = 0; i < nifti.getImageStackSize(); i++) {
-		// Image img = new Image(path, "nii");
-		// ImagePlus data = new ImagePlus();
-		// nifti.setSlice(i);
-		// data.setImage(nifti.getBufferedImage());
-		// img.setData(data);
-		// slices.add(img);
-		// }
-		// }
 
-	}
-
-	/**
-	 * This construktur is used by the gui class. The diffence is, that the
-	 * normal construktur would call System.exit(1) if the Volume path is not
-	 * correct, while this method throws a RuntimeException.
-	 * 
-	 * @param path
-	 * @param volumetab 
-	 */
-	public DICOMVolume(String path, VolumeTab volumetab) {
-		resetTextOptions();
-		slices = new ArrayList<Image>();
-		this.path = path;
-
-		// getting the files inhabited in the path
-		File file = new File(path);
-		if (file.isDirectory()) {
-			File[] list = file.listFiles();
-
-			if (list == null) {
-				throw new RuntimeException(
-						"The given Volume path seems to be not correct. Please check the path.");
-			}
-
-			// adding the Images
-			for (File l : list) {
-				try {
-					Image img = new Image(l.getAbsolutePath());
-					slices.add(img);
-				} catch (RuntimeException e) {
-				}
-			}
-		} else if (file.getName().endsWith(".nii")) {
-			Nifti_Reader nr = new Nifti_Reader();
-			ImagePlus nifti = nr.load(file.getParent(), file.getName());
-			System.out.println(nifti.getNFrames());
-			for (int i = 0; i < nifti.getImageStackSize(); i++) {
-				Image img = new Image(path, "nii");
-				ImagePlus data = new ImagePlus();
-				nifti.setSlice(i);
-				data.setImage(nifti.getBufferedImage());
-				img.setData(data);
-				slices.add(img);
-			}
-		}
-
-		if (size() == 0) {
-			throw new RuntimeException(
-					"The given Volume path seems to be not correct. Please check the path.");
-		}
-
-		// sort images
-		Collections.sort(slices);
 	}
 
 	/**
@@ -204,7 +136,7 @@ public class DICOMVolume extends Volume {
 	 * information of the Images.
 	 * 
 	 * @param outputdir
-	 *            The Destinationfolder of the header files.
+	 *            The Destination folder of the header files.
 	 */
 	public void extractHeader(String outputdir) {
 		int excounter = 0;
@@ -378,7 +310,7 @@ public class DICOMVolume extends Volume {
 
 	/**
 	 * Returning a Attribute value, to a given key and a Vector named slices,
-	 * which contains the indizies of the slices, which should be used.
+	 * which contains the indices of the slices, which should be used.
 	 * 
 	 * @param key
 	 *            The KeyMap enum, that represents the searched value.
@@ -419,7 +351,7 @@ public class DICOMVolume extends Volume {
 	/**
 	 * Returns an array of Strings, where each String belong to one Slice. One
 	 * String may contain more rows, if the given key matches to more than one
-	 * searchparameter.
+	 * search parameter.
 	 * 
 	 * @param key
 	 *            The String, that should be searched in the header lines.
@@ -450,7 +382,7 @@ public class DICOMVolume extends Volume {
 	 * @param key
 	 *            The String, that should be searched in the header lines.
 	 * @param slice
-	 *            The Slice, which header should be searched throught for the
+	 *            The Slice, which header should be searched through for the
 	 *            given key.
 	 */
 	public String[] getAttributeList(String key, int slice) {
@@ -463,7 +395,7 @@ public class DICOMVolume extends Volume {
 	 * @param key
 	 *            The String, that should be searched in the header lines.
 	 * @param slices
-	 *            The Slices, which header should be searched throught for the
+	 *            The Slices, which header should be searched through for the
 	 *            given key.
 	 */
 	public String[][] getAttributeList(String key, Vector<Integer> slices) {
@@ -629,38 +561,5 @@ public class DICOMVolume extends Volume {
 			img.loadData();
 		}
 	}
-	// /**
-	// * Returning the decay of Signal belonging to different Echoes.
-	// */
-	// public ArrayList<BufferedImage> getDecayImages(){
-	// int size = size();
-	// ArrayList<BufferedImage> rightnow = getData();
-	// KeyMap[] info = {KeyMap.KEY_ECHO_NUMBERS_S};
-	// String[] att = getSlice(size-1).getAttributesDicom(info);
-	// int echoNumbers = Integer.parseInt(att[0]);
-	// int slices = size/echoNumbers;
-	// int width = rightnow.get(0).getWidth();
-	// int height = rightnow.get(0).getHeight();
-	// int rgbtype = rightnow.get(0).getType();
-	//
-	// ArrayList<BufferedImage> ret = new ArrayList<>(slices);
-	// int values[][][] = new int[slices][echoNumbers][width*height];
-	// int sum = 0;
-	//
-	// for (int s=0; s<slices; s++){
-	// BufferedImage next = new BufferedImage(width,height,rgbtype);
-	// for (int e=0; e<echoNumbers; e++){
-	// BufferedImage val = rightnow.get(s+e*slices);
-	// for (int x=0; x<height; x++){
-	// for (int y=0; y<width; y++){
-	// values[s][e][y+x*width] = val.getRGB(y, x);
-	// }
-	// }
-	// }
-	// }
-	// System.out.println("done");
-	// System.out.println(slices*echoNumbers*height*width+" Pixels");
-	//
-	// return null;
-	// }
+
 }

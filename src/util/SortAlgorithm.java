@@ -35,16 +35,16 @@ public class SortAlgorithm {
 	 * PatientID wasn't saved in the file.
 	 */
 	public final static String DEFAULT_PATIENTID = "NO_ID";
-	
+
 	/**
-	 * The Default value for the Protocolname, that is used, in case that the
-	 * Protocolname wasn't saved in the file.
+	 * The Default value for the Protocol name, that is used, in case that the
+	 * Protocol name wasn't saved in the file.
 	 */
 	public final static String DEFAULT_PROCOLNAME = "NO_PROT_NAME";
-	
+
 	/**
-	 * The Default value for the Imagenumber, that is used, in case that the
-	 * Imagenumber wasn't saved in the file.
+	 * The Default value for the Image number, that is used, in case that the
+	 * Image number wasn't saved in the file.
 	 */
 	public final static String DEFAULT_IMAGENUMBER = "0";
 
@@ -72,18 +72,18 @@ public class SortAlgorithm {
 	public final static String DEFAULT_INSTANCE_UID = "1";
 
 	/**
-	 * This boolean is used to print a error Message, when curropt data was
+	 * This boolean is used to print a error Message, when corrupt data was
 	 * found. This way i only print one time a error Message.
 	 */
 	private boolean anyCurropt;
 
 	/**
-	 * Defines, if the dicoms transefered as a dicom or as a nifti.
+	 * Defines, if the dicoms transefered as a dicom or as a nifty.
 	 */
 	private boolean createNiftis = false;
 
 	/**
-	 * This hashmap helps, to create niftis.
+	 * This hashmap helps, to create nifties.
 	 */
 	private HashMap<String, ArrayList<String>> dicomtonifti;
 
@@ -102,7 +102,7 @@ public class SortAlgorithm {
 	 */
 	private boolean stopsort = false;
 	/**
-	 * The value keepImgName decides, wether the images are renamed to their
+	 * The value keepImgName decides, whether the images are renamed to their
 	 * Image Number or if they keep their name.
 	 */
 	private boolean keepImgName = false;
@@ -124,7 +124,7 @@ public class SortAlgorithm {
 	private int found;
 
 	/**
-	 * Copyd is the number of dicoms, that are copyd to the output directory.
+	 * Copied is the number of dicoms, that are copied to the output directory.
 	 */
 	private int transfered;
 
@@ -150,9 +150,9 @@ public class SortAlgorithm {
 
 	/**
 	 * The index is important for the case, that the boolean value subfolder is
-	 * false. The index is used to set the praefix of a protocol folder than.
-	 * The key of this HashMap is the patient id and the value is the highest
-	 * index, that is missing in the subfolder of a patient folder.
+	 * false. The index is used to set the prefix of a protocol folder than. The
+	 * key of this HashMap is the patient id and the value is the highest index,
+	 * that is missing in the subfolder of a patient folder.
 	 */
 	private HashMap<String, Integer> index;
 
@@ -164,15 +164,15 @@ public class SortAlgorithm {
 	private HashMap<String, String> protocolInfo;
 
 	/**
-	 * Missing is used, to fill gaps in the protocol praefix (in the subfolder
+	 * Missing is used, to fill gaps in the protocol prefix (in the subfolder
 	 * sort). If someone would delete the folder 010_protocolname, than the next
-	 * folder would use the praefix 010_, even if there are higher praefix
+	 * folder would use the prefix 010_, even if there are higher prefix
 	 * numbers.
 	 */
 	private HashMap<String, ArrayList<Integer>> missing;
 
 	/**
-	 * This is the default construktur. This construktur setting the following
+	 * This is the default constructor. This constructor setting the following
 	 * defaults value:
 	 * <p>
 	 * - subfolders = false
@@ -191,7 +191,7 @@ public class SortAlgorithm {
 	}
 
 	/**
-	 * This construktur contains the following default setter: - image digits =
+	 * This constructor contains the following default setter: - image digits =
 	 * 5
 	 * <p>
 	 * - protocol digits = 3
@@ -200,6 +200,8 @@ public class SortAlgorithm {
 	 * more informations.
 	 * 
 	 * @param subfolders
+	 *            The Options that deciding about the way the generated
+	 *            Directory is structured
 	 */
 	public SortAlgorithm(boolean subfolders) {
 		this.subfolders = subfolders;
@@ -208,14 +210,17 @@ public class SortAlgorithm {
 	}
 
 	/**
-	 * This construktur contains the following default setter: - protocol digits
+	 * This constructor contains the following default setter: - protocol digits
 	 * = 3
 	 * <p>
 	 * Take a look in the Java-doc of the setter methods of these values for
 	 * more informations.
 	 * 
 	 * @param subfolders
+	 *            This Options decides what the generated Directory looks like
 	 * @param protocol_digits
+	 *            The Number of digits, that should be at least in a Protocol
+	 *            name
 	 */
 	public SortAlgorithm(boolean subfolders, int protocol_digits) {
 		this.subfolders = subfolders;
@@ -224,13 +229,17 @@ public class SortAlgorithm {
 	}
 
 	/**
-	 * With this construktur, you can set all needed parameters at once, so you
-	 * dont need any setter methods. Take a look in the Java-doc of the setter
+	 * With this constructor, you can set all needed parameters at once, so you
+	 * don't need any setter methods. Take a look in the Java-doc of the setter
 	 * methods of these values for more informations.
 	 * 
 	 * @param subfolders
+	 *            This Options changing the Structure of the generated
+	 *            Dictionary
 	 * @param protocol_digits
+	 *            The Number of digits, that a protocol should at least
 	 * @param img_digits
+	 *            The Number of digits, that a Image should have at least
 	 */
 	public SortAlgorithm(boolean subfolders, int protocol_digits, int img_digits) {
 		this.subfolders = subfolders;
@@ -254,7 +263,7 @@ public class SortAlgorithm {
 	 * where it is printed.
 	 * 
 	 * @param out
-	 *            the printstream, that should be used, for printing the
+	 *            The printstream, that should be used, for printing the
 	 *            progress
 	 */
 	public void setPrintStream(PrintStream out) {
@@ -268,7 +277,8 @@ public class SortAlgorithm {
 	 * DICOM is taken.
 	 * 
 	 * @param i
-	 *            the amout of digits, that a Image Name should contain at least
+	 *            the amount of digits, that a Image Name should contain at
+	 *            least
 	 */
 	public void setImgDigits(int i) {
 		img_digits = i;
@@ -279,7 +289,7 @@ public class SortAlgorithm {
 	 * special position. If subfolders is true, than protocolDigits contains the
 	 * information for the number of digits for the subfolder of a protocol name
 	 * folder. Else, the protocolDigits contains the information, how many
-	 * digits are used as a Praefix of a protocol folder.
+	 * digits are used as a prefix of a protocol folder.
 	 * 
 	 * @param i
 	 *            The Number of Protocol digits that should be used at least.
@@ -292,11 +302,11 @@ public class SortAlgorithm {
 	 * The boolean value subfolders contains the information, whether the
 	 * different angel of the scans are sorted in subfolders in the protocol
 	 * name directorys or the different angel are save as the protocol name with
-	 * a certain praefix.
+	 * a certain prefix.
 	 * 
 	 * @param useSubfolders
 	 *            The boolean that indicates, whether the Algorithm should use
-	 *            Subfolders or not.
+	 *            subfolders or not.
 	 */
 	public void useSubfolders(boolean useSubfolders) {
 		subfolders = useSubfolders;
@@ -317,11 +327,11 @@ public class SortAlgorithm {
 	}
 
 	/**
-	 * Defines, if the dicoms transefered as a dicom or as a nifti.
+	 * Defines, if the dicoms transfered as a dicom or as a nifty.
 	 * 
 	 * @param createniftis
-	 *            true, if the found dicoms should be saved as a nifti; false
-	 *            otherwiese
+	 *            true, if the found dicoms should be saved as a nifty; false
+	 *            otherwise
 	 */
 	public void setCreateNiftis(boolean createniftis) {
 		this.createNiftis = createniftis;
@@ -366,7 +376,7 @@ public class SortAlgorithm {
 	}
 
 	/**
-	 * This method checks if a File to the given path exists anf if its not
+	 * This method checks if a File to the given path exists and if its not
 	 * existing, the method prints the information, that the path gonna be
 	 * created and creates the directory to the path.
 	 * 
@@ -411,14 +421,14 @@ public class SortAlgorithm {
 	/**
 	 * This method searching in the path "searchin" for DICOMs and subfolders,
 	 * which contains DICOMs. These DICOMs are sorted in the value "sortInDir".
-	 * If "sortInDir" not exists, it gonna be created. To specify the behaivor
+	 * If "sortInDir" not exists, it gonna be created. To specify the behavior
 	 * of this method, you can use the setter methods.
 	 * 
 	 * @param searchin
 	 *            The Folder, where the Algorithm search for DICOMs.
 	 * @param sortInDir
 	 *            The Folder, where the Algorithm move and sort the DICOMs.
-	 * @return True if sort algorithm wasn't stopped; else otherwiese
+	 * @return True if sort algorithm wasn't stopped; else otherwise
 	 */
 	public boolean searchAndSortIn(String searchin, String sortInDir) {
 		// a list of found dicoms is needed, if nifti should be used
@@ -514,7 +524,7 @@ public class SortAlgorithm {
 	}
 
 	/**
-	 * This Method creates the Niftis at the end of the SortAlgorithmen.
+	 * This Method creates the Nifties at the end of the SortAlgorithmen.
 	 */
 	private int createNiftis() {
 		int numberofnii = 0;

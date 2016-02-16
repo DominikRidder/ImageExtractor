@@ -12,8 +12,11 @@ public class NIFTIHeaderWriter {
 	private StringBuilder header;
 
 	/**
+	 * This method generates a Nifty header to the given Nifty data.
+	 * 
 	 * @param data
-	 * @return
+	 *            The data, that contains the header information
+	 * @return The generated NiftiHeader
 	 */
 	public String writeHeader(ImagePlus data) {
 		header = new StringBuilder();

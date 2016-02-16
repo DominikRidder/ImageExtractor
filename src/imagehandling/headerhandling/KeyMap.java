@@ -339,12 +339,13 @@ public enum KeyMap {
 	KEY_PIXEL_DATA;
 
 	/**
-	 * This method returns the value of an Enum. If the given type is equal to
+	 * This method returns the value of an enum. If the given type is equal to
 	 * "dcm" or "IMA", than the value is a String, which contains 8 numbers
 	 * like: "0002,0002".
 	 * 
 	 * @param type
-	 * @return
+	 *            The extension of the file type
+	 * @return The value of an enum
 	 */
 	public String getValue(String type) {
 		String str = "";
