@@ -367,7 +367,7 @@ public class SortAlgorithm {
 	 * @param number
 	 * @return A String representation of a number filled with leading zeros
 	 */
-	private String toNDigits(int n, String number) {
+	private static String toNDigits(int n, String number) {
 		StringBuilder digits = new StringBuilder(n);
 		for (int i = 0; i < n - number.length(); i++) {
 			digits.append("0");

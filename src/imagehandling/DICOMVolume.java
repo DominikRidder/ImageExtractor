@@ -165,7 +165,7 @@ public class DICOMVolume extends Volume {
 	 *            get the Attribute
 	 * @return The Attribute, that matches the enum name
 	 */
-	public String getAttribute(KeyMap en) {
+	public String getAttribute(KeyMap en, boolean compareslices) {
 		if (en == null) {
 			System.out
 					.println("The given element is 'null'. Cant search without a real KeyMap enum.");
@@ -173,31 +173,33 @@ public class DICOMVolume extends Volume {
 		}
 
 		// getting the first Attribute, for some comparisons
-		int index = 0;
+		int index = size() - 1;
 		String str = null;
 		while (str == null) {
 			try {
-				str = getAttribute(en, index++);
+				str = getAttribute(en, index--);
 			} catch (IndexOutOfBoundsException e) {
 				// catching files, that are not part of the images
 			}
 		}
 
-		// if str == " " the attribute isnt set in the header
-		if (str.equals(" ")) {
-			return str;
-		}
+		if (compareslices) {
+			// if str == " " the attribute isnt set in the header
+			if (str.equals(" ")) {
+				return str;
+			}
 
-		// starting with i=1, because we already have str = 'slice(0)'...
-		for (int i = 1; i < slices.size(); i++) {
-			try {
-				if (!str.equals(getAttribute(en, i))) {
-					System.out
-							.println("The Attributes are not the same in all slices.");
-					break;
+			// starting with i=1, because we already have str = 'slice(0)'...
+			for (int i = 1; i < slices.size(); i++) {
+				try {
+					if (!str.equals(getAttribute(en, i))) {
+						System.out
+								.println("The Attributes are not the same in all slices.");
+						break;
+					}
+				} catch (IndexOutOfBoundsException e) {
+					// catching files, that are not part of the images
 				}
-			} catch (IndexOutOfBoundsException e) {
-				// catching files, that are not part of the images
 			}
 		}
 
@@ -252,9 +254,12 @@ public class DICOMVolume extends Volume {
 	 * 
 	 * @param key
 	 *            An String, that should be searched in the Header.
+	 * @param compareslices
+	 *            True: checks, if all slices containing value; False: just
+	 *            returning the value of the last slice
 	 * @return The Information in the Header, that matches the key
 	 */
-	public String getAttribute(String key) {
+	public String getAttribute(String key, boolean compareslices) {
 		if (key == null) {
 			System.out
 					.println("The given element is 'null'. Cant search without a String.");
@@ -263,27 +268,27 @@ public class DICOMVolume extends Volume {
 
 		// getting the last Attribute, for some comparisons
 		String str = getAttribute(key, this.size() - 1);
-		if (str.equals("<<key not found>>")) {
-			return str;
-		}
 
-		// if str == "<<no attribute found>>" the attribute isnt set in the
-		// header
-		if (str.equals("<<no attribute found>>")) {
-			return str;
-		}
+		if (compareslices) {
+			// if str == "<<no attribute found>>" the attribute isnt set in the
+			// header
+			if (str.equals("<<no attribute found>>")) {
+				return str;
+			}
 
-		// ending by i = slices.size-1, because we use this attribute for the
-		// comparission
-		for (int i = 0; i < slices.size() - 1; i++) {
-			try {
-				if (!str.equals(getAttribute(key, i))) {
-					System.out
-							.println("The Attributes are not the same in all slices.");
-					break;
+			// ending by i = slices.size-1, because we use this attribute for
+			// the
+			// comparission
+			for (int i = 0; i < slices.size() - 1; i++) {
+				try {
+					if (!str.equals(getAttribute(key, i))) {
+						System.out
+								.println("The Attributes are not the same in all slices.");
+						break;
+					}
+				} catch (IndexOutOfBoundsException e) {
+					// catching files, that are not part of the images
 				}
-			} catch (IndexOutOfBoundsException e) {
-				// catching files, that are not part of the images
 			}
 		}
 
@@ -373,7 +378,7 @@ public class DICOMVolume extends Volume {
 	}
 
 	public String[] getAttributeList(String key) {
-		return getAttribute(key).split("\n");
+		return getAttribute(key, false).split("\n");
 	}
 
 	/**

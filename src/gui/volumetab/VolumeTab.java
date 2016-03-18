@@ -168,7 +168,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private JButton open_imagej;
 
 	/**
-	 * JFileChooser is used to search a Volume (dir).
+	 * JFileChooser is used to search a Volume (directory/file).
 	 */
 	private JFileChooser chooser;
 
@@ -178,7 +178,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private JTextField path;
 
 	/**
-	 * This field is the current choosen echo.
+	 * This field is the current chosen echo.
 	 */
 	private JTextField echo_index;
 
@@ -277,7 +277,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	/**
 	 * This Roi is a scaled roi of the internal Roi. It is used, for a faster
-	 * and easyer solution, to find out, whether a roi is set or not and what
+	 * and easier solution, to find out, whether a roi is set or not and what
 	 * kind of roi is used.
 	 */
 	private Roi relativroi;
@@ -289,15 +289,15 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private VolumeFitter vf;
 
 	/**
-	 * String that was in the Attribute Filter Textfield since the lasttime the
+	 * String that was in the Attribute Filter Textfield since the last time the
 	 * filter got checked.
 	 */
 	private String lastfilter = "";
 
 	/**
 	 * The LastTime in milliseconds, that the current Slice/Echo is changed.
-	 * This gives the User a better feeling i. e. sliding throught 64 slices
-	 * with 1 millisecond each slice would be to fast for the User.
+	 * This gives the User a better feeling i. e. sliding through 64 slices with
+	 * 1 millisecond each slice would be to fast for the User.
 	 */
 	private long lastpressed;
 
@@ -362,7 +362,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private JMenu imagemenu = new JMenu("Image");
 
 	/**
-	 * Button, that is used, to start or cancle the calculation of the ZeroEcho.
+	 * Button, that is used, to start or cancel the calculation of the ZeroEcho.
 	 */
 	private JButton zero_echo;
 
@@ -379,14 +379,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	/**
 	 * This boolean indicates, if a actionPerformed() is called by the
-	 * ContrastAdjuster. Without this boolean the Programm could stuckt in an
-	 * Update Cyrcle.
+	 * ContrastAdjuster. Without this boolean the Program could stuck in an
+	 * Update Cycle.
 	 */
 	private boolean contrastupdate;
 
 	/**
 	 * MenueItem, that contains the options to save the calculated ZeroEcho. In
-	 * case, that the user didn't calculated the ZeroEcho, this Menueitem will
+	 * case, that the user didn't calculated the ZeroEcho, this Menu item will
 	 * be disabled.
 	 */
 	private JMenuItem save;
@@ -408,7 +408,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private JSlider echo_slider;
 
 	/**
-	 * Standard Constructur.
+	 * Standard Constructor.
 	 * 
 	 * @param filechooser
 	 *            The Filechooser, that should be used
@@ -808,7 +808,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
-	 * Action Command, that is called, when the actual shape is changed throught
+	 * Action Command, that is called, when the actual shape is changed through
 	 * the JComboBox in the Gui.
 	 */
 	public void actionShape() {
@@ -1137,14 +1137,33 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 			index_slider.setMinimum(1);
 			index_slider.setMaximum(perEcho);
+			index_slider.setValue(1);
 			echo_slider.setMinimum(1);
 			echo_slider.setMaximum(echoNumbers);
+			echo_slider.setValue(1);
 
 			slice_index.requestFocus();
 			showROI(false);
 			displayImage();
+
+			// A Way, how the combobox could be filled
+			// TextOptions oldopt = volume.getTextOptions();
+			// TextOptions newopt = new TextOptions();
+			//
+			// int[] searchopt = { TextOptions.ATTRIBUTE_NAME };
+			// newopt.setSearchOptions(searchopt);
+			// newopt.setReturnExpression(TextOptions.ATTRIBUTE_NAME + "");
+			//
+			// volume.setTextOptions(newopt);
+			// for (KeyMap att : KeyMap.values()) {
+			// String name = volume.getAttribute(att, false).replace("\n", "");
+			// if (!name.replace(" ", "").equals("")) {
+			// System.out.println(name);
+			// }
+			// }
+			// volume.setTextOptions(oldopt);
 		} catch (RuntimeException ert) {
-			// thrown by createVolume() if it didit worked.
+			// thrown by createVolume() if it didn't worked.
 			slice_index.setEditable(false);
 			slice_index.setText("0");
 			slice_max.setText("/0");
@@ -1178,17 +1197,17 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	@Override
 	public void dragOver(DropTargetDragEvent dtde) {
-	
+
 	}
 
 	@Override
 	public void dropActionChanged(DropTargetDragEvent dtde) {
-	
+
 	}
 
 	@Override
 	public void dragExit(DropTargetEvent dte) {
-	
+
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1214,7 +1233,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	
+
 	}
 
 	/**
@@ -1237,7 +1256,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	/**
 	 * Method to read out the echo Textfield. This Method is specially used to
-	 * have a checked Exception, in case the User give us an unqualifiet input.
+	 * have a checked Exception, in case the User give us an unqualified input.
 	 * 
 	 * @return The Number, that is written in the slice textfield.
 	 * @throws IOException
@@ -1293,7 +1312,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * This Method returns an intern boolean, that contains the Information, if
 	 * a volume is in creation or not.
 	 * 
-	 * @return true if volume is in creation; false otherwiese
+	 * @return true if volume is in creation; false otherwise
 	 */
 	public boolean isCreatingVolume() {
 		return creatingVolume;
@@ -1302,7 +1321,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	/**
 	 * Returns, if the outputarea is empty.
 	 * 
-	 * @return True if the outputarea is empty; false otherwiese
+	 * @return True if the outputarea is empty; false otherwise
 	 */
 	public boolean isOutputAreaEmpty() {
 		return outputArea.getText().equals("");
@@ -1354,7 +1373,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			int change = -1 * e.getWheelRotation();
 			boolean makechange = false;
 			boolean changeEcho = false;
-	
+
 			if (obj instanceof JTextField) {
 				JTextField index = (JTextField) obj;
 				if (index.equals(slice_index) || index.equals(slice_max)
@@ -1385,9 +1404,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					makechange = true;
 					changeEcho = false;
 				}
-	
+
 			}
-	
+
 			if (makechange) {
 				if (changeEcho) {
 					addtoEcho(change);
@@ -1432,12 +1451,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				&& e.getSource().equals(imagelabel)) {
 			float value = getImage().getProcessor().getf(
 					(int) (e.getX() / scaling), (int) (e.getY() / scaling));
-	
+
 			String val = "value = " + value;
 			String x = "x = " + e.getX();
 			String y = "y = " + e.getY();
 			String seperator = ", ";
-	
+
 			parent.getStatusLabel()
 					.setText(x + seperator + y + seperator + val);
 		}
@@ -1513,18 +1532,18 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			double x = relativroi.getXBase();
 			double y = relativroi.getYBase();
 			double calrad = relativroi.getBounds().getWidth() / 2;
-	
+
 			double radius = this.radius.getValue();
-	
+
 			if (unit.getSelectedItem().equals("pixel")) {
 				radius /= volume.getSlice(0).getData().getFileInfo().pixelWidth;
 			}
-	
+
 			double newr = (int) (radius * scaling);
-	
+
 			x += calrad - newr;
 			y += calrad - newr;
-	
+
 			relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
 			realroi = new OvalRoi(((double) x) / scaling, ((double) y)
 					/ scaling, radius * 2, radius * 2);
@@ -1533,9 +1552,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			double y = relativroi.getYBase();
 			int z = ((Roi3D) relativroi).getZ();
 			double calrad = relativroi.getBounds().getHeight() / 2;
-	
+
 			double radius = this.radius.getValue();
-	
+
 			if (unit.getSelectedItem().equals("pixel")) {
 				radius /= volume.getSlice(0).getData().getFileInfo().pixelWidth;
 			}
@@ -1563,7 +1582,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			parent.requestWidth(preferedWidth(), this);
 			GUI.setfinalSize(toppanel, new Dimension(preferedWidth(),
 					parent.height));
-	
+
 			if (vf == null) {
 				vf = new VolumeFitter();
 			}
@@ -1603,12 +1622,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			ownExtended = false;
 			parent.requestWidth(preferedWidth(), this);
 		}
-	
+
 		this.repaint();
 	}
 
 	/**
-	 * This Method sets the acutal roi Shape. Actual valid shape names are:
+	 * This Method sets the actual roi Shape. Actual valid shape names are:
 	 * Point, Circle and Sphere.
 	 * 
 	 * @param shape
@@ -1625,44 +1644,44 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	/**
 	 * Method, that calls a JFileChooser and saves the ZeroEcho + the other
-	 * Echos as a Nifti, as the selected File. If the filename don't endswith
+	 * Echos as a Nifty, as the selected File. If the filename don't ends with
 	 * ".nii", than the extension ".nii" is added.
 	 */
 	public void saveZeroEcho() {
 		if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION
 				&& chooser.getSelectedFile() != null) {
 			Nifti_Writer writer = new Nifti_Writer();
-	
+
 			ImageStack is = null;
 			ImagePlus ip = new ImagePlus();
-	
+
 			double min = Double.POSITIVE_INFINITY;
 			double max = Double.NEGATIVE_INFINITY;
-	
+
 			ArrayList<ImagePlus> concat = new ArrayList<ImagePlus>();
 			concat.addAll(zeroecho);
 			for (int i = 0; i < volume.size(); i++) {
 				concat.add(volume.getSlice(i).getData());
 			}
-	
+
 			is = new ImageStack(volume.getSlice(volume.size() - 1).getData()
 					.getWidth(), volume.getSlice(volume.size() - 1).getData()
 					.getHeight());
 			ip.setCalibration(volume.getSlice(volume.size() - 1).getData()
 					.getCalibration());
-	
+
 			for (ImagePlus nextimp : concat) {
-	
+
 				min = Math.min(nextimp.getProcessor().getMin(), min);
 				max = Math.max(nextimp.getProcessor().getMax(), max);
-	
+
 				try {
 					is.addSlice(nextimp.getProcessor());
 				} catch (IllegalArgumentException e) {
 					continue;
 				}
 			}
-	
+
 			ip.setStack(is);
 			ip.getProcessor().setMinAndMax(min, max);
 			if (echoNumbers != 1) {
@@ -1671,7 +1690,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				ip.setOpenAsHyperStack(true);
 			}
 			WindowManager.setTempCurrentImage(ip);
-	
+
 			writer.dicom_to_nifti = false;
 			String name = chooser.getSelectedFile().getName();
 			if (!name.endsWith(".nii")) {
@@ -1692,30 +1711,30 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 								// data.
 			return;
 		}
-	
+
 		if (e.getSource() == alsolog) {
 			// Checkbox for logarithmic fitting
 			showROI(true);
-	
+
 		} else if (e.getSource() == radius) {
 			// Slider, that changes the roi radius
 			radiustext.setText("Radius: " + radius.getValue());
 			resizeROI();
-	
+
 		} else if (e.getSource() == unit) {
 			// JComboBox, that decides the Unit of the roi radius
 			resizeROI();
-	
+
 		} else if (e.getSource() == index_slider) {
 			// Slider below the Image
 			slice_index.setText("" + index_slider.getValue());
 			displayImage();
-	
+
 		} else if (e.getSource() == echo_slider) {
 			// Slider below the Image
 			echo_index.setText("" + echo_slider.getValue());
 			displayImage();
-	
+
 		}
 	}
 
@@ -1745,13 +1764,13 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			max_echo.setText(max_echo.getText().replace(" + 0", ""));
 		} else {
 			max_echo.setText(max_echo.getText().replace(" + 0", "") + " + 0");
-	
+
 			int i = 0;
 			for (ImagePlus imp : zeroecho) {
 				imp.setCalibration(volume.getSlice(i).getData()
 						.getCalibration());
 			}
-	
+
 			save.setEnabled(true);
 		}
 		parent.getStatusLabel().setText("");
@@ -1770,9 +1789,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	public String[] splittCommand(String command) {
 		ArrayList<String> commands = new ArrayList<String>();
 		String[] forreturn = new String[0];
-	
+
 		boolean ignore = false;
-	
+
 		StringBuilder next = new StringBuilder();
 		for (char c : command.toCharArray()) {
 			if (c == '\'') {
@@ -1784,11 +1803,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				next.append(c);
 			}
 		}
-	
+
 		if (next.length() != 0) {
 			commands.add(next.toString());
 		}
-	
+
 		return commands.toArray(forreturn);
 	}
 
@@ -1803,21 +1822,21 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	public void setRoiPosition(int x, int y) {
 		try {
 			Roi realroi = null;
-	
+
 			switch ((String) shape.getSelectedItem()) {
 			case "Point":
 				relativroi = new PointRoi(x, y);
-	
+
 				realroi = new PointRoi(((double) x) / scaling, ((double) y)
 						/ scaling);
 				break;
 			case "Circle":
 				double radius = calculateRadius();
 				double newr = (int) (radius * scaling);
-	
+
 				x -= newr;
 				y -= newr;
-	
+
 				relativroi = new OvalRoi(x, y, newr * 2, newr * 2);
 				realroi = new OvalRoi(((double) x) / scaling, ((double) y)
 						/ scaling, radius * 2, radius * 2);
@@ -1826,7 +1845,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				setRoiPosition(x, y, getActualSlice() - 1);
 				return;
 			}
-	
+
 			relativroi.setProperty("unit", (String) unit.getSelectedItem());
 			realroi.setProperty("unit", (String) unit.getSelectedItem());
 			volume.setRoi(realroi);
@@ -1848,7 +1867,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	public void setRoiPosition(int x, int y, int z) {
 		Roi realroi = null;
-	
+
 		switch ((String) shape.getSelectedItem()) {
 		case "Point":
 		case "Circle":
@@ -1862,7 +1881,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			relativroi = new SphereRoi(x, y, z, newr);
 			realroi = new SphereRoi(((double) x) / scaling, ((double) y)
 					/ scaling, z, radius);
-	
+
 			break;
 		}
 		relativroi.setProperty("unit", (String) unit.getSelectedItem());
@@ -1872,8 +1891,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	/**
-	 * Sleeps for <i>int</i> milliseconds. The InterruptedException can cancle
-	 * this Method. This Method is usefull to write less code.
+	 * Sleeps for <i>int</i> milliseconds. The InterruptedException can cancel
+	 * this Method. This Method is useful to write less code.
 	 * 
 	 * @param millisec
 	 *            The amount of time, that the current Thread should sleep.
@@ -1887,7 +1906,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	/***
 	 * This Method checks if a ZeroEcho slice is calculated already to a given
-	 * Fitting function. This Method also sets a litte "+ 0" to the max_echo
+	 * Fitting function. This Method also sets a little "+ 0" to the max_echo
 	 * field, so that the user get informed, about the additional slice.
 	 * 
 	 * @return if there is a ZeroEcho slice to show.
@@ -1899,15 +1918,15 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				return true;
 			}
 		} catch (IOException e) {
-	
+
 		}
 		max_echo.setText(max_echo.getText().replace("+ 0", ""));
 		return false;
 	}
 
 	/**
-	 * This Method calculates the actual ImageNumber with the formular: slice -
-	 * 1 + perEcho * (echo - 1).
+	 * This Method calculates the actual ImageNumber with the formula: slice - 1
+	 * + perEcho * (echo - 1).
 	 * 
 	 * @return The actual ImageNumber.
 	 * @throws IOException
@@ -1974,7 +1993,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * Number is to small, than it's set to 0 or 1, whether there is a ZeroEcho
 	 * or not.
 	 * 
-	 * If the Number in bounds, than this method won't have any effekt.
+	 * If the Number in bounds, than this method won't have any effect.
 	 */
 	private void checkSlice() {
 		Runnable handlechange = new Runnable() {
@@ -2015,7 +2034,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	/**
 	 * This Method updates/displays the Image in the Gui.
 	 * 
-	 * @return true if the Image could be displayed correctly; false otherwiese.
+	 * @return true if the Image could be displayed correctly; false otherwise.
 	 */
 	private boolean displayImage() {
 		try {
@@ -2133,12 +2152,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * Method "getScaledInstance", with the BufferedImage.SCALE_FAST hint.
 	 * 
 	 * @param target
-	 *            The BufferedImage, that should be copyd/scaled into another.
+	 *            The BufferedImage, that should be copied/scaled into another.
 	 * @param source
 	 *            The BufferedImage, that contains the scaled target
 	 *            BufferedImage.
 	 */
-	private void drawIntoImage(BufferedImage target, BufferedImage source) {
+	private static void drawIntoImage(BufferedImage target, BufferedImage source) {
 		java.awt.Graphics gr = target.getGraphics();
 		gr.drawImage(source.getScaledInstance(target.getWidth(),
 				target.getHeight(), BufferedImage.SCALE_FAST), 0, 0, null);

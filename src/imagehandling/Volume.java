@@ -120,13 +120,17 @@ public abstract class Volume {
 	 * Returning the Information of the given Key out of the Header. If there is
 	 * no such element returning str = " ". If there are any differences in the
 	 * Attribute for the given Key, this method will return the Attribute of the
-	 * first slice.
+	 * first slice. Setting compareslices to false disables the comparison
+	 * between the slices.
 	 *
 	 * @param en
 	 *            The needed value
+	 * @param compareslices
+	 *            This boolean determinate, whether the values of the slices
+	 *            are compared or not
 	 * @return The String, that matches belong to the enum
 	 */
-	public abstract String getAttribute(KeyMap en);
+	public abstract String getAttribute(KeyMap en, boolean compareslices);
 
 	/**
 	 * returning the Attribute of the given key + slice number. Use int slice =
@@ -157,14 +161,18 @@ public abstract class Volume {
 	/**
 	 * This method is used to get Attributes of a Volume. If the Values to a
 	 * given key are not the same in all slices, a message is printed into the
-	 * console. This method always returns the attribute of the last image.
+	 * console. This method always returns the attribute of the last image. By
+	 * setting the boolean compareslices to false, the comparison between the
+	 * slices is disabled.
 	 * 
 	 * @param key
 	 *            The key, that should be searched in the header
-	 * 
+	 * @param compareslices
+	 *            True: checks, if all slices containing value; False: just
+	 *            returning the value of the last slice
 	 * @return The Information in the volume, that matches the key
 	 */
-	public abstract String getAttribute(String key);
+	public abstract String getAttribute(String key, boolean compareslices);
 
 	/**
 	 * This method is used to get Attributes of a Volume. If the Values to a

@@ -562,7 +562,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 	/**
 	 * Fast method for creating JTextField classes.
 	 */
-	private JTextField createText(String text, int width, int height,
+	private static JTextField createText(String text, int width, int height,
 			boolean editable) {
 		JTextField textfield = new JTextField(text);
 		textfield.setEditable(editable);

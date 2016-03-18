@@ -90,7 +90,7 @@ public class NIFTIVolume extends Volume {
 	}
 
 	@Override
-	public String getAttribute(KeyMap en) {
+	public String getAttribute(KeyMap en, boolean compareslices) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -110,7 +110,7 @@ public class NIFTIVolume extends Volume {
 	}
 
 	@Override
-	public String getAttribute(String key) {
+	public String getAttribute(String key, boolean compareslices) {
 		// TODO Auto-generated method stub
 		return null;
 	}
