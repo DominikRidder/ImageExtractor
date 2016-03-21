@@ -23,6 +23,14 @@ public class ImageExtractorConfig {
 	 */
 	public ImageExtractorConfig() {
 		File file = new File("ImageExtractor.config");
+		if (!file.exists()) {
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				
+			}
+		}
+		
 		System.out.println("Config: " + file.getAbsolutePath());
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 			String line;

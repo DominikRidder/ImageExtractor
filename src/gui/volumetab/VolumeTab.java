@@ -102,7 +102,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	/**
 	 * Highest Panel is this Tab, which contains the leftSideStuff and the
-	 * imagepanel.
+	 * Imagepanel.
 	 */
 	private JPanel toppanel;
 
