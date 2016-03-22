@@ -23,8 +23,10 @@ The Installation is done, when the ImageExtrator.jar file is created.
 In case, that the ImageExtractor.jar under dist/ does not exist or
 if this jar seems not up to date, you can follow these steps:
 
-cd <project top level folder>
-ant jar
+```bash
+$ cd <project top level folder> 
+$ ant jar
+```
 
 The jar is than created in the dist/ folder. From there you can put 
 it to any location you like. Any needed libary is packed with in the
