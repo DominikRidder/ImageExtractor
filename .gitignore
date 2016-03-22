@@ -1,0 +1,6 @@
+ImageExtractor.config
+bin
+build
+libs/unused
+etc/
+dist/data

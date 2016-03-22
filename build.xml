@@ -3,7 +3,10 @@
 <project name="ImageExtractor" default="archive">
 
 	<property name="prj.authors" value="Dominik Ridder" />
-
+	<property name="build" value="bin/" />
+	<property name="etc" value="./dist/data/etc"/>
+	<property name="lib.dir" value="libs"/>
+	
 	<target name="init">
 		<mkdir dir="build/classes" />
 		<mkdir dir="dist" />
@@ -11,14 +14,28 @@
 	</target>
 
 	<target name="compile" depends="init">
-		<javac includeAntRuntime="false" srcdir="src" destdir="build/classes" debug="true" debuglevel="lines,vars,source">
-			<classpath refid="project.lib" />
+		<javac includeAntRuntime="false" srcdir="src" destdir="build/classes" debug="true" debuglevel="lines,vars,source"
+	               classpathref="project.class.path">
 		</javac>
 	</target>
 
+	<target name="create-manifest" depends="init">
+		<manifest file="${etc}/MANIFEST.MF">
+			<attribute name="Built-By" value="${prj.authors}" />
+			<attribute name="Built-On" value="${timestamp.isoformat}" />
+			<attribute name="Main-Class" value="gui.GUI" />
+		</manifest>
+	</target>
 	
-	<target name="jar" depends="archive">
-	  <!--Dummy Target for NetBeans -->
+	<target name="jar" depends="archive, create-manifest"
+	  description="creates a Java archive of an executable program">
+          <jar destfile="dist/ImageExtractor.jar"
+	      basedir="${build}"
+	      excludes="**/package/*, **/testcases/*"
+	      manifest="${etc}/MANIFEST.MF">
+	  
+	    <zipgroupfileset dir="libs" includes="*.jar"/>
+	  </jar>
 	</target>
 	
 	<target name="archive" depends="compile">
@@ -32,7 +49,7 @@
 	</target>
 
 	<target name="execute" depends="compile">
-		<java classname="application.se.ImageExtractor.Main">
+		<java classname="gui.GUI">
 			<classpath refid="project.class.path" />
 		</java>
 	</target>
@@ -40,35 +57,19 @@
 	<path id="project.class.path">
 		<pathelement path="./build/classes" />
 		<pathelement path="./dist/ImageExtractor.jar" />
+		<pathelement path="./libs/" />
 	</path>
 
-	<path id="project.lib">
-		<pathelement path="./libs/junit-4.12.jar" />
-		<pathelement path="./libs/hamcrest-all-1.3.jar" />
-		<pathelement path="./libs/ij.jar" />
-		<pathelement path="./libs/PolyFitter.jar" />
-	</path>
-
-	<property name="etc" value="./etc" />
 	<tstamp>
 		<format property="timestamp.isoformat" pattern="yyyy-MM-dd'T'HH:mm:ss" locale="de" />
 	</tstamp>
-
-	<target name="create-manifest" depends="init">
-		<manifest file="${etc}/MANIFEST.MF">
-			<attribute name="Built-By" value="${prj.authors}" />
-			<attribute name="Built-On" value="${timestamp.isoformat}" />
-			<attribute name="Main-Class" value="application.se.ImageExtractor.Main" />
-		</manifest>
-	</target>
 	
 	<target name="junit" depends="archive">
 
  		<junit printsummary="yes" haltonfailure="no"> 
 
-			<classpath location="lib/junit-4.12.jar" />
-			<classpath location="lib/hamcrest-core-1.3.jar" />
-			<classpath refid="project.lib" />
+			<classpath location="libs/junit-4.12.jar" />
+			<classpath location="libs/hamcrest-core-1.3.jar" />
 			<classpath refid="project.class.path" />
 
 			<formatter type="xml" />
