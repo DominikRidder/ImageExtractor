@@ -55,9 +55,11 @@
 	</target>
 	
 	<path id="project.class.path">
-		<pathelement path="./${build}" />
-		<pathelement path="./dist/ImageExtractor.jar" />
-		<pathelement path="./libs/" />
+		<pathelement path="${build}" />
+		<pathelement path="libs/ij.jar" />
+		<pathelement path="libs/junit-4.12.jar" />
+		<pathelement path="libs/hamcrest-core-1.3.jar" />
+		<pathelement path="libs/PolyFitter.jar" />
 	</path>
 
 	<tstamp>
