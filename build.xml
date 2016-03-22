@@ -8,13 +8,13 @@
 	<property name="lib.dir" value="libs"/>
 	
 	<target name="init">
-		<mkdir dir="build/classes" />
+		<mkdir dir="${build}" />
 		<mkdir dir="dist" />
 		<mkdir dir="${etc}" />
 	</target>
 
 	<target name="compile" depends="init">
-		<javac includeAntRuntime="false" srcdir="src" destdir="build/classes" debug="true" debuglevel="lines,vars,source"
+		<javac includeAntRuntime="false" srcdir="src" destdir="${build}" debug="true" debuglevel="lines,vars,source"
 	               classpathref="project.class.path">
 		</javac>
 	</target>
@@ -39,11 +39,11 @@
 	</target>
 	
 	<target name="archive" depends="compile">
-		<jar destfile="dist/ImageExtractor.jar" basedir="build/classes" />
+		<jar destfile="dist/ImageExtractor.jar" basedir="${build}" />
 	</target>
 
 	<target name="clean" depends="init">
-		<delete dir="build" />
+		<delete dir="${build}" />
 		<delete dir="dist" />
 		<delete dir="${etc}" />
 	</target>
@@ -55,7 +55,7 @@
 	</target>
 	
 	<path id="project.class.path">
-		<pathelement path="./build/classes" />
+		<pathelement path="./${build}" />
 		<pathelement path="./dist/ImageExtractor.jar" />
 		<pathelement path="./libs/" />
 	</path>
