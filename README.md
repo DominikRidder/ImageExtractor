@@ -44,12 +44,16 @@ MacOS installation note
 In order to build the executable (jar), in MacOS (10.9 or higher) you need to install
 'ant' first. Easiest way is by 'brew' (see brew.sh):
 
+```bash
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
 
 And then:
 
+```bash
 brew update
 brew install ant
+```
 
 Licensing
 ---------
