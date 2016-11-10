@@ -55,15 +55,6 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	public static final boolean DEBUG = false;
 
 	/**
-	 * Temporary boolean that was used, to test a new size System on other
-	 * Operating Systems. In case that this new way of sizing would have caused
-	 * problems, it could be dissabled quickly and easy with this boolean.
-	 * Nevertheless this boolean should be removed in future.
-	 */
-	@Deprecated
-	public static boolean testnewsize = true;
-
-	/**
 	 * Main method, to start the GUI.
 	 * 
 	 * @param agrs

@@ -161,7 +161,7 @@ public class SortAlgorithm {
 	 * protocolnames is used, to check, if 2 Dicoms with the same protocol Name
 	 * + series Number + patient ID are equal.
 	 */
-	private HashMap<String, String> protocolInfo;
+	private HashMap<String, ArrayList<String>> protocolInfo;
 
 	/**
 	 * Missing is used, to fill gaps in the protocol prefix (in the subfolder
@@ -442,7 +442,7 @@ public class SortAlgorithm {
 		double start = deltaTimeHelp;
 		// new File, to test if the path is correct
 		File file = new File(searchin);
-		protocolInfo = new HashMap<String, String>(100);
+		protocolInfo = new HashMap<String, ArrayList<String>>(100);
 		anyCurropt = false;
 		numbOfEchos = new HashMap<String, Integer>();
 
@@ -728,7 +728,9 @@ public class SortAlgorithm {
 									+ att[1];
 							// If there is no key, i gonna create it
 							if (!protocolInfo.containsKey(key)) {
-								protocolInfo.put(key, test);
+								//protocolInfo.put(key, test);
+								protocolInfo.put(key, new ArrayList<String>());
+								protocolInfo.get(key).add(test);
 								continue;
 							}
 
@@ -959,8 +961,10 @@ public class SortAlgorithm {
 						index.get(patientID + protocolName) + 1);
 			}
 			// new protocol subfolder
+			ArrayList<String> toAdd = new ArrayList<String>();
+			toAdd.add(numb);
 			protocolInfo.put(
-					patientID + protocolName + instanceUID + birthDate, numb);
+					patientID + protocolName + instanceUID + birthDate, toAdd);
 		}
 		// check next protocol and creating it, if its not existant
 		path.append("/"
@@ -1070,7 +1074,8 @@ public class SortAlgorithm {
 										protocolName.length());
 						// If there is no key, i gonna create it
 						if (!protocolInfo.containsKey(key)) {
-							protocolInfo.put(key, att[1] + att[0]);
+							protocolInfo.put(key, new ArrayList<String>());
+							protocolInfo.get(key).add(att[1] + att[0]);
 							continue;
 						}
 
@@ -1150,26 +1155,44 @@ public class SortAlgorithm {
 		}
 
 		StringBuilder path = new StringBuilder();
-		// Check existing
-		path.append(dir + "/" + patientID);
-		existOrCreate(path);
 
 		// Block for checking birth date with target folder
 		String key = patientID + seriesNumber + protocolName;
 		String curValue = birthDate + instanceUID;
+		int valueNumber = -1;
 		if (protocolInfo.containsKey(key)) {
-			String value = protocolInfo.get(key);
-			if (!value.equals(curValue)) {
-				if (anyCurropt == false) {
-					out.println("ALERT! SOME DATA SEEMS TO BE CORRUPT.\nTHE MOST INFORMATION ARE EQUAL, BUT THE BIRTH DATE && INSTANCE UID ARE NOT.");
-					anyCurropt = true;
+			ArrayList<String> existingValues = protocolInfo.get(key);
+			for ( int i = 0; i < existingValues.size(); i++) {
+				String value = existingValues.get(i);
+				if (value.equals(curValue)) {
+					/*if (anyCurropt == false) {
+						out.println("ALERT! SOME DATA SEEMS TO BE CORRUPT.\nTHE MOST INFORMATION ARE EQUAL, BUT THE BIRTH DATE && INSTANCE UID ARE NOT.");
+						anyCurropt = true;
+					}*/
+					//path.append("/Corrupt");
+					//existOrCreate(path);
+					valueNumber = i;
+					break;
 				}
-				path.append("/Corrupt");
-				existOrCreate(path);
+			}
+			
+			if (valueNumber == -1) {
+				valueNumber = existingValues.size();
+				existingValues.add(curValue);
 			}
 		} else {
-			protocolInfo.put(key, curValue);
+			protocolInfo.put(key, new ArrayList<String>());
+			protocolInfo.get(key).add(curValue);
+			valueNumber = 0;
 		}
+		
+		// Check existing
+		if (valueNumber == 0) {
+			path.append(dir + "/" + patientID);
+		} else {
+			path.append(dir + "/" + patientID+"_"+(valueNumber+1));
+		}
+		existOrCreate(path);
 
 		// check next protocol and creating it, if its not existant
 		path.append("/" + toProtocolDigits(seriesNumber + "") + "_"
@@ -1250,6 +1273,7 @@ public class SortAlgorithm {
 
 				transfered++;
 			} catch (IOException e) {
+				e.printStackTrace();
 				out.println("Filetransfer didnt worked");
 				permissionProblem = true;
 				stopSort();
