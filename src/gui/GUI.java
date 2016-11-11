@@ -207,7 +207,7 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 		forceEnd = forceProgrammEndIfThereIsNoWindow;
 		JMenu menu;
-		JMenuItem newGuiWindow, newVolumeTab, newSortTab;
+		JMenuItem newGuiWindow, newVolumeTab, newSortTab, imageSearch;
 
 		// Create the menu bar.
 		menuBar = new JMenuBar();
@@ -219,11 +219,15 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		newSortTab.addActionListener(this);
 		newGuiWindow = new JMenuItem("new Window");
 		newGuiWindow.addActionListener(this);
+		imageSearch = new JMenuItem("Search Images");
+		imageSearch.addActionListener(this);
 		menu = new JMenu("File");
 		menu.setMnemonic(KeyEvent.VK_N);
 		menu.add(newGuiWindow);
 		menu.add(newVolumeTab);
 		menu.add(newSortTab);
+		menu.addSeparator();
+		menu.add(imageSearch);
 		menuBar.add(menu);
 
 		this.setJMenuBar(menuBar);
@@ -332,6 +336,9 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 			break;
 		case "new Window":
 			new GUI(forceEnd, this.isVisible());
+			break;
+		case "Search Images":
+			new ImageSearch();
 			break;
 		default:
 			break;
