@@ -2111,8 +2111,6 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					// getting the header of the actual slice
 					String header = volume.getSlice(actualSliceIndex())
 							.getHeader();
-					// String header = volume.getSlice(getActualSlice())
-					// .getHeader();
 
 					// The Document, which is used by the output is very
 					// slow
@@ -2125,9 +2123,12 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					for (String str : volume.getSlice(actualSliceIndex())
 							.getHeader().split("\n")) {
 						if (!filter.getText().equals("")) {
-							if (str.toLowerCase().contains(
-									filter.getText().toLowerCase())) {
-								outputstring.append(str + "\n");
+							for (String part : filter.getText().split("\\|")){
+								if (str.toLowerCase().contains(
+										part.trim().toLowerCase())) {
+									outputstring.append(str + "\n");
+									break;
+								}
 							}
 						} else {
 							if (!str.contains("--:")) {
