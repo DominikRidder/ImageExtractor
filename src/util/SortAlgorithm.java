@@ -72,6 +72,12 @@ public class SortAlgorithm {
 	public final static String DEFAULT_INSTANCE_UID = "1";
 
 	/**
+	 * The Default value for the patient name, that is used, in case that the
+	 * instance uid wastn't saved in the file.
+	 */
+	public final static String DEFAULT_PATIENTNAME = "No_Name_Found";
+
+	/**
 	 * This boolean is used to print a error Message, when corrupt data was
 	 * found. This way i only print one time a error Message.
 	 */
@@ -728,7 +734,7 @@ public class SortAlgorithm {
 									+ att[1];
 							// If there is no key, i gonna create it
 							if (!protocolInfo.containsKey(key)) {
-								//protocolInfo.put(key, test);
+								// protocolInfo.put(key, test);
 								protocolInfo.put(key, new ArrayList<String>());
 								protocolInfo.get(key).add(test);
 								continue;
@@ -1049,7 +1055,9 @@ public class SortAlgorithm {
 						// the dicoms
 						KeyMap info[] = { KeyMap.KEY_SERIES_INSTANCE_UID,
 								KeyMap.KEY_PATIENTS_BIRTH_DATE,
-								KeyMap.KEY_SERIES_NUMBER };
+								KeyMap.KEY_SERIES_NUMBER, KeyMap.KEY_PATIENTS_NAME,
+								KeyMap.KEY_PATIENT_ID, KeyMap.KEY_SERIES_NUMBER,
+								KeyMap.KEY_PROTOCOL_NAME};
 						String[] att = null;
 						for (File dicom : protocolfolder.listFiles()) {
 							if (dicom.getAbsolutePath().endsWith(".dcm")
@@ -1067,15 +1075,11 @@ public class SortAlgorithm {
 						}
 
 						// Key for the protocolnames HashMap
-						String key = patientID
-								+ att[2]
-								+ protocolName.substring(
-										protocolName.indexOf("_") + 1,
-										protocolName.length());
+						String key = att[3] + att[5] + att[6];
 						// If there is no key, i gonna create it
 						if (!protocolInfo.containsKey(key)) {
 							protocolInfo.put(key, new ArrayList<String>());
-							protocolInfo.get(key).add(att[1] + att[0]);
+							protocolInfo.get(key).add(att[4] + att[1] + att[0]);
 							continue;
 						}
 
@@ -1107,7 +1111,7 @@ public class SortAlgorithm {
 		KeyMap[] info = { KeyMap.KEY_PATIENT_ID, KeyMap.KEY_PROTOCOL_NAME,
 				KeyMap.KEY_IMAGE_NUMBER, KeyMap.KEY_SERIES_INSTANCE_UID,
 				KeyMap.KEY_PATIENTS_BIRTH_DATE, KeyMap.KEY_SERIES_NUMBER,
-				KeyMap.KEY_ECHO_NUMBERS_S };
+				KeyMap.KEY_ECHO_NUMBERS_S, KeyMap.KEY_PATIENTS_NAME };
 		String[] att = Image.getAttributesDicom(input, info);
 		// This makes the code more readable
 		String patientID = att[0];
@@ -1117,65 +1121,65 @@ public class SortAlgorithm {
 		String birthDate = att[4];
 		String seriesNumber = att[5];
 		String echoNumbers = att[6];
+		String patientName = att[7];
 
 		if (patientID.equals("")) { // att[0]
 			patientID = DEFAULT_PATIENTID;
-			out.println("PatientID not found. Using Default for sorting: "
+			out.println("PatientID not found. Using default for sorting: "
 					+ DEFAULT_PATIENTID);
 		}
 		if (protocolName.equals("")) { // att[1]
-			patientID = DEFAULT_PROCOLNAME;
-			out.println("Protocolname not found. Using Default for sorting: "
+			protocolName = DEFAULT_PROCOLNAME;
+			out.println("Protocolname not found. Using default for sorting: "
 					+ DEFAULT_PROCOLNAME);
 		}
 		if (imageNumber.equals("")) { // att[2]
-			patientID = DEFAULT_IMAGENUMBER;
-			out.println("Imagenumber not found. Using Default for sorting: "
+			imageNumber = DEFAULT_IMAGENUMBER;
+			out.println("Imagenumber not found. Using default for sorting: "
 					+ DEFAULT_IMAGENUMBER);
 		}
 		if (instanceUID.equals("")) { // att[3]
-			patientID = DEFAULT_INSTANCE_UID;
-			out.println("InstanceUID not found. Using Default for sorting: "
+			instanceUID = DEFAULT_INSTANCE_UID;
+			out.println("InstanceUID not found. Using default for sorting: "
 					+ DEFAULT_INSTANCE_UID);
 		}
 		if (birthDate.equals("")) { // att[4]
-			patientID = DEFAULT_PATIENTID;
-			out.println("PatientID not found. Using Default for sorting: "
+			birthDate = DEFAULT_PATIENTID;
+			out.println("PatientID not found. Using default for sorting: "
 					+ DEFAULT_PATIENTID);
 		}
 		if (seriesNumber.equals("")) { // att[5]
-			patientID = DEFAULT_SERIES_NUMBERS;
-			out.println("Seriesnumber not found. Using Default for sorting: "
+			seriesNumber = DEFAULT_SERIES_NUMBERS;
+			out.println("Seriesnumber not found. Using default for sorting: "
 					+ DEFAULT_SERIES_NUMBERS);
 		}
 		if (echoNumbers.equals("")) { // att[6]
-			patientID = DEFAULT_ECHONUMBERS;
-			out.println("Echonumber not found. Using Default for sorting: "
+			echoNumbers = DEFAULT_ECHONUMBERS;
+			out.println("Echonumber not found. Using default for sorting: "
 					+ DEFAULT_ECHONUMBERS);
+		}
+		if (patientName.equals("")) {
+			patientName = DEFAULT_PATIENTNAME;
+			out.println("Patient name not found. Using default for sorting: "
+					+ DEFAULT_PATIENTNAME);
 		}
 
 		StringBuilder path = new StringBuilder();
 
 		// Block for checking birth date with target folder
-		String key = patientID + seriesNumber + protocolName;
-		String curValue = birthDate + instanceUID;
+		String key = patientName + seriesNumber + protocolName;
+		String curValue = patientID + birthDate + instanceUID;
 		int valueNumber = -1;
 		if (protocolInfo.containsKey(key)) {
 			ArrayList<String> existingValues = protocolInfo.get(key);
-			for ( int i = 0; i < existingValues.size(); i++) {
+			for (int i = 0; i < existingValues.size(); i++) {
 				String value = existingValues.get(i);
 				if (value.equals(curValue)) {
-					/*if (anyCurropt == false) {
-						out.println("ALERT! SOME DATA SEEMS TO BE CORRUPT.\nTHE MOST INFORMATION ARE EQUAL, BUT THE BIRTH DATE && INSTANCE UID ARE NOT.");
-						anyCurropt = true;
-					}*/
-					//path.append("/Corrupt");
-					//existOrCreate(path);
 					valueNumber = i;
 					break;
 				}
 			}
-			
+
 			if (valueNumber == -1) {
 				valueNumber = existingValues.size();
 				existingValues.add(curValue);
@@ -1185,12 +1189,12 @@ public class SortAlgorithm {
 			protocolInfo.get(key).add(curValue);
 			valueNumber = 0;
 		}
-		
+
 		// Check existing
 		if (valueNumber == 0) {
-			path.append(dir + "/" + patientID);
+			path.append(dir + "/" + patientName);
 		} else {
-			path.append(dir + "/" + patientID+"_"+(valueNumber+1));
+			path.append(dir + "/" + patientName + "_" + (valueNumber + 1));
 		}
 		existOrCreate(path);
 
