@@ -187,8 +187,10 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 			outer: for (File potentialDicom : list) {
 				
 				path = potentialDicom.getAbsolutePath();
-				if (!fullsearch && !potentialDicom.isDirectory() && foundAImage) {
-					continue;
+//				if (!fullsearch && !potentialDicom.isDirectory() && foundAImage) {
+//					continue;
+				if (!fullsearch && foundAImage) {
+					break;
 				} else if (potentialDicom.isDirectory()){
 					if (!Files.isSymbolicLink(potentialDicom.toPath())) {
 						nextFolders.push(potentialDicom);
@@ -208,7 +210,7 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 							String extracted = img.getAttribute(key).toLowerCase().trim();
 							
 							if (!warnedKey && extracted.equals("")) {
-								outputArea.setText("WARNING: Key "+key+" is maybe not correct spelled!");
+								outputArea.setText("WARNING: Key "+key+" is maybe not correct spelled!\n"+outputArea.getText());
 								warnedKey = true;
 							}
 							
