@@ -187,8 +187,11 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 			outer: for (File potentialDicom : list) {
 				
 				path = potentialDicom.getAbsolutePath();
-//				if (!fullsearch && !potentialDicom.isDirectory() && foundAImage) {
-//					continue;
+				
+				if (!fullsearch && potentialDicom.getName().startsWith(".")) {
+					continue;
+				}
+				
 				if (!fullsearch && foundAImage) {
 					break;
 				} else if (potentialDicom.isDirectory()){
