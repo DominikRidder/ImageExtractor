@@ -14,6 +14,8 @@ import java.util.Stack;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -43,6 +45,8 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 	
 	JButton startButton;
 	
+	JCheckBox searchAll;
+	
 	boolean stop = false;
 	
 	public ImageSearch() {
@@ -61,6 +65,7 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 		startButton = new JButton("Start Search");
 		startButton.addActionListener(this);
 		
+		searchAll = new JCheckBox();
 		
 //		// creating the output area
 		outputArea = new JTextArea();
@@ -75,6 +80,8 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 		panel.add(Box.createVerticalStrut(10));
 		panel.add(addDescription(filter, "Filter:"));
 		panel.add(Box.createVerticalStrut(10));
+		panel.add(addDescription(searchAll, "Full Search"));
+		panel.add(Box.createVerticalStrut(10));
 		panel.add(startButton);
 		panel.add(Box.createVerticalStrut(10));
 		panel.add(outputScroller);
@@ -85,7 +92,7 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 		this.setVisible(true);
 	}
 	
-	public JPanel addDescription(JTextField textfield, String desc) {
+	public JPanel addDescription(JComponent textfield, String desc) {
 		JPanel row = new JPanel();
 		row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
 		row.setMinimumSize(new Dimension(300, 75));
@@ -123,6 +130,7 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 		String dir = searchin.getText();
 		String filterStr = filter.getText();
 		HashSet<String> alreadyOutput = new HashSet<String>();
+		boolean fullsearch = searchAll.isSelected();
 		
 		for (String test : filterStr.split("&")){
 			String parts[] = test.split("=");
@@ -166,21 +174,29 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 		boolean warnedKey = false;
 
 		while (!nextFolders.isEmpty()) {
+			boolean foundAImage = false;
 			file = nextFolders.pop();
 			list = file.listFiles();
 			if (list == null) {
 				// Maybe we dont have a Directory than
 				continue;
 			}
+			if (stop) {
+				return;
+			}
 			outer: for (File potentialDicom : list) {
-				if (stop) {
-					return;
-				}
 				
 				path = potentialDicom.getAbsolutePath();
-				if (!potentialDicom.isDirectory() && !alreadyOutput.contains(potentialDicom.getParentFile().getAbsolutePath())
+				if (!fullsearch && !potentialDicom.isDirectory() && foundAImage) {
+					continue;
+				} else if (potentialDicom.isDirectory()){
+					if (!Files.isSymbolicLink(potentialDicom.toPath())) {
+						nextFolders.push(potentialDicom);
+					}
+				} else if (!potentialDicom.isDirectory() && !alreadyOutput.contains(potentialDicom.getParentFile().getAbsolutePath())
 						&& (path.endsWith(".dcm") || path.endsWith(".IMA") || Image
 								.isDicom(potentialDicom.toPath()))) {
+					foundAImage = true;
 					try {
 						Image img = new Image(potentialDicom.getAbsolutePath());
 						
@@ -205,10 +221,6 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 						alreadyOutput.add(potentialDicom.getParentFile().getAbsolutePath());
 					} catch (Exception err) {
 						continue;
-					}
-				} else {
-					if (!Files.isSymbolicLink(potentialDicom.toPath())) {
-						nextFolders.push(potentialDicom);
 					}
 				}
 			}
