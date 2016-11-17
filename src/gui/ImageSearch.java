@@ -249,7 +249,7 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 			Thread t = new Thread(this);
 			t.start();
 			break;
-		case "Cancle":
+		case "Cancel":
 			stop = true;
 			startButton.setText("Start Search");
 			break;
@@ -263,7 +263,7 @@ public class ImageSearch extends JFrame implements ActionListener, Runnable {
 	}
 
 	public void run() {
-		startButton.setText("Cancle");
+		startButton.setText("Cancel");
 		search();
 		startButton.setText("Start Search");
 	}

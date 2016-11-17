@@ -1,0 +1,11 @@
+Testsuite: tests.Testcase
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.678 sec
+------------- Standard Output ---------------
+Config: /opt/dridder_local/Documents/ImageExtractor/ImageExtractor.config
+Screen width 3200
+Screen height 1080
+Gui width = 1100
+Gui height = 540
+------------- ---------------- ---------------
+
+Testcase: VisibleAttributes took 2.504 sec
