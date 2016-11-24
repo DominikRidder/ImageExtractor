@@ -19,6 +19,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
@@ -176,6 +177,16 @@ public class SortAlgorithm {
 	 * numbers.
 	 */
 	private HashMap<String, ArrayList<Integer>> missing;
+
+	/**
+	 * The native image name is used to ignore duplicate files.
+	 */
+	private HashSet<String> nativeImageName;
+
+	/**
+	 * Boolean that secueres, that the duplicate warning only occures once.
+	 */
+	private boolean warnedDuplicate;
 
 	/**
 	 * This is the default constructor. This constructor setting the following
@@ -439,6 +450,8 @@ public class SortAlgorithm {
 	public boolean searchAndSortIn(String searchin, String sortInDir) {
 		// a list of found dicoms is needed, if nifti should be used
 		dicomtonifti = new HashMap<>();
+		nativeImageName = new HashSet<>();
+		warnedDuplicate = false;
 		// true if an IOException appears somewhere
 		permissionProblem = false;
 		// false until the user calls stopSort()
@@ -1030,6 +1043,7 @@ public class SortAlgorithm {
 	private void SASInNoSubfolderWrapper(String searchin, String sortInDir) {
 		File file = new File(sortInDir);
 		File[] list = file.listFiles();
+		out.println("Scanning output dir for existing files ...");
 
 		if (list != null) {
 			for (File patientfolder : list) {
@@ -1038,14 +1052,11 @@ public class SortAlgorithm {
 					continue;
 				}
 
-				String patientID = patientfolder.getName();
-
 				File[] newlist = patientfolder.listFiles();
 				if (newlist == null) {
 					continue;
 				}
 				for (File protocolfolder : newlist) {
-					String protocolName = protocolfolder.getName();
 					if (protocolfolder.listFiles() == null) {
 						continue;
 					}
@@ -1055,9 +1066,11 @@ public class SortAlgorithm {
 						// the dicoms
 						KeyMap info[] = { KeyMap.KEY_SERIES_INSTANCE_UID,
 								KeyMap.KEY_PATIENTS_BIRTH_DATE,
-								KeyMap.KEY_SERIES_NUMBER, KeyMap.KEY_PATIENTS_NAME,
-								KeyMap.KEY_PATIENT_ID, KeyMap.KEY_SERIES_NUMBER,
-								KeyMap.KEY_PROTOCOL_NAME};
+								KeyMap.KEY_SERIES_NUMBER,
+								KeyMap.KEY_PATIENTS_NAME,
+								KeyMap.KEY_PATIENT_ID,
+								KeyMap.KEY_SERIES_NUMBER,
+								KeyMap.KEY_PROTOCOL_NAME };
 						String[] att = null;
 						for (File dicom : protocolfolder.listFiles()) {
 							if (dicom.getAbsolutePath().endsWith(".dcm")
@@ -1065,9 +1078,15 @@ public class SortAlgorithm {
 								// static method, for getting the attributes,
 								// because if we always Initialize a new Image
 								// class, than we would loose a lot of time.
-								att = Image.getAttributesDicom(
+								if (att == null) {
+									att = Image.getAttributesDicom(
 										dicom.getAbsolutePath(), info);
-								break;
+								}
+								KeyMap imageNumber[] = {KeyMap.KEY_IMAGE_NUMBER};
+								String strNumber[] = Image.getAttributesDicom(dicom.getAbsolutePath(), imageNumber);
+								if (strNumber.length == 1 && !strNumber[0].equals("")) {
+									nativeImageName.add(dicom.getParentFile().getAbsolutePath()+toImgDigits(strNumber[0]));
+								}
 							}
 						}
 						if (att == null) {
@@ -1213,6 +1232,16 @@ public class SortAlgorithm {
 		if (!createNiftis) {
 			existOrCreate(new StringBuilder(pathname));
 		}
+
+		if (nativeImageName.contains(pathname + toImgDigits(imageNumber))) {
+			if (!warnedDuplicate) {
+				out.println("Recognized duplicate image!");
+				warnedDuplicate = true;
+			}
+			return;
+		}
+
+		nativeImageName.add(pathname + toImgDigits(imageNumber));
 
 		// next the dicom name
 		String name;
