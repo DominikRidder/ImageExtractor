@@ -18,7 +18,7 @@ import java.util.HashSet;
 public class ImageExtractorConfig {
 
 	private HashMap<String, String> options = new HashMap<String, String>();
-	private String pathConfig;
+	private String pathConfig = "";
 
 	/**
 	 * Constructor that loads the Config of the ImageExtractor.
@@ -27,7 +27,11 @@ public class ImageExtractorConfig {
 		pathConfig = filename;
 		File file = new File(filename);
 		if (!file.exists()) {
-			InitCfgFile(file);
+			if (!InitCfgFile(file)) {
+				System.out.println("Failed to create config file.");
+				System.out.println("Config: " + file.getAbsolutePath());
+				return;
+			}
 		}
 
 		System.out.println("Config: " + file.getAbsolutePath());
@@ -52,7 +56,7 @@ public class ImageExtractorConfig {
 		}
 	}
 
-	private static void InitCfgFile(File file) {
+	private static boolean InitCfgFile(File file) {
 		try {
 			file.createNewFile();
 			
@@ -64,8 +68,10 @@ public class ImageExtractorConfig {
 				bw.write("# StartBrowse = /path/to/dir\n");
 			}
 		} catch (IOException e) {
-
+			e.printStackTrace();
+			return false;
 		}
+		return true;
 	}
 	
 	/**
@@ -101,6 +107,10 @@ public class ImageExtractorConfig {
 		StringBuffer text = new StringBuffer();
 		HashSet<String> optionNotFound = new HashSet<String>();
 
+		if (!file.exists()) {
+			return;
+		}
+		
 		for (String key : options.keySet()) {
 			optionNotFound.add(key);
 		}
