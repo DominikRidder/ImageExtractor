@@ -101,6 +101,18 @@ public class DICOMVolume extends Volume {
 
 			// sort images
 			Collections.sort(slices);
+			
+			// Remove duplicates
+			String lastHeader = slices.get(0).getHeader();
+			for (int i = 0; i < slices.size()-1; i++) {
+				String nextHeader = slices.get(i+1).getHeader();
+				if (lastHeader.equals(nextHeader)) {
+					slices.remove(i+1);
+					i--;
+				} else {
+					lastHeader = nextHeader;
+				}
+			}
 		}
 
 	}

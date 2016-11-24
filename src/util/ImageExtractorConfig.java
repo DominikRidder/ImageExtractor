@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * This class is used to save and load the config of the gui.
@@ -17,20 +18,18 @@ import java.util.HashMap;
 public class ImageExtractorConfig {
 
 	private HashMap<String, String> options = new HashMap<String, String>();
+	private String pathConfig;
 
 	/**
 	 * Constructor that loads the Config of the ImageExtractor.
 	 */
-	public ImageExtractorConfig() {
-		File file = new File("ImageExtractor.config");
+	public ImageExtractorConfig(String filename) {
+		pathConfig = filename;
+		File file = new File(filename);
 		if (!file.exists()) {
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				
-			}
+			InitCfgFile(file);
 		}
-		
+
 		System.out.println("Config: " + file.getAbsolutePath());
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 			String line;
@@ -40,19 +39,35 @@ public class ImageExtractorConfig {
 				}
 				if (line.length() > 0 && Character.isAlphabetic(line.charAt(0))) {
 					String parts[] = line.split("=", 2);
-					options.put(parts[0], parts[1]);
+					options.put(parts[0].trim(), parts[1].trim());
 				} else if (line.replace("\n", "").replace(" ", "").length() == 0) {
 					continue;
 				}
 			}
 		} catch (IOException e) {
 			System.out
-					.println("Reading the ImageExtractor.config Textfile failed.");
+					.println("Reading the ImageExtractor.cfg Textfile failed.");
 			System.out.println("Guessed dest: " + file.getAbsolutePath());
 			System.exit(0);
 		}
 	}
 
+	private static void InitCfgFile(File file) {
+		try {
+			file.createNewFile();
+			
+			try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+				bw.write("# Image Extractor Config File\n");
+				bw.write("#\n");
+				bw.write("# You can uncomment the following line, to enable a default starting\n");
+				bw.write("# for the filechooser\n");
+				bw.write("# StartBrowse = /path/to/dir\n");
+			}
+		} catch (IOException e) {
+
+		}
+	}
+	
 	/**
 	 * Returns the value to a given option Name.
 	 * 
@@ -82,8 +97,14 @@ public class ImageExtractorConfig {
 	 * Saves the Options, that are currently in this objekt.
 	 */
 	public void save() {
-		File file = new File("ImageExtractor.config");
+		File file = new File(pathConfig);
 		StringBuffer text = new StringBuffer();
+		HashSet<String> optionNotFound = new HashSet<String>();
+
+		for (String key : options.keySet()) {
+			optionNotFound.add(key);
+		}
+
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 			String line;
 			while ((line = br.readLine()) != null) {
@@ -92,7 +113,8 @@ public class ImageExtractorConfig {
 				}
 				if (line.length() > 0 && Character.isAlphabetic(line.charAt(0))) {
 					String parts[] = line.split("=", 2);
-					text.append(parts[0] + "=" + options.get(parts[0]) + "\n");
+					text.append(parts[0].trim() + " = " + options.get(parts[0].trim()) + "\n");
+					optionNotFound.remove(parts[0].trim());
 				} else if (line.replace("\n", "").replace(" ", "").length() == 0) {
 					text.append("\n");
 					continue;
@@ -100,16 +122,20 @@ public class ImageExtractorConfig {
 			}
 		} catch (IOException e) {
 			System.out
-					.println("Reading the ImageExtractor.config Textfile failed.");
+					.println("Reading the ImageExtractor.cfg Textfile failed.");
 			System.out.println("Guessed dest: " + file.getAbsolutePath());
 			System.exit(0);
+		}
+
+		for (String opt : optionNotFound) {
+			text.append(opt + " = " + options.get(opt) + "\n");
 		}
 
 		try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
 			bw.write(text.toString());
 		} catch (IOException e) {
 			System.out
-					.println("Writing the ImageExtractor.config Textfile failed.");
+					.println("Writing the ImageExtractor.cfg Textfile failed.");
 			System.out.println("Guessed dest: " + file.getAbsolutePath());
 			System.exit(0);
 		}

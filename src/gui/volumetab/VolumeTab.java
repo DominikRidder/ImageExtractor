@@ -990,7 +990,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	public void actionOpenInExternal() {
 		// if (volume != null) {
-		parent.imec = new ImageExtractorConfig();
+		//parent.imec = new ImageExtractorConfig();
 		String customExternal = null;
 		if (path.getText().endsWith(".nii")) {
 			customExternal = parent.imec.getOption("External_NITFI");

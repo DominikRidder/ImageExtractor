@@ -174,14 +174,12 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 *            helpfull for testcases.
 	 */
 	public GUI(boolean forceProgrammEndIfThereIsNoWindow, boolean visible) {
-		imec = new ImageExtractorConfig();
+		imec = new ImageExtractorConfig(System.getProperty("user.home")+".ImageExtractorConfig.cfg");
 		this.addWindowListener(this);
 
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension d = tk.getScreenSize();
-		// System.out.println("Dots per inch: "+tk.getScreenResolution());
-		System.out.println("Screen width " + d.width);
-		System.out.println("Screen height " + d.height);
+		
 		width = (int) (((double) d.width) / 2.5);
 		height = d.height / 2;
 
@@ -270,9 +268,6 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 
 		currentTab = (MyTab) tabber.getSelectedComponent();
 		currentTab.onFocus();
-
-		System.out.println("Gui width = " + width);
-		System.out.println("Gui height = " + height);
 	}
 
 	/**
