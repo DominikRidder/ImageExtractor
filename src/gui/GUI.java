@@ -60,8 +60,12 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 * @param agrs
 	 *            This value is currently ignored.
 	 */
-	public static void main(String[] agrs) {
-		new GUI(true, true);
+	public static void main(String[] args) {
+		if (args.length >=1) {
+			new GUI(true, true, args[0]);
+		} else {
+			new GUI(true, true);
+		}
 	}
 
 	/**
@@ -162,7 +166,16 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	 */
 	public static boolean islinux = System.getProperty("os.name").toLowerCase()
 			.contains("linux");
-
+	
+	public GUI(boolean forceProgrammEndIfThereIsNoWindow, boolean visible, String filename) {
+		this(forceProgrammEndIfThereIsNoWindow, visible);
+//		filechooser.setCurrentDirectory(new File(fileChooserDirectory));
+		if (tabber.getSelectedComponent() instanceof VolumeTab) {
+			VolumeTab currentTab = (VolumeTab) tabber.getSelectedComponent();
+			currentTab.open(filename);
+		}
+	}
+	
 	/**
 	 * Constructs a new GUI. The GUI can be controlled with a Mouse or even
 	 * based on Java code.

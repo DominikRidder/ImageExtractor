@@ -4,7 +4,15 @@ import static org.junit.Assert.assertTrue; // checking the values
 import gui.GUI;
 import gui.volumetab.VolumeTab;
 
+import java.awt.Component;
+import java.awt.Container;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
+
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JTextField;
 
 import org.junit.Test; // needed for annotation
 import org.junit.runner.Result;
@@ -67,22 +75,116 @@ public class Testcase {
 		voltab.setPath("/opt/dridder_local/TestDicoms/AllDicoms/B0092/14_wm_gre_rx=PA");
 		voltab.createVolume();
 
-		double start = System.currentTimeMillis();
-
-		while (voltab.isCreatingVolume()) { // wait max 5 sec for open the
-											// volume
-			if (System.currentTimeMillis() - start > 5000) {
-				break;
-			} else {
-				try {
-					Thread.sleep(300);
-				} catch (InterruptedException e) {
-					// do nothing
-				}
-			}
-		}
+		int millisec = 5000; // 5 sec max
+		waitForVolumeCreation(voltab, millisec);
 
 		assertTrue(!voltab.isOutputAreaEmpty());
 	}
 
+	/**
+	 * This Test should check if the sorting algorithm is working properly.
+	 */
+	@Test
+	public void CheckSort() {
+
+		assertTrue(false);
+	}
+
+	/**
+	 * Test which tries to detect slidebar and textfield equality for slice and
+	 * echo. This includes mainly 3 tests:
+	 * <p>
+	 * o Slice and Echo equality given after instanciating the volume?
+	 * <p>
+	 * o Does a slider change effect the textfield?
+	 * <p>
+	 * o Does a textfield change effect the slider?
+	 */
+	@Test
+	public void Slide2Textfield() {
+		String volPath = "/opt/dridder_local/Datadir/Sorted/B0316/16_wm_gre_b0";
+		int millisec = 5000;
+		boolean forceEnd = true;
+		boolean visible = false;
+		GUI g = new GUI(forceEnd, visible);
+		VolumeTab voltab = (VolumeTab) g.getCurrentTab();
+
+		// Setting up gui and volume
+		voltab.setPath(volPath);
+		voltab.createVolume();
+		waitForVolumeCreation(voltab, millisec);
+		
+		if (voltab.isCreatingVolume()) {
+			assertTrue("Volume creation timeout.", false);
+			return;
+		}
+		
+		// Finding the components
+		String[] names = {"SliceIndex", "EchoIndex", "SliceSlider", "EchoSlider"};
+		ArrayList<Component> components = new ArrayList<>();
+		Stack<Component> searchThrough = new Stack<Component>();
+		
+		for (String compName : names) {
+			searchThrough.push(voltab);
+			
+			while(searchThrough.size() > 0) {
+				Component comp = searchThrough.pop();
+				
+				if (comp instanceof Container) {
+					for (Component child : ((Container) comp).getComponents()) {
+						searchThrough.push(child);
+					}
+				}
+			
+				if (compName.equals(comp.getName())) {
+					components.add(comp);
+					break;
+				}
+			}
+		}
+		
+		// Did we found all components?
+		if (components.size() != 4) {
+			assertTrue("Components Not Found.", false);
+			return;
+		}
+		
+		// Typecasting
+		JTextField sliceIndex = (JTextField) components.get(0);
+		JTextField echoIndex = (JTextField) components.get(1);
+		JSlider sliceSlider = (JSlider) components.get(2);
+		JSlider echoSlider = (JSlider) components.get(3);
+		
+		// Should be equal after creation
+		assertTrue("Slice error after creation.", Integer.parseInt(sliceIndex.getText()) == sliceSlider.getValue());
+		assertTrue("Echo error after creation.", Integer.parseInt(echoIndex.getText()) == echoSlider.getValue());
+		
+		// Testing slidebar to field
+		sliceSlider.setValue(80);
+		echoSlider.setValue(3);
+		assertTrue("Slice Slider to Textfield error.", Integer.parseInt(sliceIndex.getText()) == sliceSlider.getValue());
+		assertTrue("Echo Slider to Textfield error.", Integer.parseInt(echoIndex.getText()) == echoSlider.getValue());
+		
+		// Testing field to slidebar
+		sliceIndex.setText("40");
+		echoIndex.setText("2");
+		assertTrue("Slice Textfield to Slider error.", Integer.parseInt(sliceIndex.getText()) == sliceSlider.getValue());
+		assertTrue("Echo Textfield to Slider error.", Integer.parseInt(echoIndex.getText()) == echoSlider.getValue());
+	}
+
+	public void waitForVolumeCreation(VolumeTab voltab, int duration) {
+		double start = System.currentTimeMillis();
+		
+		while (voltab.isCreatingVolume()) { // Finished Creation?
+			if (System.currentTimeMillis() - start > duration) {
+				break; // Timeout
+			} else {
+				try {
+					Thread.sleep(300); // Wait
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 }

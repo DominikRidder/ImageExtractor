@@ -1,0 +1,11 @@
+TODO for the ImageExtractor project:
+o Clean up Code
+o Bugfixes
+	- Move the Slidebar when number in changed
+o enable image operations like add, sub and so on
+o enable script language for optimized workflow
+o Programm logfile
+o more testcases
+o File selection should be moved into the menue bar, as well as open in external
+o Display all Attributes should not be required. Instead check for empty search?
+o create very small test niftis in order to upload tests

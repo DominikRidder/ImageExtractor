@@ -166,7 +166,7 @@ public class NIFTIVolume extends Volume {
 	@Override
 	public ArrayList<ImagePlus> getData() {
 		ArrayList<ImagePlus> data = new ArrayList<ImagePlus>();
-		for (int i = 0; i < size(); i++) {
+		for (int i = 0; i < nifti.getNSlices(); i++) {
 			data.add(slices.get(i).getData());
 		}
 		return data;
@@ -176,7 +176,7 @@ public class NIFTIVolume extends Volume {
 	public ArrayList<String> getHeader() {
 		String head = getSlice(0).getHeader();
 		ArrayList<String> header = new ArrayList<String>();
-		for (int i = 0; i < size(); i++) {
+		for (int i = 0; i < nifti.getNSlices(); i++) {
 			header.add(head);
 		}
 

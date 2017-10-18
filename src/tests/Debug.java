@@ -36,11 +36,11 @@ public class Debug {
 		// KeyMap att2 = KeyMap.KEY_WINDOW_WIDTH;
 
 		int count1 = 0;
-		ArrayList<String> foundtypes1 = new ArrayList<String>();
 		int count2 = 0;
+		ArrayList<String> foundtypes1 = new ArrayList<String>();
 		ArrayList<String> foundtypes2 = new ArrayList<String>();
 
-		for (int i = 0; i < vol.size(); i++) {
+		for (int i = 0; i < vol.size(); i++) { // Collection Key Attributes FA and Echo_n
 			if (!foundtypes1.contains(vol.getAttribute(att2, i))) {
 				foundtypes1.add(vol.getAttribute(att2, i));
 				count1++;
@@ -51,8 +51,8 @@ public class Debug {
 			}
 		}
 
-		System.out.println(count2);
 		System.out.println(count1);
+		System.out.println(count2);
 
 		ArrayList<String> data = new ArrayList<String>();
 		for (int i = 0; i < vol.size(); i++) {

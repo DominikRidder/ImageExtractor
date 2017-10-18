@@ -6,6 +6,8 @@
 	<property name="build" value="bin/" />
 	<property name="etc" value="./dist/data/etc"/>
 	<property name="lib.dir" value="libs"/>
+	<property name="entry" value="gui.GUI"/>
+	<property name="jarname" value="ImageExtractor.jar"/>
 	
 	<target name="init">
 		<mkdir dir="${build}" />
@@ -23,13 +25,13 @@
 		<manifest file="${etc}/MANIFEST.MF">
 			<attribute name="Built-By" value="${prj.authors}" />
 			<attribute name="Built-On" value="${timestamp.isoformat}" />
-			<attribute name="Main-Class" value="gui.GUI" />
+			<attribute name="Main-Class" value="${entry}" />
 		</manifest>
 	</target>
 	
 	<target name="jar" depends="archive, create-manifest"
 	  description="creates a Java archive of an executable program">
-          <jar destfile="dist/ImageExtractor.jar"
+          <jar destfile="dist/${jarname}"
 	      basedir="${build}"
 	      excludes="**/package/*, **/testcases/*"
 	      manifest="${etc}/MANIFEST.MF">
@@ -39,7 +41,7 @@
 	</target>
 	
 	<target name="archive" depends="compile">
-		<jar destfile="dist/ImageExtractor.jar" basedir="${build}" />
+		<jar destfile="dist/${jarname}" basedir="${build}" />
 	</target>
 
 	<target name="clean" depends="init">
@@ -49,7 +51,7 @@
 	</target>
 
 	<target name="execute" depends="compile">
-		<java classname="gui.GUI">
+		<java classname="${entry}">
 			<classpath refid="project.class.path" />
 		</java>
 	</target>
@@ -74,8 +76,8 @@
 			<classpath location="libs/hamcrest-all-1.3.jar" />
 			<classpath refid="project.class.path" />
 
-			<formatter type="xml" />
-			<formatter type="plain"/>
+			<formatter type="xml" usefile="true" />
+			<formatter type="plain" usefile="true" />
 
 			<batchtest fork="yes" todir="dist">
 				<fileset dir="src/">

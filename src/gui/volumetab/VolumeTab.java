@@ -457,6 +457,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				(int) (parent.height / 21.6)));
 
 		index_slider = new JSlider();
+		index_slider.setName("SliceSlider");
 		index_slider.setMinimum(1);
 		index_slider.setMaximum(10);
 		index_slider.addChangeListener(this);
@@ -464,6 +465,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				(int) (parent.width / 2.483), (int) (parent.height / 20)));
 
 		echo_slider = new JSlider();
+		echo_slider.setName("EchoSlider");
 		echo_slider.setMinimum(1);
 		echo_slider.setMaximum(10);
 		echo_slider.addChangeListener(this);
@@ -558,6 +560,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				(int) (parent.height / 5.4)));
 
 		slice_index = new JTextField("0");
+		slice_index.setName("SliceIndex");
 		slice_index.setEditable(false);
 		slice_index.addMouseWheelListener(this);
 		slice_index.addKeyListener(this);
@@ -566,6 +569,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				(int) (parent.width / 14.67), (int) (parent.height / 5.4)));
 
 		echo_index = new JTextField("0");
+		echo_index.setName("EchoIndex");
 		echo_index.setEditable(false);
 		echo_index.addMouseWheelListener(this);
 		echo_index.addKeyListener(this);
@@ -961,17 +965,22 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			} else if (chooser.getSelectedFile().isFile()) {
 				if (!chooser.getSelectedFile().getAbsolutePath()
 						.endsWith("nii")) {
-					path.setText(chooser.getSelectedFile().getParent()
+					open(chooser.getSelectedFile().getParent()
 							.toString());
 				} else {
-					path.setText(chooser.getSelectedFile().getAbsolutePath());
+					open(chooser.getSelectedFile().getAbsolutePath());
 				}
 			}
-			new Thread(this).start();
+//			new Thread(this).start();
 		}
 		parent.imec.setOption("LastBrowse", chooser.getCurrentDirectory()
 				.getAbsolutePath());
 		parent.imec.save();
+	}
+	
+	public void open(String filename) {
+		path.setText(filename);
+		new Thread(this).start();
 	}
 
 	/**
@@ -993,7 +1002,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		//parent.imec = new ImageExtractorConfig();
 		String customExternal = null;
 		if (path.getText().endsWith(".nii")) {
-			customExternal = parent.imec.getOption("External_NITFI");
+			customExternal = parent.imec.getOption("External_NIFTI");
 		} else {
 			customExternal = parent.imec.getOption("External_DICOM");
 		}
