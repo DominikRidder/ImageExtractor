@@ -68,8 +68,9 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.text.DefaultCaret;
+import javax.swing.text.PlainDocument;
 
-import util.ImageExtractorConfig;
+import util.IntegerFilter;
 import util.VolumeFitter;
 import util.ZeroEcho;
 
@@ -572,6 +573,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		slice_index.addMouseWheelListener(this);
 		slice_index.addKeyListener(this);
 		slice_index.addCaretListener(this);
+		((PlainDocument)slice_index.getDocument()).setDocumentFilter(new IntegerFilter());
 		GUI.setfinalSize(slice_index, new Dimension(
 				(int) (parent.width / 14.67), (int) (parent.height / 5.4)));
 
@@ -581,6 +583,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		echo_index.addMouseWheelListener(this);
 		echo_index.addKeyListener(this);
 		echo_index.addCaretListener(this);
+		((PlainDocument)echo_index.getDocument()).setDocumentFilter(new IntegerFilter());
 		GUI.setfinalSize(echo_index, new Dimension(
 				(int) (parent.width / 14.67), (int) (parent.height / 5.4)));
 

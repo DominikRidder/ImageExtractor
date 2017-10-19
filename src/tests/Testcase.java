@@ -241,6 +241,49 @@ public class Testcase {
 		assertTrue("Echo textfield did accept the letter b.", !echoIndex.getText().contains("b"));
 	}
 	
+	/**
+	 * Tests, if the textfields for the slice and the echo number is resistant to high numbers.
+	 */
+	@Test
+	public void toHighSliceOrEcho() {
+		String volPath = "/opt/dridder_local/Datadir/Sorted/B0316/16_wm_gre_b0";
+		int millisec = 5000;
+		boolean forceEnd = true;
+		boolean visible = false;
+		GUI g = new GUI(forceEnd, visible);
+		VolumeTab voltab = (VolumeTab) g.getCurrentTab();
+
+		// Setting up gui and volume
+		voltab.setPath(volPath);
+		voltab.createVolume();
+		waitForVolumeCreation(voltab, millisec);
+		assertTrue("Volume creation timeout.", !voltab.isCreatingVolume());
+		
+		// Finding the components
+		String[] names = {"SliceIndex", "EchoIndex"};
+		ArrayList<Component> components = findComponentsByName(voltab, names);
+		
+		// Did we found all components?
+		assertTrue("Components Not Found.", components != null);
+		
+		// Typecasting
+		JTextField sliceIndex = (JTextField) components.get(0);
+		JTextField echoIndex = (JTextField) components.get(1);
+
+		// Testing field to slidebar
+		sliceIndex.setText("800");
+		echoIndex.setText("4");
+		try{
+			int slice = Integer.parseInt(sliceIndex.getText());
+			int echo = Integer.parseInt(echoIndex.getText());
+			assertTrue("Slice textfield become to higher maxslice, by inserting 800.", slice<=80);
+			assertTrue("Slice textfield become to higher maxecho, by inserting 4.", echo<=3);
+		}catch(NumberFormatException e) {
+			assertTrue("Could not parse Integer from slice field.", false);
+			assertTrue("Could not parse Integer from echo field.", false);
+		}
+	}
+	
 	
 	public ArrayList<Component> findComponentsByName(Container container, String[] names) {
 		ArrayList<Component> components = new ArrayList<Component>();
