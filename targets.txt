@@ -9,3 +9,4 @@ o more testcases
 o File selection should be moved into the menue bar, as well as open in external
 o Display all Attributes should not be required. Instead check for empty search?
 o create very small test niftis in order to upload tests
+o enable header editor

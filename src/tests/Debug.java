@@ -26,6 +26,10 @@ public class Debug {
 	 *            This paramater is unused.
 	 */
 	public static void main(String[] agrs) {
+		
+	}
+	
+	private static void testSorter() {
 		String filepath = "/opt/dridder_local/TestDicoms/AllDicoms/15.05.19-17:00:13-DST-1.3.12.2.1107.5.2.32.35135/11_gre_t2star";
 		Volume vol = Volume.createVolume(filepath);
 		vol.getTextOptions().setReturnExpression(

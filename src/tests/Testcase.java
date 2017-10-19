@@ -171,41 +171,14 @@ public class Testcase {
 		voltab.setPath(volPath);
 		voltab.createVolume();
 		waitForVolumeCreation(voltab, millisec);
-		
-		if (voltab.isCreatingVolume()) {
-			assertTrue("Volume creation timeout.", false);
-			return;
-		}
+		assertTrue("Volume creation timeout.", !voltab.isCreatingVolume());
 		
 		// Finding the components
 		String[] names = {"SliceIndex", "EchoIndex", "SliceSlider", "EchoSlider"};
-		ArrayList<Component> components = new ArrayList<>();
-		Stack<Component> searchThrough = new Stack<Component>();
-		
-		for (String compName : names) {
-			searchThrough.push(voltab);
-			
-			while(searchThrough.size() > 0) {
-				Component comp = searchThrough.pop();
-				
-				if (comp instanceof Container) {
-					for (Component child : ((Container) comp).getComponents()) {
-						searchThrough.push(child);
-					}
-				}
-			
-				if (compName.equals(comp.getName())) {
-					components.add(comp);
-					break;
-				}
-			}
-		}
+		ArrayList<Component> components = findComponentsByName(voltab, names);
 		
 		// Did we found all components?
-		if (components.size() != 4) {
-			assertTrue("Components Not Found.", false);
-			return;
-		}
+		assertTrue("Components Not Found.", components != null);
 		
 		// Typecasting
 		JTextField sliceIndex = (JTextField) components.get(0);
@@ -230,6 +203,73 @@ public class Testcase {
 		echoIndex.setCaretPosition(1);
 		assertTrue("Slice Textfield to Slider error.", Integer.parseInt(sliceIndex.getText()) == sliceSlider.getValue());
 		assertTrue("Echo Textfield to Slider error.", Integer.parseInt(echoIndex.getText()) == echoSlider.getValue());
+	}
+	
+	/**
+	 * Tests, if the textfields for the slice and the echo number is resistant to letters.
+	 */
+	@Test
+	public void lettersInNumericField() {
+		String volPath = "/opt/dridder_local/Datadir/Sorted/B0316/16_wm_gre_b0";
+		int millisec = 5000;
+		boolean forceEnd = true;
+		boolean visible = false;
+		GUI g = new GUI(forceEnd, visible);
+		VolumeTab voltab = (VolumeTab) g.getCurrentTab();
+
+		// Setting up gui and volume
+		voltab.setPath(volPath);
+		voltab.createVolume();
+		waitForVolumeCreation(voltab, millisec);
+		assertTrue("Volume creation timeout.", !voltab.isCreatingVolume());
+		
+		// Finding the components
+		String[] names = {"SliceIndex", "EchoIndex"};
+		ArrayList<Component> components = findComponentsByName(voltab, names);
+		
+		// Did we found all components?
+		assertTrue("Components Not Found.", components != null);
+		
+		// Typecasting
+		JTextField sliceIndex = (JTextField) components.get(0);
+		JTextField echoIndex = (JTextField) components.get(1);
+
+		// Testing field to slidebar
+		sliceIndex.setText("40a");
+		echoIndex.setText("2b");
+		assertTrue("Slice textfield did accept the letter a.", !sliceIndex.getText().contains("a"));
+		assertTrue("Echo textfield did accept the letter b.", !echoIndex.getText().contains("b"));
+	}
+	
+	
+	public ArrayList<Component> findComponentsByName(Container container, String[] names) {
+		ArrayList<Component> components = new ArrayList<Component>();
+		Stack<Component> searchThrough = new Stack<Component>();
+		
+		for (String compName : names) {
+			searchThrough.push(container);
+			
+			while(searchThrough.size() > 0) {
+				Component comp = searchThrough.pop();
+				
+				if (comp instanceof Container) {
+					for (Component child : ((Container) comp).getComponents()) {
+						searchThrough.push(child);
+					}
+				}
+			
+				if (compName.equals(comp.getName())) {
+					components.add(comp);
+					break;
+				}
+			}
+			
+			if (components.size()<1 || components.get(components.size()-1).getName() != compName) {
+				return null;
+			}
+		}
+		
+		return components;
 	}
 
 	public void waitForVolumeCreation(VolumeTab voltab, int duration) {

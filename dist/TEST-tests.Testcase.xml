@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="1" failures="0" hostname="nmrpc28" name="tests.Testcase" skipped="0" tests="3" time="2.604" timestamp="2017-10-19T07:43:46">
+<testsuite errors="0" failures="1" hostname="nmrpc28" name="tests.Testcase" skipped="0" tests="4" time="3.965" timestamp="2017-10-19T13:42:53">
   <properties>
     <property name="java.vendor" value="Oracle Corporation" />
     <property name="lib.dir" value="libs" />
@@ -36,7 +36,7 @@
     <property name="java.vm.info" value="mixed mode" />
     <property name="ant.file" value="/opt/dridder_local/Documents/ImageExtractor/build.xml" />
     <property name="os.version" value="4.10.0-32-generic" />
-    <property name="timestamp.isoformat" value="2017-10-19T09:43:45" />
+    <property name="timestamp.isoformat" value="2017-10-19T15:42:52" />
     <property name="path.separator" value=":" />
     <property name="java.vm.version" value="25.131-b11" />
     <property name="etc" value="./dist/data/etc" />
@@ -50,10 +50,10 @@
     <property name="java.vendor.url" value="http://java.oracle.com/" />
     <property name="java.vm.vendor" value="Oracle Corporation" />
     <property name="java.runtime.name" value="OpenJDK Runtime Environment" />
-    <property name="sun.java.command" value="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner tests.Testcase skipNonTests=false filtertrace=true haltOnError=false haltOnFailure=false formatter=org.apache.tools.ant.taskdefs.optional.junit.SummaryJUnitResultFormatter showoutput=false outputtoformatters=true logfailedtests=true threadid=0 logtestlistenerevents=false formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,/opt/dridder_local/Documents/ImageExtractor/dist/TEST-tests.Testcase.xml formatter=org.apache.tools.ant.taskdefs.optional.junit.PlainJUnitResultFormatter,/opt/dridder_local/Documents/ImageExtractor/dist/TEST-tests.Testcase.txt crashfile=/opt/dridder_local/Documents/ImageExtractor/junitvmwatcher3569747945197495269.properties propsfile=/opt/dridder_local/Documents/ImageExtractor/junit181082967779158224.properties" />
+    <property name="sun.java.command" value="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner tests.Testcase skipNonTests=false filtertrace=true haltOnError=false haltOnFailure=false formatter=org.apache.tools.ant.taskdefs.optional.junit.SummaryJUnitResultFormatter showoutput=false outputtoformatters=true logfailedtests=true threadid=0 logtestlistenerevents=false formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,/opt/dridder_local/Documents/ImageExtractor/dist/TEST-tests.Testcase.xml formatter=org.apache.tools.ant.taskdefs.optional.junit.PlainJUnitResultFormatter,/opt/dridder_local/Documents/ImageExtractor/dist/TEST-tests.Testcase.txt crashfile=/opt/dridder_local/Documents/ImageExtractor/junitvmwatcher1365498830820501668.properties propsfile=/opt/dridder_local/Documents/ImageExtractor/junit6111817151227382433.properties" />
     <property name="java.class.path" value="/opt/dridder_local/Documents/ImageExtractor/libs/junit-4.12.jar:/opt/dridder_local/Documents/ImageExtractor/libs/hamcrest-all-1.3.jar:/opt/dridder_local/Documents/ImageExtractor/bin:/opt/dridder_local/Documents/ImageExtractor/libs/ij.jar:/opt/dridder_local/Documents/ImageExtractor/libs/PolyFitter.jar:/usr/share/java/ant-launcher-1.9.6.jar:/usr/share/ant/lib/ant.jar:/usr/share/ant/lib/ant-junit.jar:/usr/share/ant/lib/ant-junit4.jar" />
     <property name="ant.version" value="Apache Ant(TM) version 1.9.6 compiled on July 8 2015" />
-    <property name="TSTAMP" value="0943" />
+    <property name="TSTAMP" value="1542" />
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification" />
     <property name="ant.file.type" value="file" />
     <property name="java.vm.specification.version" value="1.8" />
@@ -77,16 +77,46 @@
     <property name="ant.project.invoked-targets" value="junit" />
     <property name="ant.file.type.ImageExtractor" value="file" />
   </properties>
-  <testcase classname="tests.Testcase" name="CheckSort" time="0.01">
-    <error message="Unresolved compilation problem: &#xa;&#x9;Syntax error, insert &quot;;&quot; to complete BlockStatements&#xa;" type="java.lang.Error">java.lang.Error: Unresolved compilation problem: 
-	Syntax error, insert &quot;;&quot; to complete BlockStatements
-
-	at tests.Testcase.CheckSort(Testcase.java:136)
-</error>
+  <testcase classname="tests.Testcase" name="CheckSort" time="0.286" />
+  <testcase classname="tests.Testcase" name="Slide2Textfield" time="2.02" />
+  <testcase classname="tests.Testcase" name="lettersInNumericField" time="1.304">
+    <failure message="Slice textfield did accept the letter a." type="junit.framework.AssertionFailedError">junit.framework.AssertionFailedError: Slice textfield did accept the letter a.
+	at tests.Testcase.lettersInNumericField(Testcase.java:240)
+</failure>
   </testcase>
-  <testcase classname="tests.Testcase" name="Slide2Textfield" time="2.23" />
-  <testcase classname="tests.Testcase" name="VisibleAttributes" time="0.304" />
-  <system-out><![CDATA[Config: /opt/dridder_local.ImageExtractorConfig.cfg
+  <testcase classname="tests.Testcase" name="VisibleAttributes" time="0.229" />
+  <system-out><![CDATA[Scanning output dir for existing files ...
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/19_ep2d_fid
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/16_wm_gre_b0
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/15_wm_gre_rx=bc
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/13_wm_gre_rx=pa
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/21_ep2d_fid
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/17_wm_gre_b0
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/24_ep2d_fid
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/25_ep2d_fid
+PatientID not found. Using default for sorting: NO_ID
+Protocolname not found. Using default for sorting: NO_PROT_NAME
+Imagenumber not found. Using default for sorting: 0
+InstanceUID not found. Using default for sorting: 1
+PatientID not found. Using default for sorting: NO_ID
+Seriesnumber not found. Using default for sorting: 1
+Echonumber not found. Using default for sorting: 1
+Patient name not found. Using default for sorting: No_Name_Found
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/No_Name_Found
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/No_Name_Found/1_NO_PROT_NAME
+I found and sorted 10 Dicoms in 0,238 seconds! I copied 10 of them to the Output directory.Scanning output dir for existing files ...
+Recognized duplicate image!
+PatientID not found. Using default for sorting: NO_ID
+Protocolname not found. Using default for sorting: NO_PROT_NAME
+Imagenumber not found. Using default for sorting: 0
+InstanceUID not found. Using default for sorting: 1
+PatientID not found. Using default for sorting: NO_ID
+Seriesnumber not found. Using default for sorting: 1
+Echonumber not found. Using default for sorting: 1
+Patient name not found. Using default for sorting: No_Name_Found
+I found and sorted 10 Dicoms in 0,039 seconds! I copied 0 of them to the Output directory.Config: /opt/dridder_local.ImageExtractorConfig.cfg
+Config: /opt/dridder_local.ImageExtractorConfig.cfg
 Config: /opt/dridder_local.ImageExtractorConfig.cfg
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>

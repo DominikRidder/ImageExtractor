@@ -448,27 +448,13 @@ public class SortAlgorithm {
 	 * @return True if sort algorithm wasn't stopped; else otherwise
 	 */
 	public boolean searchAndSortIn(String searchin, String sortInDir) {
-		// a list of found dicoms is needed, if nifti should be used
-		dicomtonifti = new HashMap<>();
-		nativeImageName = new HashSet<>();
-		warnedDuplicate = false;
-		// true if an IOException appears somewhere
-		permissionProblem = false;
-		// false until the user calls stopSort()
-		stopsort = false;
-		// time between two system.out.println
-		deltaTimeHelp = System.currentTimeMillis();
-		double start = deltaTimeHelp;
-		// new File, to test if the path is correct
-		File file = new File(searchin);
-		protocolInfo = new HashMap<String, ArrayList<String>>(100);
-		anyCurropt = false;
-		numbOfEchos = new HashMap<String, Integer>();
-
-		// number of dicoms that the programm found
-		found = 0;
-		// number of dicoms, that the programm copyd or moved
-		transfered = 0;
+		double start = System.currentTimeMillis(); // start time for the sort
+													// algorithm
+		double totalTime;
+		String operation; // equals "created", "moved" or "copied"
+		File file = new File(searchin); // new File, to test if the path is
+										// correct
+		setupValues();
 
 		if (!file.exists() | !file.isDirectory()) {
 			out.println("The Given Path seems to be incorrect.");
@@ -479,6 +465,62 @@ public class SortAlgorithm {
 		existOrCreate(new StringBuilder(sortInDir));
 
 		// README (exist or create)
+		if (!createReadme(sortInDir)) {
+			return false;
+		}
+
+		// Performing the Search and Sort
+		if (subfolders) {
+			SASInSubfoldersWrapper(searchin, sortInDir);
+		} else {
+			SASInNoSubfolderWrapper(searchin, sortInDir);
+		}
+
+		// Was the sort end forced by the user?
+		if (stopsort) {
+			return false;
+		}
+
+		int numberofnii = createNiftis();
+
+		// The last output
+		totalTime = System.currentTimeMillis() - start;
+		if (createNiftis) {
+			operation = "created";
+		} else {
+			operation = move ? "moved" : "copied";
+		}
+
+		if (!createNiftis) {
+			out.format(
+					"I found and sorted %d Dicoms in %.3f seconds! I %s %d of them to the Output directory.",
+					found, totalTime / 1000, operation, transfered);
+		} else {
+			out.format(
+					"I found %d Dicoms in %.3f seconds! I %s %d niftis in the Output directory.",
+					found, totalTime / 1000, operation, numberofnii);
+		}
+
+		return true;
+	}
+
+	private void setupValues() {
+		dicomtonifti = new HashMap<>(); // a list of found dicoms is needed, if
+		nativeImageName = new HashSet<>(); // nifti should be used
+		warnedDuplicate = false;
+		permissionProblem = false; // true if an IOException appears somewhere
+		stopsort = false; // false until the user calls stopSort() or errors
+							// occure
+		deltaTimeHelp = System.currentTimeMillis(); // time since last deltaTime
+													// call or start time
+		protocolInfo = new HashMap<String, ArrayList<String>>(100);
+		anyCurropt = false;
+		numbOfEchos = new HashMap<String, Integer>();
+		found = 0; // number of dicoms that the programm found
+		transfered = 0; // number of dicoms, that the programm copyd or moved
+	}
+
+	private boolean createReadme(String sortInDir) {
 		File readmeDir = new File(sortInDir + "/README");
 		if (!readmeDir.exists()) {
 			try {
@@ -499,45 +541,8 @@ public class SortAlgorithm {
 				out.println("Creating a file in the outputdir failed.");
 				permissionProblem = true;
 				stopSort();
+				return false;
 			}
-		}
-
-		// Preparing the Sort and Sort
-		if (subfolders) {
-			SASInSubfoldersWrapper(searchin, sortInDir);
-		} else {
-			SASInNoSubfolderWrapper(searchin, sortInDir);
-		}
-		// Sort Finished
-
-		// Was the sort end forced by the user?
-		if (stopsort) {
-			return false;
-		}
-
-		int numberofnii = createNiftis();
-
-		// The last output
-		start = System.currentTimeMillis() - start;
-		String operation = "";
-		if (!createNiftis) {
-			if (move) {
-				operation = "moved";
-			} else {
-				operation = "copied";
-			}
-		} else {
-			operation = "created";
-			// transfered = numberofnii;
-		}
-		if (!createNiftis) {
-			out.println("I found and sorted " + found + " Dicoms in " + start
-					/ 1000 + " seconds! I " + operation + " " + transfered
-					+ " of them to the Output directory.");
-		} else {
-			out.println("I found " + found + " Dicoms in " + start / 1000
-					+ " seconds! I " + operation + " " + numberofnii
-					+ " niftis in the Output directory.");
 		}
 		return true;
 	}
@@ -637,7 +642,7 @@ public class SortAlgorithm {
 						helpfile.mkdir();
 					}
 					boolean empty = true;
-					// Does the Protocol contains already dicoms?
+					// Does the Protocol contain already dicoms?
 					for (File dicomcheck : protocolNameFolder.listFiles()) {
 						if (dicomcheck.getAbsolutePath().endsWith(".dcm")) {
 							try {
@@ -708,7 +713,7 @@ public class SortAlgorithm {
 													.add(i);
 										}
 									}
-									// making the highest index higher
+									// increasing the highest index
 									index.put(patientID + protocolName,
 											nextParse);
 								}
@@ -752,7 +757,6 @@ public class SortAlgorithm {
 								protocolInfo.get(key).add(test);
 								continue;
 							}
-
 						} catch (Exception e) {
 							e.printStackTrace();
 							stopSort();
@@ -786,17 +790,17 @@ public class SortAlgorithm {
 							}
 						}
 					}
-					// If there is only one, i gonna unpack it
+					// If there is only one, I'm going to unpack it
 					if (onlyone) {
 						for (File protocolSubfolder : protocolNameFolder
 								.listFiles()) {
 							if (protocolSubfolder.isDirectory()) {
-								// searching the lonley subfolder
+								// searching the lonely subfolder
 								if (!protocolSubfolder.getName().equals(
 										toProtocolDigits(1 + ""))) {
 									continue;
 								}
-								// delete it, when im finished
+								// delete it, when I'm finished
 								protocolSubfolder.deleteOnExit();
 								for (File dicoms : protocolSubfolder
 										.listFiles()) {
@@ -1080,12 +1084,16 @@ public class SortAlgorithm {
 								// class, than we would loose a lot of time.
 								if (att == null) {
 									att = Image.getAttributesDicom(
-										dicom.getAbsolutePath(), info);
+											dicom.getAbsolutePath(), info);
 								}
-								KeyMap imageNumber[] = {KeyMap.KEY_IMAGE_NUMBER};
-								String strNumber[] = Image.getAttributesDicom(dicom.getAbsolutePath(), imageNumber);
-								if (strNumber.length == 1 && !strNumber[0].equals("")) {
-									nativeImageName.add(dicom.getParentFile().getAbsolutePath()+toImgDigits(strNumber[0]));
+								KeyMap imageNumber[] = { KeyMap.KEY_IMAGE_NUMBER };
+								String strNumber[] = Image.getAttributesDicom(
+										dicom.getAbsolutePath(), imageNumber);
+								if (strNumber.length == 1
+										&& !strNumber[0].equals("")) {
+									nativeImageName.add(dicom.getParentFile()
+											.getAbsolutePath()
+											+ toImgDigits(strNumber[0]));
 								}
 							}
 						}
@@ -1288,14 +1296,12 @@ public class SortAlgorithm {
 
 		dicomtonifti.get(output).add(imageNumber + "#" + input);
 		transfered++;
-		//
 	}
 
 	private void moveDicom(String input, String output, String name) {
 		File test = new File(output + "/" + name);
 		if (!test.exists()) {
 			try {
-
 				if (move) {
 					Files.move(new File(input).toPath(), test.toPath(),
 							StandardCopyOption.REPLACE_EXISTING);

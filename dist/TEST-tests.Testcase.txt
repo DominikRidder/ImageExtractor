@@ -1,19 +1,47 @@
 Testsuite: tests.Testcase
-Tests run: 3, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 2,604 sec
+Tests run: 4, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 3,965 sec
 ------------- Standard Output ---------------
+Scanning output dir for existing files ...
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/19_ep2d_fid
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/16_wm_gre_b0
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/15_wm_gre_rx=bc
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/13_wm_gre_rx=pa
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/21_ep2d_fid
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/17_wm_gre_b0
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/24_ep2d_fid
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316/25_ep2d_fid
+PatientID not found. Using default for sorting: NO_ID
+Protocolname not found. Using default for sorting: NO_PROT_NAME
+Imagenumber not found. Using default for sorting: 0
+InstanceUID not found. Using default for sorting: 1
+PatientID not found. Using default for sorting: NO_ID
+Seriesnumber not found. Using default for sorting: 1
+Echonumber not found. Using default for sorting: 1
+Patient name not found. Using default for sorting: No_Name_Found
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/No_Name_Found
+Creating /opt/dridder_local/Datadir/Testcase/Sorted/No_Name_Found/1_NO_PROT_NAME
+I found and sorted 10 Dicoms in 0,238 seconds! I copied 10 of them to the Output directory.Scanning output dir for existing files ...
+Recognized duplicate image!
+PatientID not found. Using default for sorting: NO_ID
+Protocolname not found. Using default for sorting: NO_PROT_NAME
+Imagenumber not found. Using default for sorting: 0
+InstanceUID not found. Using default for sorting: 1
+PatientID not found. Using default for sorting: NO_ID
+Seriesnumber not found. Using default for sorting: 1
+Echonumber not found. Using default for sorting: 1
+Patient name not found. Using default for sorting: No_Name_Found
+I found and sorted 10 Dicoms in 0,039 seconds! I copied 0 of them to the Output directory.Config: /opt/dridder_local.ImageExtractorConfig.cfg
 Config: /opt/dridder_local.ImageExtractorConfig.cfg
 Config: /opt/dridder_local.ImageExtractorConfig.cfg
 ------------- ---------------- ---------------
 
-Testcase: CheckSort took 0,006 sec
-	Caused an ERROR
-Unresolved compilation problem: 
-	Syntax error, insert ";" to complete BlockStatements
+Testcase: CheckSort took 0,286 sec
+Testcase: Slide2Textfield took 2,02 sec
+Testcase: lettersInNumericField took 1,303 sec
+	FAILED
+Slice textfield did accept the letter a.
+junit.framework.AssertionFailedError: Slice textfield did accept the letter a.
+	at tests.Testcase.lettersInNumericField(Testcase.java:240)
 
-java.lang.Error: Unresolved compilation problem: 
-	Syntax error, insert ";" to complete BlockStatements
-
-	at tests.Testcase.CheckSort(Testcase.java:136)
-
-Testcase: Slide2Textfield took 2,23 sec
-Testcase: VisibleAttributes took 0,304 sec
+Testcase: VisibleAttributes took 0,229 sec
