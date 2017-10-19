@@ -1,20 +1,15 @@
 Testsuite: tests.Testcase
-Tests run: 3, Failures: 2, Errors: 0, Skipped: 0, Time elapsed: 4,625 sec
+Tests run: 3, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 2,754 sec
 ------------- Standard Output ---------------
 Config: /opt/dridder_local.ImageExtractorConfig.cfg
 Config: /opt/dridder_local.ImageExtractorConfig.cfg
 ------------- ---------------- ---------------
 
-Testcase: CheckSort took 0,007 sec
+Testcase: CheckSort took 0,008 sec
 	FAILED
 null
 junit.framework.AssertionFailedError
 	at tests.Testcase.CheckSort(Testcase.java:90)
 
-Testcase: Slide2Textfield took 3,865 sec
-	FAILED
-Slice Textfield to Slider error.
-junit.framework.AssertionFailedError: Slice Textfield to Slider error.
-	at tests.Testcase.Slide2Textfield(Testcase.java:171)
-
-Testcase: VisibleAttributes took 0,667 sec
+Testcase: Slide2Textfield took 2,342 sec
+Testcase: VisibleAttributes took 0,31 sec

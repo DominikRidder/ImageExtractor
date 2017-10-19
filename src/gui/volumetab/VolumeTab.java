@@ -408,6 +408,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	private JSlider echo_slider;
 
 	/**
+	 * Actual Image position.
+	 */
+	private int sliceIdx, echoIdx;
+
+	/**
 	 * Standard Constructor.
 	 * 
 	 * @param filechooser
@@ -417,6 +422,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	public VolumeTab(JFileChooser filechooser, GUI gui) {
 		parent = gui;
+		sliceIdx = 1;
+		echoIdx = 1;
 
 		JMenuItem contrtmen = new JMenuItem("Adjust Brightness/Contrast");
 		contrtmen.addActionListener(this);
@@ -865,7 +872,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				actionCalculateZeroEcho();
 			}
 			break;
-		case "Cancle":
+		case "Cancel":
 			if (ze != null) {
 				ze.Cancle();
 				ze = null;
@@ -943,7 +950,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			}
 		}
 
-		zero_echo.setText("Cancle");
+		zero_echo.setText("Cancel");
 
 		parent.getStatusLabel().setText("Calculating ZeroEcho: ");
 		parent.getProgressBar().setValue(0);
@@ -965,19 +972,18 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			} else if (chooser.getSelectedFile().isFile()) {
 				if (!chooser.getSelectedFile().getAbsolutePath()
 						.endsWith("nii")) {
-					open(chooser.getSelectedFile().getParent()
-							.toString());
+					open(chooser.getSelectedFile().getParent().toString());
 				} else {
 					open(chooser.getSelectedFile().getAbsolutePath());
 				}
 			}
-//			new Thread(this).start();
+			// new Thread(this).start();
 		}
 		parent.imec.setOption("LastBrowse", chooser.getCurrentDirectory()
 				.getAbsolutePath());
 		parent.imec.save();
 	}
-	
+
 	public void open(String filename) {
 		path.setText(filename);
 		new Thread(this).start();
@@ -999,7 +1005,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	public void actionOpenInExternal() {
 		// if (volume != null) {
-		//parent.imec = new ImageExtractorConfig();
+		// parent.imec = new ImageExtractorConfig();
 		String customExternal = null;
 		if (path.getText().endsWith(".nii")) {
 			customExternal = parent.imec.getOption("External_NIFTI");
@@ -1037,8 +1043,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			int lowest = zeroecho == null ? 1 : 0;
 			if (actecho + change > lowest - 1
 					&& actecho + change <= echoNumbers) {
-				echo_index.setText(""
-						+ (Integer.parseInt(echo_index.getText()) + change));
+				echoIdx += change;
+				echo_index.setText("" + (echoIdx));
 				checkEcho();
 			}
 		} catch (NumberFormatException e) {
@@ -1058,8 +1064,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	public void addtoSlice(int change) {
 		try {
 			if (!(getActualSlice() + change < 1 || getActualSlice() + change > perEcho)) {
-				slice_index.setText(""
-						+ (Integer.parseInt(slice_index.getText()) + change));
+				sliceIdx += change;
+				slice_index.setText("" + (sliceIdx));
 				checkSlice();
 			}
 		} catch (NumberFormatException e) {
@@ -1092,9 +1098,15 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		Object source = e.getSource();
 		if (source == slice_index) {
 			checkSlice();
+			index_slider.removeChangeListener(this);
+			index_slider.setValue(sliceIdx);
+			index_slider.addChangeListener(this);
 			displayImage();
 		} else if (source == echo_index) {
 			checkEcho();
+			echo_slider.removeChangeListener(this);
+			echo_slider.setValue(echoIdx);
+			echo_slider.addChangeListener(this);
 			displayImage();
 		} else if (source == filter) {
 			if (!filter.getText().equals(lastfilter)) {
@@ -1255,12 +1267,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 *             Digit or if there is no character.
 	 */
 	public int getActualSlice() throws IOException {
-		try {
-			return Integer.parseInt(slice_index.getText());
-		} catch (NumberFormatException e) {
-			throw new IOException(e.getMessage()); // Forcing myself, to catch
-													// Exceptions
-		}
+		return sliceIdx;
 	}
 
 	/**
@@ -1273,12 +1280,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 *             Digit or if there is no character.
 	 */
 	public int getActualEcho() throws IOException {
-		try {
-			return Integer.parseInt(echo_index.getText());
-		} catch (NumberFormatException e) {
-			throw new IOException(e.getMessage()); // Forcing myself, to catch
-													// Exceptions
-		}
+		return echoIdx;
 	}
 
 	/**
@@ -1736,12 +1738,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 		} else if (e.getSource() == index_slider) {
 			// Slider below the Image
-			slice_index.setText("" + index_slider.getValue());
+			sliceIdx = index_slider.getValue();
+			slice_index.setText("" + sliceIdx);
 			displayImage();
 
 		} else if (e.getSource() == echo_slider) {
 			// Slider below the Image
-			echo_index.setText("" + echo_slider.getValue());
+			echoIdx = echo_slider.getValue();
+			echo_index.setText("" + echoIdx);
 			displayImage();
 
 		}
@@ -1957,41 +1961,48 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * If the Number in bounds, than this method won't have any effekt.
 	 */
 	private void checkEcho() {
-		Runnable handlechange = new Runnable() {
-			public void run() {
-				int act = 0;
-				try {
-					act = Integer.parseInt(echo_index.getText());
-				} catch (NumberFormatException e) {
-					String newtext = echo_index.getText().replaceAll("[^\\d]",
-							"");
-					if (newtext.length() == 0) {
-						act = 0;
-					} else {
-						act = Integer.parseInt(newtext);
-					}
-				}
-				if (act > echoNumbers) {
-					act = echoNumbers;
-				} else if (act <= 0 && zeroecho != null) {
-					act = 0;
-				} else if (act < 1 && volume != null) {
-					act = 1;
-				}
-				CaretListener[] listener = echo_index.getCaretListeners();
-				if (listener.length != 0) {
-					for (CaretListener l : listener) {
-						echo_index.removeCaretListener(l);
-					}
-					echo_index.setText(act + "");
-					for (CaretListener l : listener) {
-						echo_index.addCaretListener(l);
-					}
-				}
-			}
-		};
+		boolean updateText = true;
+		int act = 0;
+		String newtext = echo_index.getText().replaceAll("[^\\d]", "");
+		if (newtext.length() == 0) {
+			act = 1;
+		} else {
+			act = Integer.parseInt(newtext);
+		}
 
-		SwingUtilities.invokeLater(handlechange);
+		if (act > echoNumbers) {
+			act = echoNumbers;
+		} else if (act <= 0 && zeroecho != null) {
+			act = 0;
+		} else if (act < 1 && volume != null) {
+			act = 1;
+		}
+
+		echoIdx = act;
+		if ((act + "").equals(echo_index.getText())
+				|| echo_index.getText().length() == 0) {
+			updateText = false;
+		}
+
+		if (updateText) {
+			// Prevent Attempt to mutate in notification error
+			Runnable handlechange = new Runnable() {
+				public void run() {
+					CaretListener[] listener = echo_index.getCaretListeners();
+					if (listener.length != 0) {
+						for (CaretListener l : listener) {
+							echo_index.removeCaretListener(l);
+						}
+						echo_index.setText(echoIdx + "");
+						for (CaretListener l : listener) {
+							echo_index.addCaretListener(l);
+						}
+					}
+				}
+			};
+
+			SwingUtilities.invokeLater(handlechange);
+		}
 	}
 
 	/**
@@ -2005,39 +2016,46 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * If the Number in bounds, than this method won't have any effect.
 	 */
 	private void checkSlice() {
-		Runnable handlechange = new Runnable() {
-			public void run() {
-				int act = 0;
-				try {
-					act = Integer.parseInt(slice_index.getText());
-				} catch (NumberFormatException e) {
-					String newtext = slice_index.getText().replaceAll("[^\\d]",
-							"");
-					if (newtext.length() == 0) {
-						act = 0;
-					} else {
-						act = Integer.parseInt(newtext);
-					}
-				}
-				if (act > perEcho) {
-					act = perEcho;
-				} else if (act < 1 && volume != null) {
-					act = 1;
-				}
-				CaretListener[] listener = slice_index.getCaretListeners();
-				if (listener.length != 0) {
+		boolean updateText = true;
+		int act = 0;
+		String newtext = slice_index.getText().replaceAll("[^\\d]", "");
+		if (newtext.length() == 0) {
+			act = 1;
+		} else {
+			act = Integer.parseInt(newtext);
+		}
+
+		if (act > perEcho) {
+			act = perEcho;
+		} else if (act < 1 && volume != null) {
+			act = 1;
+		}
+
+		sliceIdx = act;
+
+		if ((act + "").equals(slice_index.getText())
+				|| slice_index.getText().length() == 0) {
+			updateText = false;
+		}
+
+		if (updateText) {
+			// Prevent Attempt to mutate in notification error
+			Runnable handlechange = new Runnable() {
+				public void run() {
+					CaretListener[] listener = slice_index.getCaretListeners();
 					for (CaretListener l : listener) {
 						slice_index.removeCaretListener(l);
 					}
-					slice_index.setText(act + "");
+					slice_index.setText(sliceIdx + "");
 					for (CaretListener l : listener) {
 						slice_index.addCaretListener(l);
 					}
 				}
-			}
-		};
+			};
 
-		SwingUtilities.invokeLater(handlechange);
+			SwingUtilities.invokeLater(handlechange);
+
+		}
 	}
 
 	/**
@@ -2132,7 +2150,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					for (String str : volume.getSlice(actualSliceIndex())
 							.getHeader().split("\n")) {
 						if (!filter.getText().equals("")) {
-							for (String part : filter.getText().split("\\|")){
+							for (String part : filter.getText().split("\\|")) {
 								if (str.toLowerCase().contains(
 										part.trim().toLowerCase())) {
 									outputstring.append(str + "\n");

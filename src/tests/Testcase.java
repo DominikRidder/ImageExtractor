@@ -168,6 +168,8 @@ public class Testcase {
 		// Testing field to slidebar
 		sliceIndex.setText("40");
 		echoIndex.setText("2");
+		sliceIndex.setCaretPosition(1); // Invoke caret change event
+		echoIndex.setCaretPosition(1);
 		assertTrue("Slice Textfield to Slider error.", Integer.parseInt(sliceIndex.getText()) == sliceSlider.getValue());
 		assertTrue("Echo Textfield to Slider error.", Integer.parseInt(echoIndex.getText()) == echoSlider.getValue());
 	}

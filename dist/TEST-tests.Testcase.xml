@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite errors="0" failures="2" hostname="nmrpc28" name="tests.Testcase" skipped="0" tests="3" time="4.625" timestamp="2017-10-18T13:45:01">
+<testsuite errors="0" failures="1" hostname="nmrpc28" name="tests.Testcase" skipped="0" tests="3" time="2.754" timestamp="2017-10-19T06:35:21">
   <properties>
     <property name="java.vendor" value="Oracle Corporation" />
     <property name="lib.dir" value="libs" />
@@ -8,7 +8,7 @@
     <property name="entry" value="gui.GUI" />
     <property name="os.name" value="Linux" />
     <property name="sun.boot.class.path" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jfr.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/classes" />
-    <property name="TODAY" value="October 18 2017" />
+    <property name="TODAY" value="October 19 2017" />
     <property name="sun.desktop" value="gnome" />
     <property name="java.vm.specification.vendor" value="Oracle Corporation" />
     <property name="ant.home" value="/usr/share/ant" />
@@ -19,7 +19,7 @@
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64" />
     <property name="ant.project.default-target" value="archive" />
     <property name="ant.project.name" value="ImageExtractor" />
-    <property name="DSTAMP" value="20171018" />
+    <property name="DSTAMP" value="20171019" />
     <property name="java.version" value="1.8.0_131" />
     <property name="user.timezone" value="" />
     <property name="jarname" value="ImageExtractor.jar" />
@@ -36,7 +36,7 @@
     <property name="java.vm.info" value="mixed mode" />
     <property name="ant.file" value="/opt/dridder_local/Documents/ImageExtractor/build.xml" />
     <property name="os.version" value="4.10.0-32-generic" />
-    <property name="timestamp.isoformat" value="2017-10-18T15:45:00" />
+    <property name="timestamp.isoformat" value="2017-10-19T08:35:20" />
     <property name="path.separator" value=":" />
     <property name="java.vm.version" value="25.131-b11" />
     <property name="etc" value="./dist/data/etc" />
@@ -50,10 +50,10 @@
     <property name="java.vendor.url" value="http://java.oracle.com/" />
     <property name="java.vm.vendor" value="Oracle Corporation" />
     <property name="java.runtime.name" value="OpenJDK Runtime Environment" />
-    <property name="sun.java.command" value="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner tests.Testcase skipNonTests=false filtertrace=true haltOnError=false haltOnFailure=false formatter=org.apache.tools.ant.taskdefs.optional.junit.SummaryJUnitResultFormatter showoutput=false outputtoformatters=true logfailedtests=true threadid=0 logtestlistenerevents=false formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,/opt/dridder_local/Documents/ImageExtractor/dist/TEST-tests.Testcase.xml formatter=org.apache.tools.ant.taskdefs.optional.junit.PlainJUnitResultFormatter,/opt/dridder_local/Documents/ImageExtractor/dist/TEST-tests.Testcase.txt crashfile=/opt/dridder_local/Documents/ImageExtractor/junitvmwatcher7317754935892661682.properties propsfile=/opt/dridder_local/Documents/ImageExtractor/junit3319694159897823041.properties" />
+    <property name="sun.java.command" value="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner tests.Testcase skipNonTests=false filtertrace=true haltOnError=false haltOnFailure=false formatter=org.apache.tools.ant.taskdefs.optional.junit.SummaryJUnitResultFormatter showoutput=false outputtoformatters=true logfailedtests=true threadid=0 logtestlistenerevents=false formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,/opt/dridder_local/Documents/ImageExtractor/dist/TEST-tests.Testcase.xml formatter=org.apache.tools.ant.taskdefs.optional.junit.PlainJUnitResultFormatter,/opt/dridder_local/Documents/ImageExtractor/dist/TEST-tests.Testcase.txt crashfile=/opt/dridder_local/Documents/ImageExtractor/junitvmwatcher7722932385253228504.properties propsfile=/opt/dridder_local/Documents/ImageExtractor/junit6619764490896618804.properties" />
     <property name="java.class.path" value="/opt/dridder_local/Documents/ImageExtractor/libs/junit-4.12.jar:/opt/dridder_local/Documents/ImageExtractor/libs/hamcrest-all-1.3.jar:/opt/dridder_local/Documents/ImageExtractor/bin:/opt/dridder_local/Documents/ImageExtractor/libs/ij.jar:/opt/dridder_local/Documents/ImageExtractor/libs/PolyFitter.jar:/usr/share/java/ant-launcher-1.9.6.jar:/usr/share/ant/lib/ant.jar:/usr/share/ant/lib/ant-junit.jar:/usr/share/ant/lib/ant-junit4.jar" />
     <property name="ant.version" value="Apache Ant(TM) version 1.9.6 compiled on July 8 2015" />
-    <property name="TSTAMP" value="1545" />
+    <property name="TSTAMP" value="0835" />
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification" />
     <property name="ant.file.type" value="file" />
     <property name="java.vm.specification.version" value="1.8" />
@@ -77,17 +77,13 @@
     <property name="ant.project.invoked-targets" value="junit" />
     <property name="ant.file.type.ImageExtractor" value="file" />
   </properties>
-  <testcase classname="tests.Testcase" name="CheckSort" time="0.015">
+  <testcase classname="tests.Testcase" name="CheckSort" time="0.012">
     <failure type="junit.framework.AssertionFailedError">junit.framework.AssertionFailedError
 	at tests.Testcase.CheckSort(Testcase.java:90)
 </failure>
   </testcase>
-  <testcase classname="tests.Testcase" name="Slide2Textfield" time="3.865">
-    <failure message="Slice Textfield to Slider error." type="junit.framework.AssertionFailedError">junit.framework.AssertionFailedError: Slice Textfield to Slider error.
-	at tests.Testcase.Slide2Textfield(Testcase.java:171)
-</failure>
-  </testcase>
-  <testcase classname="tests.Testcase" name="VisibleAttributes" time="0.667" />
+  <testcase classname="tests.Testcase" name="Slide2Textfield" time="2.342" />
+  <testcase classname="tests.Testcase" name="VisibleAttributes" time="0.31" />
   <system-out><![CDATA[Config: /opt/dridder_local.ImageExtractorConfig.cfg
 Config: /opt/dridder_local.ImageExtractorConfig.cfg
 ]]></system-out>
