@@ -1,15 +1,19 @@
 Testsuite: tests.Testcase
-Tests run: 3, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 2,754 sec
+Tests run: 3, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 2,604 sec
 ------------- Standard Output ---------------
 Config: /opt/dridder_local.ImageExtractorConfig.cfg
 Config: /opt/dridder_local.ImageExtractorConfig.cfg
 ------------- ---------------- ---------------
 
-Testcase: CheckSort took 0,008 sec
-	FAILED
-null
-junit.framework.AssertionFailedError
-	at tests.Testcase.CheckSort(Testcase.java:90)
+Testcase: CheckSort took 0,006 sec
+	Caused an ERROR
+Unresolved compilation problem: 
+	Syntax error, insert ";" to complete BlockStatements
 
-Testcase: Slide2Textfield took 2,342 sec
-Testcase: VisibleAttributes took 0,31 sec
+java.lang.Error: Unresolved compilation problem: 
+	Syntax error, insert ";" to complete BlockStatements
+
+	at tests.Testcase.CheckSort(Testcase.java:136)
+
+Testcase: Slide2Textfield took 2,23 sec
+Testcase: VisibleAttributes took 0,304 sec

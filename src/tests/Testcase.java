@@ -6,17 +6,19 @@ import gui.volumetab.VolumeTab;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 
 import org.junit.Test; // needed for annotation
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure; // printing the failures
+
+import util.SortAlgorithm;
 
 // Everytime an error occurs, please write a Test for this (take a look at Software Engineering).
 
@@ -86,8 +88,64 @@ public class Testcase {
 	 */
 	@Test
 	public void CheckSort() {
-
-		assertTrue(false);
+		String unsorted = "/opt/dridder_local/Datadir/Testcase/Unsorted";
+		String sorted = "/opt/dridder_local/Datadir/Testcase/Sorted";
+		SortAlgorithm sorter = new SortAlgorithm();
+		sorter.setCreateNiftis(false);
+		sorter.setFilesOptionCopy();
+		sorter.setKeepImageName(false);
+		sorter.setProtocolDigits(0);
+		sorter.setImgDigits(0);
+		sorter.useSubfolders(false);
+		
+		for (int i = 0; i < 2; i++) { // Check once with existant source and once without
+			assertTrue("Testdata not Found: "+unsorted+".", new File(unsorted).exists());
+			sorter.searchAndSortIn(unsorted, sorted);
+		
+			File subjectDir = new File(sorted+"/B0316");
+			assertTrue("Subject Directory B0316 was not created.", subjectDir.exists());
+			
+			int dircount = 0;
+			int dcmcount = 0;
+			for (File potDirectory : subjectDir.listFiles()) {
+				if (potDirectory.isDirectory()) {
+					dircount++;
+					
+					for (File dcm : potDirectory.listFiles()) {
+						if (dcm.getName().endsWith(".dcm")) {
+							dcmcount++;
+						}
+					}
+				}
+			}
+			
+			assertTrue("Subject Directory B0316 should contain 10 directorys.", dircount == 8);
+			assertTrue("Subject Directory B0316 should contain 14 dicoms.", dcmcount == 9);
+		}
+		
+		// Clean up Sorted directory
+		Stack<File> todelete = new Stack<File>();
+		for (File subfile : new File(sorted).listFiles()) {
+			todelete.push(subfile);
+		}
+		
+		while(todelete.size() != 0) {
+			File next = todelete.pop();
+			
+			if (next.isDirectory() && next.listFiles().length != 0) {
+				todelete.push(next) // Retry later
+				for (File subfile : next.listFiles()) {
+					todelete.push(subfile);
+				}
+			} else {
+				boolean worked = next.delete();
+				if (!worked) {
+					break;
+				}
+			}
+		}
+		
+		assertTrue("Error while deleting sorted directory.", new File(sorted).listFiles().length == 0);
 	}
 
 	/**
