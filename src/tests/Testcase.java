@@ -133,7 +133,7 @@ public class Testcase {
 			File next = todelete.pop();
 			
 			if (next.isDirectory() && next.listFiles().length != 0) {
-				todelete.push(next) // Retry later
+				todelete.push(next); // Retry later
 				for (File subfile : next.listFiles()) {
 					todelete.push(subfile);
 				}
