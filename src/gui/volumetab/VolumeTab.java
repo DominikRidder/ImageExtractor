@@ -413,6 +413,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private int sliceIdx, echoIdx;
 
+	public Volume getVolume() {
+		return volume;
+	}
+	
 	/**
 	 * Standard Constructor.
 	 * 
@@ -1658,7 +1662,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	/**
 	 * Method, that calls a JFileChooser and saves the ZeroEcho + the other
-	 * Echos as a Nifty, as the selected File. If the filename don't ends with
+	 * Echos as a Nifti, as the selected File. If the filename don't ends with
 	 * ".nii", than the extension ".nii" is added.
 	 */
 	public void saveZeroEcho() {

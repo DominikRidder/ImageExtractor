@@ -6,7 +6,7 @@
 	<property name="build" value="bin/" />
 	<property name="etc" value="./dist/data/etc"/>
 	<property name="lib.dir" value="libs"/>
-	<property name="entry" value="gui.GUI"/>
+	<property name="entry" value="main.ImageExtractor"/>
 	<property name="jarname" value="ImageExtractor.jar"/>
 	
 	<target name="init">

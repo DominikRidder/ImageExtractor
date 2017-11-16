@@ -306,6 +306,8 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		sortListener = new ByteArrayOutputStream();
 		PrintStream ps = new PrintStream(sortListener);
 		sortAlgorithm.setPrintStream(ps);
+		
+		resetStatus();
 	}
 
 	/**
@@ -564,7 +566,7 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 	 */
 	private static JTextField createText(String text, int width, int height,
 			boolean editable) {
-		JTextField textfield = new JTextField(text);
+		JTextField textfield = new GradientTextField(text);
 		textfield.setEditable(editable);
 		if (!editable) {
 			textfield.setBackground(null);
@@ -573,6 +575,16 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		return textfield;
 	}
 
+	private void resetStatus() {
+		for (int i = 0; i < tablerows_left.length; i++) {
+			Component[] left_stuff = tablerows_left[i].getComponents();
+			GradientTextField status = (GradientTextField) left_stuff[L_STATUS];
+			status.setBackground(new Color(0, 0, 0, 0));
+			status.setGradientColors(Color.LIGHT_GRAY.brighter(), Color.LIGHT_GRAY);
+			status.setText("Undefined");
+		}
+	}
+	
 	/**
 	 * This method is called by a Thread, to start the sorting.
 	 */
@@ -584,8 +596,9 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		// Setting every status to Unchecked
 		for (int i = 0; i < tablerows_left.length; i++) {
 			Component[] left_stuff = tablerows_left[i].getComponents();
-			JTextField status = (JTextField) left_stuff[L_STATUS];
-			status.setBackground(null);
+			GradientTextField status = (GradientTextField) left_stuff[L_STATUS];
+			status.setBackground(new Color(0, 0, 0, 0));
+			status.setGradientColors(color_inProgress, color_inProgress.darker());
 			status.setText("Unchecked");
 		}
 
@@ -593,8 +606,10 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 		for (int i = 0; i < tablerows_left.length; i++) {
 			// getting the components and casting them
 			Component[] left_stuff = tablerows_left[i].getComponents();
-			JTextField status = (JTextField) left_stuff[L_STATUS];
-			status.setBackground(color_inProgress);
+			GradientTextField status = (GradientTextField) left_stuff[L_STATUS];
+			status.setBackground(new Color(0, 0, 0, 0));
+			status.setGradientColors(color_inProgress, color_inProgress.darker());
+			
 			JTextField inputfield = (JTextField) left_stuff[L_INPUT];
 			JTextField tooutput = (JTextField) left_stuff[L_OUTPUT_NR];
 			@SuppressWarnings("unchecked")
@@ -603,15 +618,18 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 
 			// catching empty input
 			if (inputfield.getText().equals("")) {
-				status.setBackground(color_failed);
+				//status.setBackground(color_failed);
+				status.setGradientColors(color_failed.brighter(), color_failed);
 				status.setText("Empty Input");
 				continue;
 			}
 
 			// catching empty output nr
 			if (tooutput.getText().equals("")) {
-				status.setBackground(color_failed);
+				//status.setBackground(color_failed);
+				status.setGradientColors(color_failed.brighter(), color_failed);
 				status.setText("Index Missing");
+				continue;
 			}
 
 			// now getting the output information
@@ -628,8 +646,9 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 					target = (JTextField) right_stuff[1];
 					image_digits = (JTextField) right_stuff[2];
 				} catch (IndexOutOfBoundsException | NumberFormatException e) {
-					status.setBackground(color_failed);
-					status.setText("Index Err");
+					//status.setBackground(color_failed);
+					status.setGradientColors(color_failed.brighter(), color_failed);
+					status.setText("Index Error");
 					continue;
 				}
 
@@ -656,7 +675,8 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 					}
 
 					if (option == 1) {
-						status.setBackground(color_failed);
+						//status.setBackground(color_failed);
+						status.setGradientColors(color_failed.brighter(), color_failed);
 						status.setText("No Outp. Dir");
 						continue;
 					} else if (option == 0) {
@@ -678,7 +698,8 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 					sortAlgorithm.setKeepImageName(true);
 				}
 			} catch (NumberFormatException e) {
-				status.setBackground(color_failed);
+				//status.setBackground(color_failed);
+				status.setGradientColors(color_failed.brighter(), color_failed);
 				status.setText("Err Img Digits");
 				continue;
 			}
@@ -703,21 +724,32 @@ public class SorterTab extends JPanel implements ActionListener, MyTab,
 			if (sortAlgorithm.searchAndSortIn(inputfield.getText(),
 					target.getText())) {
 				status.setText("Finished");
-				status.setBackground(color_sucess);
+				//status.setBackground(color_sucess);
+				status.setGradientColors(color_sucess, color_sucess.darker());
 			} else {
 				if (sortAlgorithm.gotStopped()) {
 					if (sortAlgorithm.getPermissionProblem()) {
-						status.setBackground(color_failed);
+						//status.setBackground(color_failed);
+						status.setGradientColors(color_failed.brighter(), color_failed);
 						status.setText("Permission Err");
 						continue;
 					} else {
-						status.setBackground(color_failed);
+						//status.setBackground(color_failed);
+						status.setGradientColors(color_failed.brighter(), color_failed);
 						status.setText("Canceled");
+						for (int j = i+1; j < tablerows_left.length; j++) {
+							left_stuff = tablerows_left[j].getComponents();
+							status = (GradientTextField) left_stuff[L_STATUS];
+							status.setBackground(new Color(0, 0, 0, 0));
+							status.setGradientColors(color_failed.brighter(), color_failed);
+							status.setText("Canceled");
+						}
 						break;
 					}
 				}
-				status.setBackground(color_failed);
-				status.setText("Input Dir Err");
+				//status.setBackground(color_failed);
+				status.setGradientColors(color_failed.brighter(), color_failed);
+				status.setText("Input Dir Error");
 			}
 		}
 

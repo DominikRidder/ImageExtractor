@@ -1,5 +1,5 @@
 Testsuite: tests.Testcase
-Tests run: 5, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 4,85 sec
+Tests run: 5, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 5,358 sec
 ------------- Standard Output ---------------
 Scanning output dir for existing files ...
 Creating /opt/dridder_local/Datadir/Testcase/Sorted/B0316
@@ -21,7 +21,7 @@ Echonumber not found. Using default for sorting: 1
 Patient name not found. Using default for sorting: No_Name_Found
 Creating /opt/dridder_local/Datadir/Testcase/Sorted/No_Name_Found
 Creating /opt/dridder_local/Datadir/Testcase/Sorted/No_Name_Found/1_NO_PROT_NAME
-I found and sorted 10 Dicoms in 0,244 seconds! I copied 10 of them to the Output directory.Scanning output dir for existing files ...
+I found and sorted 10 Dicoms in 0,319 seconds! I copied 10 of them to the Output directory.Scanning output dir for existing files ...
 Recognized duplicate image!
 PatientID not found. Using default for sorting: NO_ID
 Protocolname not found. Using default for sorting: NO_PROT_NAME
@@ -31,19 +31,19 @@ PatientID not found. Using default for sorting: NO_ID
 Seriesnumber not found. Using default for sorting: 1
 Echonumber not found. Using default for sorting: 1
 Patient name not found. Using default for sorting: No_Name_Found
-I found and sorted 10 Dicoms in 0,033 seconds! I copied 0 of them to the Output directory.Config: /opt/dridder_local.ImageExtractorConfig.cfg
+I found and sorted 10 Dicoms in 0,031 seconds! I copied 0 of them to the Output directory.Config: /opt/dridder_local.ImageExtractorConfig.cfg
 Config: /opt/dridder_local.ImageExtractorConfig.cfg
 Config: /opt/dridder_local.ImageExtractorConfig.cfg
 Config: /opt/dridder_local.ImageExtractorConfig.cfg
 ------------- ---------------- ---------------
 
-Testcase: CheckSort took 0,285 sec
-Testcase: Slide2Textfield took 1,938 sec
-Testcase: lettersInNumericField took 1,294 sec
-Testcase: toHighSliceOrEcho took 1,008 sec
+Testcase: CheckSort took 0,359 sec
+Testcase: Slide2Textfield took 2,182 sec
+Testcase: lettersInNumericField took 1,296 sec
+Testcase: toHighSliceOrEcho took 0,997 sec
 	FAILED
 Slice textfield become to higher maxslice, by inserting 800.
 junit.framework.AssertionFailedError: Slice textfield become to higher maxslice, by inserting 800.
 	at tests.Testcase.toHighSliceOrEcho(Testcase.java:279)
 
-Testcase: VisibleAttributes took 0,242 sec
+Testcase: VisibleAttributes took 0,434 sec

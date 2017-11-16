@@ -1,0 +1,9 @@
+Testsuite: main.TestMainInput
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 0,117 sec
+
+Testcase: initializationError took 0,006 sec
+	Caused an ERROR
+No runnable methods
+java.lang.Exception: No runnable methods
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+

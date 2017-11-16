@@ -55,20 +55,6 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 	public static final boolean DEBUG = false;
 
 	/**
-	 * Main method, to start the GUI.
-	 * 
-	 * @param agrs
-	 *            This value is currently ignored.
-	 */
-	public static void main(String[] args) {
-		if (args.length >=1) {
-			new GUI(true, true, args[0]);
-		} else {
-			new GUI(true, true);
-		}
-	}
-
-	/**
 	 * Default serialVersionUID
 	 */
 	private static final long serialVersionUID = 1L;
@@ -176,6 +162,21 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		}
 	}
 	
+	public VolumeTab getFirstVolumeTab() {
+		VolumeTab voltab = null;
+		
+		for (int i = 0; i < tabber.getTabCount(); i++) {
+			Component tab = tabber.getComponentAt(i);
+			
+			if (tab instanceof VolumeTab) {
+				voltab = (VolumeTab) tab;
+				break;
+			}
+		}
+		
+		return voltab;
+	}
+	
 	/**
 	 * Constructs a new GUI. The GUI can be controlled with a Mouse or even
 	 * based on Java code.
@@ -200,7 +201,6 @@ public class GUI extends JFrame implements ActionListener, ChangeListener,
 		height = height < 550 ? height : 550;
 
 		width = (islinux ? width : (int) (width * 1.5));
-		// System.out.println(System.getProperty("os.name"));
 
 		setfinalSize(this, new Dimension(width, height));
 
