@@ -7,6 +7,26 @@ import javax.swing.text.DocumentFilter;
 
 public class IntegerFilter extends DocumentFilter {
 
+	int min, max;
+	
+	public IntegerFilter() {
+		super();
+		min = Integer.MIN_VALUE;
+		max = Integer.MAX_VALUE;
+	}
+	
+	public IntegerFilter(int min, int max) {
+		this();
+		
+		this.min = min;
+		this.max = max;
+	}
+	
+	public void setRange(int min, int max) {
+		this.min = min;
+		this.max = max;
+	}
+	
 	 @Override
 	   public void insertString(FilterBypass fb, int offset, String string,
 	         AttributeSet attr) throws BadLocationException {
@@ -15,11 +35,15 @@ public class IntegerFilter extends DocumentFilter {
 	      StringBuilder sb = new StringBuilder();
 	      sb.append(doc.getText(0, doc.getLength()));
 	      sb.insert(offset, string);
-
-	      if (isInteger(sb.toString())) {
-	         super.insertString(fb, offset, string, attr);
-	      } else {
-	         // warn the user and don't allow the insert
+	      String sbtext = sb.toString();
+	      
+	      if (isInteger(sbtext)) {
+	    	 int number = Integer.parseInt(sbtext);
+	    	 if (number >= min && number <= max) {
+	    		 super.insertString(fb, offset, string, attr);
+	    	 }
+	      } else if (sbtext.length() == 0) {
+	    	  super.insertString(fb, offset, string, attr);
 	      }
 	   }
 
@@ -40,13 +64,16 @@ public class IntegerFilter extends DocumentFilter {
 	      StringBuilder sb = new StringBuilder();
 	      sb.append(doc.getText(0, doc.getLength()));
 	      sb.replace(offset, offset + length, text);
+	      String sbtext = sb.toString();
 
-	      if (isInteger(sb.toString())) {
-	         super.replace(fb, offset, length, text, attrs);
-	      } else {
-	         // warn the user and don't allow the insert
+	      if (isInteger(sbtext)) {
+	    	 int number = Integer.parseInt(sbtext);
+	    	 if (number >= min && number <= max) {
+	    		 super.replace(fb, offset, length, text, attrs);
+	    	 }
+	      } else if (sbtext.length() == 0) {
+	    	  super.replace(fb, offset, length, text, attrs);
 	      }
-
 	   }
 
 	   @Override
@@ -56,12 +83,15 @@ public class IntegerFilter extends DocumentFilter {
 	      StringBuilder sb = new StringBuilder();
 	      sb.append(doc.getText(0, doc.getLength()));
 	      sb.delete(offset, offset + length);
-
-	      if (isInteger(sb.toString())) {
-	         super.remove(fb, offset, length);
-	      } else {
-	         // warn the user and don't allow the insert
+	      String sbtext = sb.toString();
+	      
+	      if (isInteger(sbtext)) {
+	    	 int number = Integer.parseInt(sbtext);
+	    	 if (number >= min && number <= max) {
+	    		 super.remove(fb, offset, length);
+	    	 }
+	      } else if (sbtext.length() == 0) {
+	    	  super.remove(fb, offset, length);
 	      }
-
 	   }
 }

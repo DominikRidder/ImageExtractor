@@ -83,6 +83,7 @@
 				<fileset dir="src/">
 					<include name="**/*Test*.java" />
 					<include name="**/*test*.java" />
+					<exclude name="main/" />
 				</fileset>
 			</batchtest>
 

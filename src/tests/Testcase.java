@@ -1,6 +1,6 @@
 package tests;
 
-import static org.junit.Assert.assertTrue; // checking the values
+import static org.junit.Assert.*; // checking the values
 import gui.GUI;
 import gui.volumetab.VolumeTab;
 
@@ -80,7 +80,7 @@ public class Testcase {
 		int millisec = 5000; // 5 sec max
 		waitForVolumeCreation(voltab, millisec);
 
-		assertTrue(!voltab.isOutputAreaEmpty());
+		assertFalse("File header did not show up in GUI.", voltab.isOutputAreaEmpty());
 	}
 
 	/**
@@ -178,7 +178,7 @@ public class Testcase {
 		ArrayList<Component> components = findComponentsByName(voltab, names);
 		
 		// Did we found all components?
-		assertTrue("Components Not Found.", components != null);
+		assertNotEquals("Components Not Found.", components, null);
 		
 		// Typecasting
 		JTextField sliceIndex = (JTextField) components.get(0);
@@ -187,22 +187,22 @@ public class Testcase {
 		JSlider echoSlider = (JSlider) components.get(3);
 		
 		// Should be equal after creation
-		assertTrue("Slice error after creation.", Integer.parseInt(sliceIndex.getText()) == sliceSlider.getValue());
-		assertTrue("Echo error after creation.", Integer.parseInt(echoIndex.getText()) == echoSlider.getValue());
+		assertEquals("Slice error after creation.", Integer.parseInt(sliceIndex.getText()), sliceSlider.getValue());
+		assertEquals("Echo error after creation.", Integer.parseInt(echoIndex.getText()), echoSlider.getValue());
 		
 		// Testing slidebar to field
 		sliceSlider.setValue(80);
 		echoSlider.setValue(3);
-		assertTrue("Slice Slider to Textfield error.", Integer.parseInt(sliceIndex.getText()) == sliceSlider.getValue());
-		assertTrue("Echo Slider to Textfield error.", Integer.parseInt(echoIndex.getText()) == echoSlider.getValue());
+		assertEquals("Slice Slider to Textfield error.", Integer.parseInt(sliceIndex.getText()), sliceSlider.getValue());
+		assertEquals("Echo Slider to Textfield error.", Integer.parseInt(echoIndex.getText()), echoSlider.getValue());
 		
 		// Testing field to slidebar
 		sliceIndex.setText("40");
 		echoIndex.setText("2");
 		sliceIndex.setCaretPosition(1); // Invoke caret change event
 		echoIndex.setCaretPosition(1);
-		assertTrue("Slice Textfield to Slider error.", Integer.parseInt(sliceIndex.getText()) == sliceSlider.getValue());
-		assertTrue("Echo Textfield to Slider error.", Integer.parseInt(echoIndex.getText()) == echoSlider.getValue());
+		assertEquals("Slice Textfield to Slider error.", Integer.parseInt(sliceIndex.getText()), sliceSlider.getValue());
+		assertEquals("Echo Textfield to Slider error.", Integer.parseInt(echoIndex.getText()), echoSlider.getValue());
 	}
 	
 	/**
@@ -228,7 +228,7 @@ public class Testcase {
 		ArrayList<Component> components = findComponentsByName(voltab, names);
 		
 		// Did we found all components?
-		assertTrue("Components Not Found.", components != null);
+		assertNotEquals("Components Not Found.", components, null);
 		
 		// Typecasting
 		JTextField sliceIndex = (JTextField) components.get(0);
@@ -237,8 +237,8 @@ public class Testcase {
 		// Testing field to slidebar
 		sliceIndex.setText("40a");
 		echoIndex.setText("2b");
-		assertTrue("Slice textfield did accept the letter a.", !sliceIndex.getText().contains("a"));
-		assertTrue("Echo textfield did accept the letter b.", !echoIndex.getText().contains("b"));
+		assertFalse("Slice textfield did accept the letter a.", sliceIndex.getText().contains("a"));
+		assertFalse("Echo textfield did accept the letter b.", echoIndex.getText().contains("b"));
 	}
 	
 	/**
@@ -257,14 +257,14 @@ public class Testcase {
 		voltab.setPath(volPath);
 		voltab.createVolume();
 		waitForVolumeCreation(voltab, millisec);
-		assertTrue("Volume creation timeout.", !voltab.isCreatingVolume());
+		assertFalse("Volume creation timeout.", voltab.isCreatingVolume());
 		
 		// Finding the components
 		String[] names = {"SliceIndex", "EchoIndex"};
 		ArrayList<Component> components = findComponentsByName(voltab, names);
 		
 		// Did we found all components?
-		assertTrue("Components Not Found.", components != null);
+		assertNotEquals("Components Not Found.", components, null);
 		
 		// Typecasting
 		JTextField sliceIndex = (JTextField) components.get(0);
@@ -276,8 +276,8 @@ public class Testcase {
 		try{
 			int slice = Integer.parseInt(sliceIndex.getText());
 			int echo = Integer.parseInt(echoIndex.getText());
-			assertTrue("Slice textfield become to higher maxslice, by inserting 800.", slice<=80);
-			assertTrue("Slice textfield become to higher maxecho, by inserting 4.", echo<=3);
+			assertTrue("Slice textfield become higher than maxslice by inserting 800. Slice textfield value = "+slice+".", slice<=80);
+			assertTrue("Slice textfield become higher than maxecho by inserting 4. Echo textfield value = "+echo+".", echo<=3);
 		}catch(NumberFormatException e) {
 			assertTrue("Could not parse Integer from slice field.", false);
 			assertTrue("Could not parse Integer from echo field.", false);

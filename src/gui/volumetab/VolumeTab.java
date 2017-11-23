@@ -28,6 +28,8 @@ import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -84,7 +86,7 @@ import util.ZeroEcho;
 public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		ChangeListener, MouseWheelListener, MouseListener, KeyListener,
 		Runnable, CaretListener, DropTargetListener, MouseMotionListener,
-		PropertyChangeListener {
+		PropertyChangeListener, FocusListener {
 
 	/**
 	 * Default serialVersionUID
@@ -370,7 +372,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	/**
 	 * This Object is used to calculate the ZeroEcho.
 	 */
-	private ZeroEcho ze;
+	private ZeroEcho zeCalculator;
 
 	/**
 	 * This Timer is used to update the StatusPanel, while the createVolume()
@@ -412,11 +414,13 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 * Actual Image position.
 	 */
 	private int sliceIdx, echoIdx;
+	
+	private IntegerFilter slice_index_filter, echo_index_filter;
 
 	public Volume getVolume() {
 		return volume;
 	}
-	
+
 	/**
 	 * Standard Constructor.
 	 * 
@@ -577,7 +581,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		slice_index.addMouseWheelListener(this);
 		slice_index.addKeyListener(this);
 		slice_index.addCaretListener(this);
-		((PlainDocument)slice_index.getDocument()).setDocumentFilter(new IntegerFilter());
+		slice_index.addFocusListener(this);
+		slice_index_filter = new IntegerFilter(0, 0);
+		((PlainDocument) slice_index.getDocument())
+				.setDocumentFilter(slice_index_filter);
 		GUI.setfinalSize(slice_index, new Dimension(
 				(int) (parent.width / 14.67), (int) (parent.height / 5.4)));
 
@@ -587,7 +594,10 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		echo_index.addMouseWheelListener(this);
 		echo_index.addKeyListener(this);
 		echo_index.addCaretListener(this);
-		((PlainDocument)echo_index.getDocument()).setDocumentFilter(new IntegerFilter());
+		echo_index.addFocusListener(this);
+		echo_index_filter = new IntegerFilter(0, 0);
+		((PlainDocument) echo_index.getDocument())
+				.setDocumentFilter(echo_index_filter);
 		GUI.setfinalSize(echo_index, new Dimension(
 				(int) (parent.width / 14.67), (int) (parent.height / 5.4)));
 
@@ -853,20 +863,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	 */
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource().equals(timer)) {
-			switch (creatingTextStatus) {
-			case 0:
-				parent.getStatusLabel().setText("Creating");
-				break;
-			case 1:
-				parent.getStatusLabel().setText("Creating.");
-				break;
-			case 2:
-				parent.getStatusLabel().setText("Creating..");
-				break;
-			case 3:
-				parent.getStatusLabel().setText("Creating...");
-				break;
-			}
+			String[] dots = { "", ".", "..", "..." };
+			parent.getStatusLabel().setText(
+					"Creating" + dots[creatingTextStatus]);
 			creatingTextStatus += 1;
 			creatingTextStatus %= 4;
 		}
@@ -875,14 +874,14 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		}
 		switch (e.getActionCommand()) {
 		case "Calculate Zero Echo":
-			if (ze == null) {
+			if (zeCalculator == null) {
 				actionCalculateZeroEcho();
 			}
 			break;
 		case "Cancel":
-			if (ze != null) {
-				ze.Cancle();
-				ze = null;
+			if (zeCalculator != null) {
+				zeCalculator.Cancel();
+				zeCalculator = null;
 			}
 			break;
 		case "open in External":
@@ -964,8 +963,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		parent.getProgressBar().setMaximum(perEcho);
 		parent.getProgressBar().setVisible(true);
 
-		ze = new ZeroEcho(volume, this, degree, alsolog.isSelected(), this);
-		new Thread(ze).start();
+		zeCalculator = new ZeroEcho(volume, this, degree, alsolog.isSelected(),
+				this);
+		new Thread(zeCalculator).start();
 	}
 
 	/**
@@ -1161,7 +1161,9 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 					KeyMap.KEY_ECHO_NUMBERS_S, volume.size() - 1));
 			perEcho = volume.size() / echoNumbers;
 			max_echo.setText("/" + echoNumbers);
+			echo_index_filter.setRange(1, echoNumbers);
 			slice_max.setText("/" + perEcho);
+			slice_index_filter.setRange(1, perEcho);
 
 			index_slider.setMinimum(1);
 			index_slider.setMaximum(perEcho);
@@ -1169,7 +1171,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 			echo_slider.setMinimum(1);
 			echo_slider.setMaximum(echoNumbers);
 			echo_slider.setValue(1);
-
+			
 			slice_index.requestFocus();
 			showROI(false);
 			displayImage();
@@ -1455,7 +1457,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 	}
 
 	public void mouseExited(MouseEvent e) {
-		if (volume != null && !creatingVolume && ze == null) {
+		if (volume != null && !creatingVolume && zeCalculator == null) {
 			parent.getStatusLabel().setText("");
 		}
 	}
@@ -1465,7 +1467,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		if (e.getSource().equals(this.imagelabel) && volume != null) {
 			setRoiPosition(e.getX(), e.getY());
 		}
-		if (volume != null && !creatingVolume && ze == null
+		if (volume != null && !creatingVolume && zeCalculator == null
 				&& e.getSource().equals(imagelabel)) {
 			float value = getImage().getProcessor().getf(
 					(int) (e.getX() / scaling), (int) (e.getY() / scaling));
@@ -1482,7 +1484,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 
 	@Override
 	public void mouseMoved(MouseEvent e) {
-		if (volume != null && !creatingVolume && ze == null
+		if (volume != null && !creatingVolume && zeCalculator == null
 				&& e.getSource().equals(imagelabel)) {
 			float value = getImage().getProcessor().getf(
 					(int) (e.getX() / scaling), (int) (e.getY() / scaling));
@@ -1617,10 +1619,11 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 				}
 			}
 			try {
-				drawIntoImage(fittingImage, vf.getPlot(this.volume,
-						this.relativroi, getActualSlice() - 1, degree,
-						alsolog.isSelected(), fittingImage.getWidth(),
-						fittingImage.getHeight(), getActualEcho()));
+				BufferedImage plot = vf.getPlot(this.volume, this.relativroi,
+						getActualSlice() - 1, degree, alsolog.isSelected(),
+						fittingImage.getWidth(), fittingImage.getHeight(),
+						getActualEcho());
+				drawIntoImage(fittingImage, plot);
 				if (!ownExtended) {
 					ownExtended = true;
 				}
@@ -1796,7 +1799,8 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		parent.getStatusLabel().setText("");
 		parent.getProgressBar().setVisible(false);
 		zero_echo.setText("Calculate Zero Echo");
-		ze = null;
+		zeCalculator = null;
+		echo_index_filter.setRange(0, echoNumbers);
 	}
 
 	/**
@@ -1972,7 +1976,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		int act = 0;
 		String newtext = echo_index.getText().replaceAll("[^\\d]", "");
 		if (newtext.length() == 0) {
-			act = 1;
+			act = echoIdx;
 		} else {
 			act = Integer.parseInt(newtext);
 		}
@@ -2027,7 +2031,7 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		int act = 0;
 		String newtext = slice_index.getText().replaceAll("[^\\d]", "");
 		if (newtext.length() == 0) {
-			act = 1;
+			act = sliceIdx;
 		} else {
 			act = Integer.parseInt(newtext);
 		}
@@ -2196,6 +2200,25 @@ public class VolumeTab extends JPanel implements ActionListener, MyTab,
 		java.awt.Graphics gr = target.getGraphics();
 		gr.drawImage(source.getScaledInstance(target.getWidth(),
 				target.getHeight(), BufferedImage.SCALE_FAST), 0, 0, null);
+	}
+
+	@Override
+	public void focusGained(FocusEvent e) {
+		// Nothing to do
+	}
+
+	@Override
+	public void focusLost(FocusEvent e) {
+		// Ensure, that the textfields contain the actual information
+		if (e.getSource() == slice_index) {
+			if (slice_index.getText().length() == 0) {
+				slice_index.setText(sliceIdx+"");
+			}
+		} else if (e.getSource() == echo_index) {
+			if (echo_index.getText().length() == 0) {
+				echo_index.setText(echoIdx+"");
+			}
+		}
 	}
 
 }

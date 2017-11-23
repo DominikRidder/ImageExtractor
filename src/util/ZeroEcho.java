@@ -63,7 +63,7 @@ public class ZeroEcho implements Runnable {
 	/**
 	 * Method to cancle the Algorithmen (thread save).
 	 */
-	public void Cancle() {
+	public void Cancel() {
 		canceld = true;
 	}
 
